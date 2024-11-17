@@ -36,6 +36,28 @@ class AuthService {
 
     return { user, token };
   }
+
+  async sign(email, password) {
+    // Check if user exists
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      const user = await User.findOne({ email }).select("+password");
+    }
+
+    const isPasswordCorrect = await user.matchPassword(password);
+
+    if (!isPasswordCorrect) {
+      throw new AppError("Incorrect password", 401);
+    }
+
+    const token = signInToken(user._id);
+
+    // Remove password before sending
+    user.password = undefined;
+
+    return { user, token };
+  }
 }
 
 module.exports = new AuthService();
