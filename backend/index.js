@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const matchRoutes = require("./routes/matchRoutes.js");
 const messageRoutes = require("./routes/messageRoutes.js");
+const { connectDB } = require("./config/db.js");
 
 const app = express();
 
@@ -45,4 +46,5 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  connectDB();
 });
