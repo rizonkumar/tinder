@@ -4,10 +4,11 @@ const cors = require("cors");
 
 dotenv.config();
 
-const authRoutes = require("./routes/authRoutes.js");
-const userRoutes = require("./routes/userRoutes.js");
-const matchRoutes = require("./routes/matchRoutes.js");
-const messageRoutes = require("./routes/messageRoutes.js");
+const authRoutes = require("./routes/auth-routes.js");
+const userRoutes = require("./routes/user-routes.js");
+const matchRoutes = require("./routes/match-routes.js");
+const messageRoutes = require("./routes/message-routes.js");
+const { connectDB } = require("./config/db.js");
 
 const app = express();
 
@@ -45,4 +46,5 @@ const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  connectDB();
 });
