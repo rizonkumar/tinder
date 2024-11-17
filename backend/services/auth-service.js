@@ -1,6 +1,8 @@
+const { signIn } = require("../controllers/auth-controller");
 const User = require("../models/user-model");
 const AppError = require("../utils/appError");
 
+const signInToken = require("../utils/signInToken");
 class AuthService {
   async signup(userData) {
     const { name, email, password, age, gender, genderPreference } = userData;
@@ -21,9 +23,13 @@ class AuthService {
       genderPreference,
     });
 
+    // Generate token
+    const token = signInToken(user._id);
+
     // Remove password from response
     user.password = undefined;
-    return user;
+
+    return { user, token };
   }
 }
 
