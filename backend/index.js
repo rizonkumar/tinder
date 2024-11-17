@@ -4,10 +4,10 @@ const cors = require("cors");
 
 dotenv.config();
 
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import matchRoutes from "./routes/matchRoutes.js";
-import messageRoutes from "./routes/messageRoutes.js";
+const authRoutes = require("./routes/authRoutes.js");
+const userRoutes = require("./routes/userRoutes.js");
+const matchRoutes = require("./routes/matchRoutes.js");
+const messageRoutes = require("./routes/messageRoutes.js");
 
 const app = express();
 
