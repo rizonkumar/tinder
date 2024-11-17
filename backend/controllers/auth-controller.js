@@ -1,5 +1,4 @@
-import authService from "../services/auth-service";
-
+const authService = require("../services/auth-service");
 const { catchAsync } = require("../utils/catchAsync");
 
 exports.signUp = catchAsync(async (req, res) => {
@@ -22,10 +21,10 @@ exports.signUp = catchAsync(async (req, res) => {
   });
 });
 
-export const signIn = (req, res) => {
-  res.send("signIn");
-};
+// export const signIn = (req, res) => {
+//   res.send("signIn");
+// };
 
-export const signOut = (req, res) => {
-  res.send("signOut");
-};
+// export const signOut = (req, res) => {
+//   res.send("signOut");
+// };
