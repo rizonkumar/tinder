@@ -48,3 +48,10 @@ exports.signOut = (req, res) => {
     message: "User signed out successfully",
   });
 };
+
+exports.userInformation = (req, res) => {
+  res.send({
+    success: true,
+    user: req.user,
+  });
+};

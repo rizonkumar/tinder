@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const User = require("../models/user-model");
 
 const signupSchema = Joi.object({
   name: Joi.string().required(),
@@ -25,8 +26,40 @@ exports.validateSignIn = (req, res, next) => {
   if (!email || !password) {
     return res.status(400).json({
       success: false,
+      success: false,
       message: "Email and password are required",
     });
   }
   next();
+};
+
+exports.protectRoute = async (req, res, next) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - No token found",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized - Invalid token",
+      });
+    }
+
+    const currentUser = await User.findById(decoded.id);
+    req.user = currentUser;
+    next();
+  } catch (error) {
+    console.error("Error in protectRoute middleware:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
