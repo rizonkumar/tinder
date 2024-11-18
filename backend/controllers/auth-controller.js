@@ -42,48 +42,28 @@ exports.signIn = async (req, res) => {
   }
 };
 
-exports.signOut = (req, res) => {
-  // try {
-  //   res.cookie("jwt", "", {
-  //     maxAge: 1, // expire immediately
-  //     httpOnly: true,
-  //     sameSite: "strict",
-  //     secure: process.env.NODE_ENV === "production",
-  //   });
+exports.signOut = async (req, res) => {
+  console.log("logout");
+  try {
+    await authService.signOut();
 
-  //   res.status(200).json({
-  //     success: true,
-  //     message: "Logged out successfully",
-  //   });
-  // } catch (error) {
-  //   res.status(500).json({
-  //     success: false,
-  //     message: "Error during logout",
-  //   });
-  // }
-  exports.signOut = async (req, res) => {
-    console.log("logout");
-    try {
-      await authService.signOut();
+    res.cookie("jwt", "", {
+      maxAge: 1,
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
 
-      res.cookie("jwt", "", {
-        maxAge: 1,
-        httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-      });
-
-      res.status(200).json({
-        success: true,
-        message: "Logged out successfully",
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Error during logout",
-      });
-    }
-  };
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error during logout",
+    });
+  }
 };
 
 exports.userInformation = async (req, res) => {
