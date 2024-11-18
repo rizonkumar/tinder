@@ -40,6 +40,11 @@ exports.signIn = async (req, res) => {
     }
   }
 };
-// export const signOut = (req, res) => {
-//   res.send("signOut");
-// };
+
+exports.signOut = (req, res) => {
+  res.clearCookie("jwt");
+  res.status(200).json({
+    success: true,
+    message: "User signed out successfully",
+  });
+};
