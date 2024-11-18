@@ -13,6 +13,7 @@ const sendResponse = (res, statusCode, user, token, message) => {
     message,
     data: {
       user,
+      token,
     },
   });
 };

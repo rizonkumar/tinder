@@ -1,3 +1,4 @@
+const User = require("../models/user-model");
 const authService = require("../services/auth-service");
 const AppError = require("../utils/appError");
 const sendResponse = require("../utils/responseHandler.JS");
@@ -40,6 +41,72 @@ exports.signIn = async (req, res) => {
     }
   }
 };
-// export const signOut = (req, res) => {
-//   res.send("signOut");
-// };
+
+exports.signOut = (req, res) => {
+  // try {
+  //   res.cookie("jwt", "", {
+  //     maxAge: 1, // expire immediately
+  //     httpOnly: true,
+  //     sameSite: "strict",
+  //     secure: process.env.NODE_ENV === "production",
+  //   });
+
+  //   res.status(200).json({
+  //     success: true,
+  //     message: "Logged out successfully",
+  //   });
+  // } catch (error) {
+  //   res.status(500).json({
+  //     success: false,
+  //     message: "Error during logout",
+  //   });
+  // }
+  exports.signOut = async (req, res) => {
+    console.log("logout");
+    try {
+      await authService.signOut();
+
+      res.cookie("jwt", "", {
+        maxAge: 1,
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production",
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error during logout",
+      });
+    }
+  };
+};
+
+exports.userInformation = async (req, res) => {
+  try {
+    const user = await authService.getUserInformation(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user information",
+    });
+  }
+};
