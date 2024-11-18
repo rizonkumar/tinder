@@ -1,4 +1,3 @@
-const { default: cloudinary } = require("../config/cloudinary");
 const userService = require("../services/user-service");
 const AppError = require("../utils/appError");
 const sendResponse = require("../utils/responseHandler.JS");
