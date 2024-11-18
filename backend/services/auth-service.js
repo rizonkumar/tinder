@@ -42,7 +42,7 @@ class AuthService {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      const user = await User.findOne({ email }).select("+password");
+      throw new AppError("Invalid email or password", 401);
     }
 
     const isPasswordCorrect = await user.matchPassword(password);
@@ -57,6 +57,24 @@ class AuthService {
     user.password = undefined;
 
     return { user, token };
+  }
+
+  async signOut() {
+    return true;
+  }
+
+  async getUserInformation(userId) {
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("matches", "name image")
+      .populate("likes", "name image")
+      .populate("dislikes", "name image");
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    return user;
   }
 }
 
