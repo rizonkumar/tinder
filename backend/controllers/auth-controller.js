@@ -1,25 +1,11 @@
 const authService = require("../services/auth-service");
 const AppError = require("../utils/appError");
+const sendResponse = require("../utils/responseHandler.JS");
 
 exports.signUp = async (req, res, next) => {
   try {
     const { user, token } = await authService.signup(req.body);
-
-    // Set Cookie
-    res.cookie("jwt", token, {
-      maxAge: 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      data: {
-        user,
-      },
-    });
+    sendResponse(res, 201, user, token, "User created successfully");
   } catch (error) {
     // If it's our AppError, send it with its status code
     if (error instanceof AppError) {
@@ -38,10 +24,22 @@ exports.signUp = async (req, res, next) => {
   }
 };
 
-// export const signIn = (req, res) => {
-//   res.send("signIn");
-// };
-
+exports.signIn = async (req, res) => {
+  try {
+    const { user, token } = await authService.sign(
+      req.body.email,
+      req.body.password
+    );
+    sendResponse(res, 200, user, token, "User signed in successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+};
 // export const signOut = (req, res) => {
 //   res.send("signOut");
 // };
