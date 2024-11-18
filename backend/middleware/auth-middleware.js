@@ -41,7 +41,6 @@ exports.protectRoute = async (req, res, next) => {
 
     if (req.cookies.jwt) {
       token = req.cookies.jwt;
-      console.log("token", token);
     } else if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
