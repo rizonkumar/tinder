@@ -4,10 +4,53 @@ const sendResponse = require("../utils/responseHandler.JS");
 
 exports.swipeRight = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { likedUserId } = req.params;
+    const result = await matchService.handleSwipeRight(
+      req.user._id,
+      likedUserId
+    );
+
+    const message = result.isMatch ? "It's a match!" : "Swipe right successful";
+
+    sendResponse(res, 200, result, null, message);
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while processing swipe",
+    });
+  }
 };
 
-exports.swipeLeft = async (req, res, next) => {};
+exports.swipeLeft = async (req, res, next) => {
+  try {
+    const { dislikedUserId } = req.params;
+    const match = await matchService.handleSwipeLeft(
+      req.user._id,
+      dislikedUserId
+    );
+
+    sendResponse(res, 200, match, null, "Swipe left successfully");
+  } catch (error) {
+    console.log(error);
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while processing swipe",
+    });
+  }
+};
 
 exports.getMatches = async (req, res, next) => {
   try {

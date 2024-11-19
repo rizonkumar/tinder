@@ -1,4 +1,6 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
+
 const { protectRoute } = require("../middleware/auth-middleware");
 const {
   swipeRight,
@@ -9,8 +11,23 @@ const {
 
 const router = express.Router();
 
-router.post("/swipe-right/:likedUserId", protectRoute, swipeRight);
-router.post("/swipe-left/:dislikedUserId", protectRoute, swipeLeft);
+const swipeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 swipes per windowMs
+});
+
+router.post(
+  "/swipe-right/:likedUserId",
+  protectRoute,
+  swipeLimiter,
+  swipeRight
+);
+router.post(
+  "/swipe-left/:dislikedUserId",
+  swipeLimiter,
+  protectRoute,
+  swipeLeft
+);
 
 router.get("/", protectRoute, getMatches);
 router.get("/user-profiles", protectRoute, getUserProfiles);
