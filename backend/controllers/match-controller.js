@@ -5,14 +5,14 @@ const sendResponse = require("../utils/responseHandler.JS");
 exports.swipeRight = async (req, res, next) => {
   try {
     const { likedUserId } = req.params;
-    const match = await matchService.handleSwipeRight(
+    const result = await matchService.handleSwipeRight(
       req.user._id,
       likedUserId
     );
 
     const message = result.isMatch ? "It's a match!" : "Swipe right successful";
 
-    sendResponse(res, 200, match, null, "Swipe right successfully");
+    sendResponse(res, 200, result, null, message);
   } catch (error) {
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({
