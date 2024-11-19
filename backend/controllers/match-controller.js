@@ -25,4 +25,26 @@ exports.getMatches = async (req, res, next) => {
   }
 };
 
-exports.getUserProfiles = async (req, res, next) => {};
+exports.getUserProfiles = async (req, res, next) => {
+  try {
+    const users = await matchService.getUserProfiles(req.user._id);
+
+    if (!users.length) {
+      return sendResponse(res, 200, [], null, "No more profiles available");
+    }
+
+    sendResponse(res, 200, users, null, "User profiles retrieved successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    // Handle unexpected errors
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving profiles",
+    });
+  }
+};
