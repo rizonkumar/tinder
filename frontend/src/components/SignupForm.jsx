@@ -175,18 +175,7 @@ const SignUpForm = () => {
             </motion.button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-medium text-pink-500 hover:text-pink-700"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
-
+          {/* TODO: Add Terms of Service and Privacy Policy Link */}
           <p className="mt-4 text-center text-xs text-gray-500">
             By signing up, you agree to our{" "}
             <Link to="/terms" className="text-pink-500 hover:text-pink-700">
