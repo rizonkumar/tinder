@@ -7,11 +7,9 @@ exports.updateProfile = async (req, res, next) => {
     const updatedUser = await userService.updateProfile(req.user._id, req.body);
     sendResponse(res, 200, updatedUser, null, "Profile updated successfully");
   } catch (error) {
-    if (error instanceof AppError) {
-      return res.status(error.statusCode).json({
-        success: false,
-        message: error.message,
-      });
-    }
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "Something went wrong while updating profile",
+    });
   }
 };
