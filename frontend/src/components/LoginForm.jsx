@@ -97,19 +97,7 @@ const LoginForm = () => {
               )}
             </motion.button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              New to Swipe?{" "}
-              <Link
-                to="/signup"
-                className="font-medium text-pink-500 hover:text-pink-700"
-              >
-                Create an account
-              </Link>
-            </p>
-          </div>
-
+          {/* TODO: Add a link to the terms of service and privacy policy */}
           <p className="mt-4 text-center text-xs text-gray-500">
             By signing in, you agree to our{" "}
             <Link to="/terms" className="text-pink-500 hover:text-pink-700">
