@@ -19,7 +19,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md px-4">
+    <div className="w-full max-w-md px-4 test">
       <div className="overflow-hidden rounded-2xl bg-white shadow-xl">
         <div className="px-8 pt-8">
           <h2 className="text-center text-3xl font-bold text-gray-900">
