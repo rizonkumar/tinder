@@ -7,6 +7,7 @@ const {
   swipeLeft,
   getMatches,
   getUserProfiles,
+  rewind,
 } = require("../controllers/match-controller");
 
 const router = express.Router();
@@ -31,5 +32,6 @@ router.post(
 
 router.get("/", protectRoute, getMatches);
 router.get("/user-profiles", protectRoute, getUserProfiles);
+router.post("/rewind", protectRoute, rewind);
 
 module.exports = router;
