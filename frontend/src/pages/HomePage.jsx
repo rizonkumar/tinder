@@ -3,8 +3,20 @@ import { Header } from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useMatchStore } from "../store/useMatchStore";
 import { useAuthStore } from "../store/useAuthStore";
-import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Frown, X, Heart, Sparkles, MessageCircle, RefreshCw } from "lucide-react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
+import {
+  Frown,
+  X,
+  Heart,
+  Sparkles,
+  MessageCircle,
+  RefreshCw,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const HomePage = () => {
@@ -23,7 +35,11 @@ const HomePage = () => {
   // Gesture handling motion values
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0.6, 1, 1, 1, 0.6]);
+  const opacity = useTransform(
+    x,
+    [-200, -150, 0, 150, 200],
+    [0.6, 1, 1, 1, 0.6],
+  );
 
   // Transform overlays
   const likeOpacity = useTransform(x, [0, 100], [0, 1]);
@@ -62,7 +78,6 @@ const HomePage = () => {
       <div className="flex flex-grow flex-col overflow-hidden">
         <Header />
 
-        {/* Main Swiping Viewport */}
         <main className="relative flex flex-grow flex-col items-center justify-center p-4">
           {isLoadingUserProfiles ? (
             <LoadingUI />
@@ -70,10 +85,8 @@ const HomePage = () => {
             <NoMoreProfiles onRefresh={getUserProfiles} />
           ) : (
             <div className="relative flex h-[32rem] w-full max-w-sm flex-col items-center justify-between">
-              {/* Cards Stack */}
               <div className="relative h-[27rem] w-full">
                 <AnimatePresence>
-                  {/* Underneath Card (Visual Deck Stack) */}
                   {nextProfile && (
                     <div
                       key={nextProfile._id}
@@ -87,7 +100,10 @@ const HomePage = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute bottom-6 left-6 right-6 text-white">
                         <h3 className="text-2xl font-bold">
-                          {nextProfile.name}, <span className="font-semibold">{nextProfile.age}</span>
+                          {nextProfile.name},{" "}
+                          <span className="font-semibold">
+                            {nextProfile.age}
+                          </span>
                         </h3>
                       </div>
                     </div>
@@ -111,7 +127,6 @@ const HomePage = () => {
                       }}
                       className="absolute inset-0 z-10 cursor-grab active:cursor-grabbing overflow-hidden rounded-3xl border border-white bg-white shadow-2xl transition-transform duration-75"
                     >
-                      {/* Swipe Visual Overlays */}
                       <motion.div
                         style={{ opacity: likeOpacity }}
                         className="absolute left-6 top-8 z-30 -rotate-12 rounded-lg border-4 border-green-500 bg-white/90 px-4 py-1.5 text-3xl font-extrabold tracking-widest text-green-500"
@@ -180,7 +195,6 @@ const HomePage = () => {
         </main>
       </div>
 
-      {/* It's a Match! Tinder Modal */}
       <AnimatePresence>
         {showMatchModal && matchedUser && (
           <motion.div
@@ -196,22 +210,25 @@ const HomePage = () => {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="relative flex w-full max-w-md flex-col items-center text-center text-white"
             >
-              {/* Sparkles backdrop */}
               <div className="absolute top-[-50px] animate-pulse">
-                <Sparkles size={80} className="text-yellow-400 opacity-60 fill-current" />
+                <Sparkles
+                  size={80}
+                  className="text-yellow-400 opacity-60 fill-current"
+                />
               </div>
 
-              {/* Spectacular Typography */}
               <h1 className="bg-gradient-to-r from-red-400 via-pink-500 to-purple-400 bg-clip-text text-5xl font-extrabold tracking-wider text-transparent drop-shadow-lg font-serif">
                 It's a Match!
               </h1>
               <p className="mt-3 text-lg font-light tracking-wide text-gray-300">
-                You and <span className="font-semibold text-pink-400">{matchedUser.name}</span> have liked each other.
+                You and{" "}
+                <span className="font-semibold text-pink-400">
+                  {matchedUser.name}
+                </span>{" "}
+                have liked each other.
               </p>
 
-              {/* Avatars Overlay Deck */}
               <div className="my-10 flex items-center justify-center -space-x-8">
-                {/* Current User Image */}
                 <motion.div
                   initial={{ rotate: -15, x: -30, opacity: 0 }}
                   animate={{ rotate: -8, x: 0, opacity: 1 }}
@@ -225,7 +242,6 @@ const HomePage = () => {
                   />
                 </motion.div>
 
-                {/* Match Heart Indicator */}
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: [0, 1.3, 1] }}
@@ -235,7 +251,6 @@ const HomePage = () => {
                   <Heart size={24} className="fill-current animate-beat" />
                 </motion.div>
 
-                {/* Matched User Image */}
                 <motion.div
                   initial={{ rotate: 15, x: 30, opacity: 0 }}
                   animate={{ rotate: 8, x: 0, opacity: 1 }}
@@ -250,7 +265,6 @@ const HomePage = () => {
                 </motion.div>
               </div>
 
-              {/* Action Buttons inside Match Modal */}
               <div className="flex w-full flex-col space-y-4 px-6">
                 <Link
                   to={`/chat/${matchedUser._id}`}
@@ -287,7 +301,8 @@ const NoMoreProfiles = ({ onRefresh }) => (
       Speedy fingers!
     </h2>
     <p className="mb-8 text-lg text-gray-600 leading-relaxed">
-      You've swiped through all available profiles in your preferences. Maybe it's time to take a break and touch some grass! 🌿
+      You've swiped through all available profiles in your preferences. Maybe
+      it's time to take a break and touch some grass! 🌿
     </p>
     <motion.button
       whileHover={{ scale: 1.05 }}
