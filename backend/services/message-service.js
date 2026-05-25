@@ -1,5 +1,6 @@
 const Message = require("../models/message-model");
 const AppError = require("../utils/appError");
+const { getReceiverSocketId, io } = require("../socket/socket");
 
 class MessageService {
   async sendMessage(senderId, receiverId, content) {
@@ -18,7 +19,10 @@ class MessageService {
       { path: "receiver", select: "name image" },
     ]);
 
-    // TODO: Send the message in real time using socket.io
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
+    }
 
     return populatedMessage;
   }
@@ -45,7 +49,7 @@ class MessageService {
       },
       {
         read: true,
-      }
+      },
     );
     return messages;
   }

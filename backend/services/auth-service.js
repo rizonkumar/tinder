@@ -13,6 +13,11 @@ class AuthService {
       throw new AppError("Email already registered", 400);
     }
 
+    // User age should be greater than 18
+    if (age < 18) {
+      throw new AppError("User age should be greater than 18", 400);
+    }
+
     // Create new user
     const user = await User.create({
       name,
@@ -22,11 +27,6 @@ class AuthService {
       gender,
       genderPreference,
     });
-
-    // User age should be greater than 18
-    if (user.age < 18) {
-      throw new AppError("User age should be greater than 18", 400);
-    }
 
     // Generate token
     const token = signInToken(user._id);

@@ -83,6 +83,10 @@ export default function App() {
               </motion.div>
             }
           />
+          <Route path="/matches" element={<Navigate to="/" />} />
+          <Route path="/messages" element={<Navigate to="/" />} />
+          <Route path="/settings" element={<Navigate to="/profile" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AnimatePresence>
       <Toaster position="bottom-right" />
