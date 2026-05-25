@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Header } from "../components/Header";
 import { useAuthStore } from "../store/useAuthStore";
 import { useUserStore } from "../store/useUserStore";
@@ -29,6 +29,19 @@ const ProfilePage = () => {
 
   const fileInputRef = useRef(null);
   const { loading, updateProfile } = useUserStore();
+
+  useEffect(() => {
+    if (authUser) {
+      setFormData({
+        name: authUser.name || "",
+        bio: authUser.bio || "",
+        age: authUser.age || "",
+        gender: authUser.gender || "",
+        genderPreference: authUser.genderPreference || "",
+        image: authUser.image || null,
+      });
+    }
+  }, [authUser]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

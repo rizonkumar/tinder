@@ -1,17 +1,17 @@
-const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const express = require("express");
 
 dotenv.config();
+
+const { app, server } = require("./socket/socket.js");
 
 const authRoutes = require("./routes/auth-routes.js");
 const userRoutes = require("./routes/user-routes.js");
 const matchRoutes = require("./routes/match-routes.js");
 const messageRoutes = require("./routes/message-routes.js");
 const connectDB = require("./config/db.js");
-
-const app = express();
 
 // Middleware
 app.use(
@@ -51,7 +51,7 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();
 });
