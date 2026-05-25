@@ -91,3 +91,16 @@ exports.getUserProfiles = async (req, res, next) => {
     });
   }
 };
+
+exports.rewind = async (req, res, next) => {
+  try {
+    const targetUser = await matchService.handleRewind(req.user._id);
+    sendResponse(res, 200, targetUser, null, "Swipe rewound successfully");
+  } catch (error) {
+    console.error("Rewind Error:", error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "An error occurred while rewinding swipe",
+    });
+  }
+};

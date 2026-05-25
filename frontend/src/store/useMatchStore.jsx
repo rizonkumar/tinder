@@ -58,4 +58,18 @@ export const useMatchStore = create((set) => ({
       toast.error(error.response?.data?.message || "Failed to swipe right");
     }
   },
+
+  rewind: async () => {
+    try {
+      const response = await axiosInstance.post("/matches/rewind");
+      const rewoundUser = response.data.data;
+      set((state) => ({
+        userProfiles: [rewoundUser, ...state.userProfiles],
+      }));
+      toast.success(`Rewound ${rewoundUser.name}! ⏪`);
+      return rewoundUser;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Nothing to rewind");
+    }
+  },
 }));

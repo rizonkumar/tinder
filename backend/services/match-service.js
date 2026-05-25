@@ -33,14 +33,19 @@ class MatchService {
 
     if (!currentUser.likes.includes(likedUserId)) {
       currentUser.likes.push(likedUserId);
-      await currentUser.save();
 
-      // if the other user has already liked the current user, it's a match
+      currentUser.swipeHistory.push({ user: likedUserId, action: "like" });
+      if (currentUser.swipeHistory.length > 15) {
+        currentUser.swipeHistory.shift();
+      }
+
       if (likedUser.likes.includes(userId)) {
         currentUser.matches.push(likedUserId);
         likedUser.matches.push(currentUser.id);
         await Promise.all([currentUser.save(), likedUser.save()]);
         // TODO: Add a notification to the liked user -> socket.io we will do this later
+      } else {
+        await currentUser.save();
       }
     }
 
@@ -70,13 +75,17 @@ class MatchService {
     if (!currentUser.dislikes.includes(dislikedUserId)) {
       currentUser.dislikes.push(dislikedUserId);
 
-      // Remove from likes/matches if exists
       currentUser.likes = currentUser.likes.filter(
-        (id) => id.toString() !== dislikedUserId
+        (id) => id.toString() !== dislikedUserId,
       );
       currentUser.matches = currentUser.matches.filter(
-        (id) => id.toString() !== dislikedUserId
+        (id) => id.toString() !== dislikedUserId,
       );
+
+      currentUser.swipeHistory.push({ user: dislikedUserId, action: "nope" });
+      if (currentUser.swipeHistory.length > 15) {
+        currentUser.swipeHistory.shift();
+      }
 
       await currentUser.save();
     }
@@ -143,10 +152,55 @@ class MatchService {
         },
       ],
     })
-      .select("name age gender bio image") // Only get these fields
-      .limit(10); // Get maximum 20 profiles
+      .select("name age gender bio image interests") // Only get these fields
+      .limit(10);
 
     return users;
+  }
+
+  async handleRewind(userId) {
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (!currentUser.swipeHistory || currentUser.swipeHistory.length === 0) {
+      throw new AppError("No swipe history to rewind", 400);
+    }
+
+    const lastSwipe = currentUser.swipeHistory.pop();
+    const targetUserId = lastSwipe.user;
+    const action = lastSwipe.action;
+
+    const targetUser = await User.findById(targetUserId).select(
+      "name age gender bio image interests",
+    );
+    if (!targetUser) {
+      throw new AppError("Target user not found", 404);
+    }
+
+    if (action === "like") {
+      currentUser.likes = currentUser.likes.filter(
+        (id) => id.toString() !== targetUserId.toString(),
+      );
+
+      currentUser.matches = currentUser.matches.filter(
+        (id) => id.toString() !== targetUserId.toString(),
+      );
+      targetUser.matches = targetUser.matches.filter(
+        (id) => id.toString() !== userId.toString(),
+      );
+
+      await Promise.all([currentUser.save(), targetUser.save()]);
+    } else if (action === "nope") {
+      currentUser.dislikes = currentUser.dislikes.filter(
+        (id) => id.toString() !== targetUserId.toString(),
+      );
+
+      await currentUser.save();
+    }
+
+    return targetUser;
   }
 }
 

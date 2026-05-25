@@ -38,6 +38,26 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    interests: {
+      type: [String],
+      default: [],
+    },
+    swipeHistory: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        action: {
+          type: String,
+          enum: ["like", "nope"],
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -16,6 +16,25 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const INTEREST_OPTIONS = [
+  "Travel",
+  "Music",
+  "Movies",
+  "Food",
+  "Fitness",
+  "Gaming",
+  "Coding",
+  "Reading",
+  "Yoga",
+  "Photography",
+  "Cooking",
+  "Pets",
+  "Bollywood",
+  "Cricket",
+  "Art",
+  "Sports",
+];
+
 const ProfilePage = () => {
   const { authUser } = useAuthStore();
   const [formData, setFormData] = useState({
@@ -25,6 +44,7 @@ const ProfilePage = () => {
     gender: authUser?.gender || "",
     genderPreference: authUser?.genderPreference || "",
     image: authUser?.image || null,
+    interests: authUser?.interests || [],
   });
 
   const fileInputRef = useRef(null);
@@ -39,6 +59,7 @@ const ProfilePage = () => {
         gender: authUser.gender || "",
         genderPreference: authUser.genderPreference || "",
         image: authUser.image || null,
+        interests: authUser.interests || [],
       });
     }
   }, [authUser]);
@@ -220,6 +241,39 @@ const ProfilePage = () => {
                       </label>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                  <Heart size={16} className="text-pink-500" />
+                  <span>My Interests / Hobbies</span>
+                </label>
+                <div className="flex flex-wrap gap-2 p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                  {INTEREST_OPTIONS.map((tag) => {
+                    const isSelected = formData.interests.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => {
+                            const newInterests = prev.interests.includes(tag)
+                              ? prev.interests.filter((t) => t !== tag)
+                              : [...prev.interests, tag];
+                            return { ...prev, interests: newInterests };
+                          });
+                        }}
+                        className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide border transition-all duration-200 ${
+                          isSelected
+                            ? "bg-gradient-to-r from-red-500 to-pink-500 text-white border-transparent shadow-sm"
+                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
