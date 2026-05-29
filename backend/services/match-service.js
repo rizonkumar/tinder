@@ -315,29 +315,29 @@ class MatchService {
     const action = lastSwipe.action;
 
     const targetUser = await User.findById(targetUserId).select(
-      "name age gender bio image interests superLikes",
+      "name age gender bio image interests superLikes matches",
     );
     if (!targetUser) {
       throw new AppError("Target user not found", 404);
     }
 
     if (action === "like" || action === "superlike") {
-      currentUser.likes = currentUser.likes.filter(
+      currentUser.likes = (currentUser.likes || []).filter(
         (id) => id.toString() !== targetUserId.toString(),
       );
-      currentUser.superLikes = currentUser.superLikes.filter(
+      currentUser.superLikes = (currentUser.superLikes || []).filter(
         (id) => id.toString() !== targetUserId.toString(),
       );
-      currentUser.matches = currentUser.matches.filter(
+      currentUser.matches = (currentUser.matches || []).filter(
         (id) => id.toString() !== targetUserId.toString(),
       );
-      targetUser.matches = targetUser.matches.filter(
+      targetUser.matches = (targetUser.matches || []).filter(
         (id) => id.toString() !== userId.toString(),
       );
 
       await Promise.all([currentUser.save(), targetUser.save()]);
     } else if (action === "nope") {
-      currentUser.dislikes = currentUser.dislikes.filter(
+      currentUser.dislikes = (currentUser.dislikes || []).filter(
         (id) => id.toString() !== targetUserId.toString(),
       );
 
