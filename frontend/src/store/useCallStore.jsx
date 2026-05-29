@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useAuthStore } from "./useAuthStore";
+import { useMessageStore } from "./useMessageStore";
 import toast from "react-hot-toast";
 
 let pc = null;
@@ -14,6 +15,7 @@ export const useCallStore = create((set, get) => ({
   micActive: true,
   cameraActive: true,
   offer: null,
+  callStartTime: null,
 
   initiateCall: async (targetId, callType) => {
     try {
@@ -23,6 +25,7 @@ export const useCallStore = create((set, get) => ({
         targetId,
         micActive: true,
         cameraActive: true,
+        callStartTime: null,
       });
 
       const constraints = {
@@ -77,7 +80,7 @@ export const useCallStore = create((set, get) => ({
   acceptIncomingCall: async () => {
     try {
       const { callType, targetId, offer } = get();
-      set({ callState: "connected" });
+      set({ callState: "connected", callStartTime: Date.now() });
 
       const constraints = {
         audio: true,
@@ -121,11 +124,17 @@ export const useCallStore = create((set, get) => ({
   },
 
   rejectIncomingCall: () => {
-    const { targetId } = get();
+    const { targetId, callType } = get();
     const socket = useAuthStore.getState().socket;
     if (socket && targetId) {
       socket.emit("disconnectCall", { targetId });
     }
+
+    if (targetId && callType) {
+      const content = `Missed ${callType === "video" ? "video" : "voice"} call`;
+      useMessageStore.getState().sendMessage(content, callType === "video" ? "video" : "audio");
+    }
+
     set({
       callState: "idle",
       callType: null,
@@ -134,11 +143,12 @@ export const useCallStore = create((set, get) => ({
       localStream: null,
       remoteStream: null,
       offer: null,
+      callStartTime: null,
     });
   },
 
   endCall: () => {
-    const { targetId, localStream } = get();
+    const { targetId, localStream, callStartTime, callType } = get();
     const socket = useAuthStore.getState().socket;
     if (socket && targetId) {
       socket.emit("disconnectCall", { targetId });
@@ -153,6 +163,18 @@ export const useCallStore = create((set, get) => ({
       pc = null;
     }
 
+    if (targetId && callType) {
+      let content = `Missed ${callType === "video" ? "video" : "voice"} call`;
+      if (callStartTime) {
+        const durationSecs = Math.floor((Date.now() - callStartTime) / 1000);
+        const minutes = Math.floor(durationSecs / 60);
+        const seconds = durationSecs % 60;
+        const durationStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        content = `${callType === "video" ? "Video" : "Voice"} call ended (${durationStr})`;
+      }
+      useMessageStore.getState().sendMessage(content, callType === "video" ? "video" : "audio");
+    }
+
     set({
       callState: "idle",
       callType: null,
@@ -163,6 +185,7 @@ export const useCallStore = create((set, get) => ({
       micActive: true,
       cameraActive: true,
       offer: null,
+      callStartTime: null,
     });
   },
 
@@ -203,11 +226,12 @@ export const useCallStore = create((set, get) => ({
         targetId: callerId,
         callerInfo,
         offer,
+        callStartTime: null,
       });
     });
 
     socket.on("callAccepted", async ({ answer }) => {
-      set({ callState: "connected" });
+      set({ callState: "connected", callStartTime: Date.now() });
       if (pc) {
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
       }
@@ -238,6 +262,7 @@ export const useCallStore = create((set, get) => ({
         micActive: true,
         cameraActive: true,
         offer: null,
+        callStartTime: null,
       });
       toast.error("Call ended");
     });
