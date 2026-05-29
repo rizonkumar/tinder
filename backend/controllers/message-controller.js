@@ -13,7 +13,7 @@ exports.sendMessage = async (req, res, next) => {
     const message = await messageService.sendMessage(
       req.user._id,
       receiverId,
-      content
+      content,
     );
 
     sendResponse(res, 200, message, null, "Message sent successfully");
@@ -41,10 +41,9 @@ exports.getConversation = async (req, res, next) => {
 
     const conversation = await messageService.getConversation(
       req.user._id,
-      userId
+      userId,
     );
 
-    // Get unread count after marking messages as read
     const unreadCount = await messageService.getUnreadCount(req.user._id);
 
     sendResponse(
@@ -52,7 +51,7 @@ exports.getConversation = async (req, res, next) => {
       200,
       { conversation, unreadCount },
       null,
-      "Conversation retrieved successfully"
+      "Conversation retrieved successfully",
     );
   } catch (error) {
     if (error instanceof AppError) {
@@ -77,7 +76,7 @@ exports.getUnreadCount = async (req, res, next) => {
       200,
       { unreadCount },
       null,
-      "Unread count retrieved successfully"
+      "Unread count retrieved successfully",
     );
   } catch (error) {
     if (error instanceof AppError) {
