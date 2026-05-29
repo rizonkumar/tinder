@@ -47,7 +47,7 @@ export const useMessageStore = create((set, get) => ({
       set({ isLoadingIcebreakers: true, icebreakers: [] });
       const response = await axiosInstance.post(`/messages/icebreakers/${userId}`);
       set({ icebreakers: response.data.data });
-    } catch (error) {
+    } catch {
       toast.error("Failed to generate icebreakers");
     } finally {
       set({ isLoadingIcebreakers: false });

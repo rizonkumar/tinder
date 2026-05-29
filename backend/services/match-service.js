@@ -77,14 +77,30 @@ class MatchService {
 
         if (currentSocketId) {
           io.to(currentSocketId).emit("matchCelebration", {
-            currentUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image },
-            matchedUser: { _id: likedUser._id, name: likedUser.name, image: likedUser.image }
+            currentUser: {
+              _id: currentUser._id,
+              name: currentUser.name,
+              image: currentUser.image,
+            },
+            matchedUser: {
+              _id: likedUser._id,
+              name: likedUser.name,
+              image: likedUser.image,
+            },
           });
         }
         if (likedSocketId) {
           io.to(likedSocketId).emit("matchCelebration", {
-            currentUser: { _id: likedUser._id, name: likedUser.name, image: likedUser.image },
-            matchedUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image }
+            currentUser: {
+              _id: likedUser._id,
+              name: likedUser.name,
+              image: likedUser.image,
+            },
+            matchedUser: {
+              _id: currentUser._id,
+              name: currentUser.name,
+              image: currentUser.image,
+            },
           });
         }
       } else {
@@ -168,7 +184,10 @@ class MatchService {
 
     if (!currentUser.superLikes.includes(targetUserId)) {
       currentUser.superLikes.push(targetUserId);
-      currentUser.swipeHistory.push({ user: targetUserId, action: "superlike" });
+      currentUser.swipeHistory.push({
+        user: targetUserId,
+        action: "superlike",
+      });
       if (currentUser.swipeHistory.length > 15) {
         currentUser.swipeHistory.shift();
       }
@@ -184,14 +203,30 @@ class MatchService {
 
         if (currentSocketId) {
           io.to(currentSocketId).emit("matchCelebration", {
-            currentUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image },
-            matchedUser: { _id: targetUser._id, name: targetUser.name, image: targetUser.image }
+            currentUser: {
+              _id: currentUser._id,
+              name: currentUser.name,
+              image: currentUser.image,
+            },
+            matchedUser: {
+              _id: targetUser._id,
+              name: targetUser.name,
+              image: targetUser.image,
+            },
           });
         }
         if (targetSocketId) {
           io.to(targetSocketId).emit("matchCelebration", {
-            currentUser: { _id: targetUser._id, name: targetUser.name, image: targetUser.image },
-            matchedUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image }
+            currentUser: {
+              _id: targetUser._id,
+              name: targetUser.name,
+              image: targetUser.image,
+            },
+            matchedUser: {
+              _id: currentUser._id,
+              name: currentUser.name,
+              image: currentUser.image,
+            },
           });
         }
       } else {
@@ -199,7 +234,11 @@ class MatchService {
         const targetSocketId = getReceiverSocketId(targetUserId);
         if (targetSocketId) {
           io.to(targetSocketId).emit("superLikeReceived", {
-            sender: { _id: currentUser._id, name: currentUser.name, image: currentUser.image }
+            sender: {
+              _id: currentUser._id,
+              name: currentUser.name,
+              image: currentUser.image,
+            },
           });
         }
       }
@@ -224,11 +263,12 @@ class MatchService {
       .select("name age gender bio image interests superLikes")
       .limit(10);
 
-    return users.map(user => {
+    return users.map((user) => {
       const userObj = user.toObject();
-      userObj.isSuperLikedByTarget = user.superLikes?.some(
-        (id) => id.toString() === currentUser._id.toString()
-      ) || false;
+      userObj.isSuperLikedByTarget =
+        user.superLikes?.some(
+          (id) => id.toString() === currentUser._id.toString(),
+        ) || false;
       return userObj;
     });
   }
@@ -250,11 +290,12 @@ class MatchService {
       .select("name age gender bio image interests superLikes")
       .limit(10);
 
-    return users.map(user => {
+    return users.map((user) => {
       const userObj = user.toObject();
-      userObj.isSuperLikedByTarget = user.superLikes?.some(
-        (id) => id.toString() === currentUser._id.toString()
-      ) || false;
+      userObj.isSuperLikedByTarget =
+        user.superLikes?.some(
+          (id) => id.toString() === currentUser._id.toString(),
+        ) || false;
       return userObj;
     });
   }
@@ -304,9 +345,10 @@ class MatchService {
     }
 
     const userObj = targetUser.toObject();
-    userObj.isSuperLikedByTarget = targetUser.superLikes?.some(
-      (id) => id.toString() === currentUser._id.toString()
-    ) || false;
+    userObj.isSuperLikedByTarget =
+      targetUser.superLikes?.some(
+        (id) => id.toString() === currentUser._id.toString(),
+      ) || false;
 
     return userObj;
   }

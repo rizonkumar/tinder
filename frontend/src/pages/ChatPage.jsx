@@ -5,8 +5,8 @@ import { useMessageStore } from "../store/useMessageStore";
 import { useAuthStore } from "../store/useAuthStore";
 import Sidebar from "../components/Sidebar";
 import { Header } from "../components/Header";
-import { Send, ArrowLeft, Heart, Loader } from "lucide-react";
-import { motion } from "framer-motion";
+import { Send, ArrowLeft, Heart, Loader, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ChatPage = () => {
   const { id } = useParams();
@@ -21,9 +21,13 @@ const ChatPage = () => {
     isLoadingMessages,
     subscribeToMessages,
     unsubscribeFromMessages,
+    icebreakers,
+    isLoadingIcebreakers,
+    getIcebreakers,
   } = useMessageStore();
 
   const [text, setText] = useState("");
+  const [showIcebreakers, setShowIcebreakers] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -36,9 +40,10 @@ const ChatPage = () => {
       if (match) {
         setActiveChatUser(match);
         getMessages(id);
+        getIcebreakers(id);
       }
     }
-  }, [id, matches, setActiveChatUser, getMessages]);
+  }, [id, matches, setActiveChatUser, getMessages, getIcebreakers]);
 
   useEffect(() => {
     subscribeToMessages();
@@ -54,6 +59,7 @@ const ChatPage = () => {
     if (!text.trim()) return;
     await sendMessage(text.trim());
     setText("");
+    setShowIcebreakers(false);
   };
 
   const isOnline = activeChatUser
@@ -68,7 +74,6 @@ const ChatPage = () => {
 
         {activeChatUser ? (
           <div className="flex flex-grow flex-col overflow-hidden bg-white shadow-xl rounded-t-3xl border-t border-pink-100 lg:m-4 lg:rounded-3xl">
-            {/* Conversation Header */}
             <div className="flex items-center justify-between border-b border-pink-100 p-4 shadow-sm">
               <div className="flex items-center space-x-4">
                 <Link
@@ -106,7 +111,6 @@ const ChatPage = () => {
               </div>
             </div>
 
-            {/* Messages Display Area */}
             <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-pink-50/20 to-purple-50/20">
               {isLoadingMessages ? (
                 <div className="flex h-full items-center justify-center">
@@ -163,9 +167,60 @@ const ChatPage = () => {
 
             <form
               onSubmit={handleSend}
-              className="border-t border-pink-100 p-4 bg-white"
+              className="border-t border-pink-100 bg-white relative flex flex-col"
             >
-              <div className="flex items-center space-x-3">
+              <AnimatePresence>
+                {showIcebreakers && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="border-b border-pink-100 p-3 bg-pink-50/40 backdrop-blur-sm space-y-2 rounded-t-2xl overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between text-xs font-bold text-pink-600 uppercase tracking-wider">
+                      <span>AI Icebreakers ✨</span>
+                      <button
+                        type="button"
+                        onClick={() => getIcebreakers(id)}
+                        className="text-gray-400 hover:text-pink-600 font-semibold"
+                      >
+                        Regenerate
+                      </button>
+                    </div>
+                    {isLoadingIcebreakers ? (
+                      <div className="flex py-2 justify-center">
+                        <Loader className="animate-spin text-pink-500" size={20} />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto">
+                        {icebreakers.map((starter, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setText(starter);
+                              setShowIcebreakers(false);
+                            }}
+                            className="w-full text-left bg-white border border-pink-50 rounded-xl px-3 py-2 text-xs text-gray-700 hover:bg-pink-50 hover:border-pink-200 transition-all font-medium leading-relaxed"
+                          >
+                            {starter}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex items-center space-x-3 p-4">
+                <button
+                  type="button"
+                  onClick={() => setShowIcebreakers(!showIcebreakers)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-50 text-pink-500 hover:bg-pink-100 transition-colors"
+                >
+                  <Sparkles size={18} />
+                </button>
+
                 <input
                   type="text"
                   value={text}
@@ -173,6 +228,7 @@ const ChatPage = () => {
                   placeholder="Type a message..."
                   className="flex-grow rounded-full border border-pink-100 bg-pink-50/20 px-5 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none transition-all focus:border-pink-300 focus:bg-white"
                 />
+
                 <button
                   type="submit"
                   disabled={!text.trim()}
