@@ -82,6 +82,14 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    isGold: {
+      type: Boolean,
+      default: false,
+    },
+    incognitoMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

@@ -29,6 +29,53 @@ class UserService {
       throw new AppError(error.message || "Error updating profile", 500);
     }
   }
+
+  async toggleIncognito(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    user.incognitoMode = !user.incognitoMode;
+    await user.save();
+    return user;
+  }
+
+  async toggleGold(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    user.isGold = !user.isGold;
+    await user.save();
+    return user;
+  }
+
+  async getStats(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const likesSent = user.likes?.length || 0;
+    const dislikesSent = user.dislikes?.length || 0;
+    const superLikesSent = user.superLikes?.length || 0;
+    const matchesCount = user.matches?.length || 0;
+    const totalSwipes = likesSent + dislikesSent;
+
+    const likesReceived = await User.countDocuments({ likes: userId });
+
+    const matchRate = totalSwipes > 0 ? Math.round((matchesCount / totalSwipes) * 100) : 0;
+
+    return {
+      likesSent,
+      dislikesSent,
+      superLikesSent,
+      matchesCount,
+      totalSwipes,
+      likesReceived,
+      matchRate,
+    };
+  }
 }
 
 module.exports = new UserService();
