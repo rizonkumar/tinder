@@ -1,7 +1,34 @@
 const User = require("../models/user-model");
 const AppError = require("../utils/appError");
+const { getReceiverSocketId, io } = require("../socket/socket");
 
 class MatchService {
+  _getProfileMatchFilter(currentUser) {
+    return [
+      { _id: { $ne: currentUser._id } },
+      { _id: { $nin: currentUser.likes } },
+      { _id: { $nin: currentUser.dislikes } },
+      { _id: { $nin: currentUser.matches } },
+      {
+        $or: [
+          { genderPreference: currentUser.gender },
+          { genderPreference: "both" },
+        ],
+      },
+      {
+        $or: [
+          { gender: currentUser.genderPreference },
+          {
+            $and: [
+              { gender: { $in: ["male", "female"] } },
+              { $expr: { $eq: [currentUser.genderPreference, "both"] } },
+            ],
+          },
+        ],
+      },
+    ];
+  }
+
   async getUserMatches(userId) {
     const user = await User.findById(userId)
       .populate("matches", "name image bio age")
@@ -26,14 +53,14 @@ class MatchService {
       throw new AppError("Liked user not found", 404);
     }
 
-    // Check if already matched
     if (currentUser.matches.includes(likedUserId)) {
       throw new AppError("Already matched with this user", 400);
     }
 
+    let isMatch = false;
+
     if (!currentUser.likes.includes(likedUserId)) {
       currentUser.likes.push(likedUserId);
-
       currentUser.swipeHistory.push({ user: likedUserId, action: "like" });
       if (currentUser.swipeHistory.length > 15) {
         currentUser.swipeHistory.shift();
@@ -41,9 +68,25 @@ class MatchService {
 
       if (likedUser.likes.includes(userId)) {
         currentUser.matches.push(likedUserId);
-        likedUser.matches.push(currentUser.id);
+        likedUser.matches.push(currentUser._id);
         await Promise.all([currentUser.save(), likedUser.save()]);
-        // TODO: Add a notification to the liked user -> socket.io we will do this later
+        isMatch = true;
+
+        const currentSocketId = getReceiverSocketId(userId);
+        const likedSocketId = getReceiverSocketId(likedUserId);
+
+        if (currentSocketId) {
+          io.to(currentSocketId).emit("matchCelebration", {
+            currentUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image },
+            matchedUser: { _id: likedUser._id, name: likedUser.name, image: likedUser.image }
+          });
+        }
+        if (likedSocketId) {
+          io.to(likedSocketId).emit("matchCelebration", {
+            currentUser: { _id: likedUser._id, name: likedUser.name, image: likedUser.image },
+            matchedUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image }
+          });
+        }
       } else {
         await currentUser.save();
       }
@@ -51,8 +94,8 @@ class MatchService {
 
     return {
       user: currentUser,
-      isMatch: likedUser.likes.includes(userId),
-      matchedUser: likedUser.likes.includes(userId) ? likedUser : null,
+      isMatch,
+      matchedUser: isMatch ? likedUser : null,
       action: "right",
     };
   }
@@ -78,6 +121,9 @@ class MatchService {
       currentUser.likes = currentUser.likes.filter(
         (id) => id.toString() !== dislikedUserId,
       );
+      currentUser.superLikes = currentUser.superLikes.filter(
+        (id) => id.toString() !== dislikedUserId,
+      );
       currentUser.matches = currentUser.matches.filter(
         (id) => id.toString() !== dislikedUserId,
       );
@@ -98,64 +144,119 @@ class MatchService {
     };
   }
 
-  async getUserProfiles(userId) {
-    // 1. First, find the current user
-    const currentUser = await User.findById(userId);
+  async handleSuperLike(userId, targetUserId) {
+    if (userId === targetUserId) {
+      throw new AppError("Cannot super like yourself", 400);
+    }
 
+    const currentUser = await User.findById(userId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      throw new AppError("Target user not found", 404);
+    }
+
+    if (currentUser.matches.includes(targetUserId)) {
+      throw new AppError("Already matched with this user", 400);
+    }
+
+    let isMatch = false;
+
+    if (!currentUser.likes.includes(targetUserId)) {
+      currentUser.likes.push(targetUserId);
+    }
+
+    if (!currentUser.superLikes.includes(targetUserId)) {
+      currentUser.superLikes.push(targetUserId);
+      currentUser.swipeHistory.push({ user: targetUserId, action: "superlike" });
+      if (currentUser.swipeHistory.length > 15) {
+        currentUser.swipeHistory.shift();
+      }
+
+      if (targetUser.likes.includes(userId)) {
+        currentUser.matches.push(targetUserId);
+        targetUser.matches.push(currentUser._id);
+        await Promise.all([currentUser.save(), targetUser.save()]);
+        isMatch = true;
+
+        const currentSocketId = getReceiverSocketId(userId);
+        const targetSocketId = getReceiverSocketId(targetUserId);
+
+        if (currentSocketId) {
+          io.to(currentSocketId).emit("matchCelebration", {
+            currentUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image },
+            matchedUser: { _id: targetUser._id, name: targetUser.name, image: targetUser.image }
+          });
+        }
+        if (targetSocketId) {
+          io.to(targetSocketId).emit("matchCelebration", {
+            currentUser: { _id: targetUser._id, name: targetUser.name, image: targetUser.image },
+            matchedUser: { _id: currentUser._id, name: currentUser.name, image: currentUser.image }
+          });
+        }
+      } else {
+        await currentUser.save();
+        const targetSocketId = getReceiverSocketId(targetUserId);
+        if (targetSocketId) {
+          io.to(targetSocketId).emit("superLikeReceived", {
+            sender: { _id: currentUser._id, name: currentUser.name, image: currentUser.image }
+          });
+        }
+      }
+    }
+
+    return {
+      user: currentUser,
+      isMatch,
+      matchedUser: isMatch ? targetUser : null,
+      action: "superlike",
+    };
+  }
+
+  async getUserProfiles(userId) {
+    const currentUser = await User.findById(userId);
     if (!currentUser) {
       throw new AppError("User not found", 404);
     }
 
-    // 2. Find potential matches using MongoDB query
-    const users = await User.find({
-      $and: [
-        // All these conditions must be true
-        // Condition 1: Don't show the current user to themselves
-        { _id: { $ne: currentUser._id } }, // $ne means "not equal"
-
-        // Condition 2: Don't show users they've already liked
-        { _id: { $nin: currentUser.likes } }, // $nin means "not in array"
-
-        // Condition 3: Don't show users they've already disliked
-        { _id: { $nin: currentUser.dislikes } },
-
-        // Condition 4: Don't show existing matches
-        { _id: { $nin: currentUser.matches } },
-
-        // Condition 5: Complex gender preference matching
-        {
-          $or: [
-            // Either of these conditions can be true
-            // Option A: Other user specifically prefers current user's gender
-            { genderPreference: currentUser.gender },
-            // Option B: Other user is open to all genders ("both")
-            { genderPreference: "both" },
-          ],
-        },
-
-        // Condition 6: Current user's preferences match with other users
-        {
-          $or: [
-            // Either of these conditions can be true
-            // Option A: Other user's gender matches current user's preference
-            { gender: currentUser.genderPreference },
-            // Option B: Handle when current user prefers "both"
-            {
-              $and: [
-                // Ensure other user has a valid gender
-                { gender: { $in: ["male", "female"] } },
-                // Current user's preference is "both"
-                { $expr: { $eq: [currentUser.genderPreference, "both"] } },
-              ],
-            },
-          ],
-        },
-      ],
-    })
-      .select("name age gender bio image interests") // Only get these fields
+    const filter = this._getProfileMatchFilter(currentUser);
+    const users = await User.find({ $and: filter })
+      .select("name age gender bio image interests superLikes")
       .limit(10);
 
-    return users;
+    return users.map(user => {
+      const userObj = user.toObject();
+      userObj.isSuperLikedByTarget = user.superLikes?.some(
+        (id) => id.toString() === currentUser._id.toString()
+      ) || false;
+      return userObj;
+    });
+  }
+
+  async getExploreProfiles(userId, interest) {
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (!interest) {
+      throw new AppError("Interest is required for explore feed", 400);
+    }
+
+    const filter = this._getProfileMatchFilter(currentUser);
+    filter.push({ interests: { $regex: new RegExp(`^${interest}$`, "i") } });
+
+    const users = await User.find({ $and: filter })
+      .select("name age gender bio image interests superLikes")
+      .limit(10);
+
+    return users.map(user => {
+      const userObj = user.toObject();
+      userObj.isSuperLikedByTarget = user.superLikes?.some(
+        (id) => id.toString() === currentUser._id.toString()
+      ) || false;
+      return userObj;
+    });
   }
 
   async handleRewind(userId) {
@@ -173,17 +274,19 @@ class MatchService {
     const action = lastSwipe.action;
 
     const targetUser = await User.findById(targetUserId).select(
-      "name age gender bio image interests",
+      "name age gender bio image interests superLikes",
     );
     if (!targetUser) {
       throw new AppError("Target user not found", 404);
     }
 
-    if (action === "like") {
+    if (action === "like" || action === "superlike") {
       currentUser.likes = currentUser.likes.filter(
         (id) => id.toString() !== targetUserId.toString(),
       );
-
+      currentUser.superLikes = currentUser.superLikes.filter(
+        (id) => id.toString() !== targetUserId.toString(),
+      );
       currentUser.matches = currentUser.matches.filter(
         (id) => id.toString() !== targetUserId.toString(),
       );
@@ -200,7 +303,12 @@ class MatchService {
       await currentUser.save();
     }
 
-    return targetUser;
+    const userObj = targetUser.toObject();
+    userObj.isSuperLikedByTarget = targetUser.superLikes?.some(
+      (id) => id.toString() === currentUser._id.toString()
+    ) || false;
+
+    return userObj;
   }
 }
 

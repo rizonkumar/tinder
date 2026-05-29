@@ -8,6 +8,8 @@ export const useMessageStore = create((set, get) => ({
   activeChatUser: null,
   isLoadingMessages: false,
   unreadCount: 0,
+  icebreakers: [],
+  isLoadingIcebreakers: false,
 
   setActiveChatUser: (user) => set({ activeChatUser: user }),
 
@@ -23,18 +25,32 @@ export const useMessageStore = create((set, get) => ({
     }
   },
 
-  sendMessage: async (content) => {
+  sendMessage: async (content, messageType = "text", mediaUrl = "") => {
     const { activeChatUser, messages } = get();
     if (!activeChatUser) return;
     try {
       const response = await axiosInstance.post("/messages/send", {
         receiverId: activeChatUser._id,
         content,
+        messageType,
+        mediaUrl,
       });
       const newMessage = response.data.data;
       set({ messages: [...messages, newMessage] });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to send message");
+    }
+  },
+
+  getIcebreakers: async (userId) => {
+    try {
+      set({ isLoadingIcebreakers: true, icebreakers: [] });
+      const response = await axiosInstance.post(`/messages/icebreakers/${userId}`);
+      set({ icebreakers: response.data.data });
+    } catch (error) {
+      toast.error("Failed to generate icebreakers");
+    } finally {
+      set({ isLoadingIcebreakers: false });
     }
   },
 

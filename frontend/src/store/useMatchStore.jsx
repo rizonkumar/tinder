@@ -35,6 +35,19 @@ export const useMatchStore = create((set) => ({
     }
   },
 
+  getExploreProfiles: async (interest) => {
+    try {
+      set({ isLoadingUserProfiles: true });
+      const res = await axiosInstance.get(`/matches/explore?interest=${encodeURIComponent(interest)}`);
+      set({ userProfiles: res.data.data });
+    } catch (error) {
+      set({ userProfiles: [] });
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      set({ isLoadingUserProfiles: false });
+    }
+  },
+
   swipeLeft: async (user) => {
     try {
       set((state) => ({
@@ -56,6 +69,18 @@ export const useMatchStore = create((set) => ({
       return response.data.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to swipe right");
+    }
+  },
+
+  swipeSuperLike: async (user) => {
+    try {
+      set((state) => ({
+        userProfiles: state.userProfiles.filter((p) => p._id !== user._id),
+      }));
+      const response = await axiosInstance.post(`/matches/swipe-super/${user._id}`);
+      return response.data.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to super like");
     }
   },
 

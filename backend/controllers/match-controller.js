@@ -38,7 +38,6 @@ exports.swipeLeft = async (req, res, next) => {
 
     sendResponse(res, 200, match, null, "Swipe left successfully");
   } catch (error) {
-    console.log(error);
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({
         success: false,
@@ -52,19 +51,47 @@ exports.swipeLeft = async (req, res, next) => {
   }
 };
 
-exports.getMatches = async (req, res, next) => {
+exports.superLike = async (req, res, next) => {
   try {
-    const matches = await matchService.getUserMatches(req.user._id);
+    const { likedUserId } = req.params;
+    const result = await matchService.handleSuperLike(
+      req.user._id,
+      likedUserId
+    );
 
-    sendResponse(res, 200, matches, null, "Matches retrieved successfully");
+    const message = result.isMatch ? "It's a match!" : "Super like successful";
+
+    sendResponse(res, 200, result, null, message);
   } catch (error) {
-    console.log(error);
     if (error instanceof AppError) {
       return res.status(error.statusCode).json({
         success: false,
         message: error.message,
       });
     }
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while processing super like",
+    });
+  }
+};
+
+exports.getMatches = async (req, res, next) => {
+  try {
+    const matches = await matchService.getUserMatches(req.user._id);
+
+    sendResponse(res, 200, matches, null, "Matches retrieved successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving matches",
+    });
   }
 };
 
@@ -91,12 +118,31 @@ exports.getUserProfiles = async (req, res, next) => {
   }
 };
 
+exports.getExploreProfiles = async (req, res, next) => {
+  try {
+    const { interest } = req.query;
+    const users = await matchService.getExploreProfiles(req.user._id, interest);
+
+    sendResponse(res, 200, users, null, "Explore profiles retrieved successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving explore profiles",
+    });
+  }
+};
+
 exports.rewind = async (req, res, next) => {
   try {
     const targetUser = await matchService.handleRewind(req.user._id);
     sendResponse(res, 200, targetUser, null, "Swipe rewound successfully");
   } catch (error) {
-    console.error("Rewind Error:", error);
     return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || "An error occurred while rewinding swipe",

@@ -12,6 +12,7 @@ import {
   Settings,
   Bell,
   MessageCircle,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,6 +36,7 @@ export const Header = () => {
   const menuItems = authUser
     ? [
         { icon: <User size={18} />, label: "Profile", to: "/profile" },
+        { icon: <Compass size={18} />, label: "Explore Vibes", to: "/explore" },
         { icon: <Heart size={18} />, label: "Matches", to: "/matches" },
         {
           icon: <MessageCircle size={18} />,
@@ -66,6 +68,12 @@ export const Header = () => {
           <div className="hidden items-center space-x-6 md:flex">
             {authUser && (
               <>
+                <Link
+                  to="/explore"
+                  className="text-gray-600 transition-colors hover:text-pink-500"
+                >
+                  <Compass size={20} />
+                </Link>
                 <Link
                   to="/matches"
                   className="text-gray-600 transition-colors hover:text-pink-500"
