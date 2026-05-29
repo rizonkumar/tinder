@@ -352,6 +352,19 @@ class MatchService {
 
     return userObj;
   }
+
+  async getUserLikes(userId) {
+    const user = await User.findById(userId)
+      .populate("likes", "name image bio age interests")
+      .select("likes matches");
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    const matchesSet = new Set(user.matches.map((m) => m.toString()));
+    return user.likes.filter(
+      (likedUser) => !matchesSet.has(likedUser._id.toString())
+    );
+  }
 }
 
 module.exports = new MatchService();

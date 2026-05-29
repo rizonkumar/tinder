@@ -4,7 +4,9 @@ import { axiosInstance } from "../utils/axios";
 
 export const useMatchStore = create((set) => ({
   matches: [],
+  likedUsers: [],
   isLoadingMyMatches: false,
+  isLoadingLikedUsers: false,
   isLoadingUserProfiles: false,
   userProfiles: [],
   swipeFeedback: null,
@@ -19,6 +21,19 @@ export const useMatchStore = create((set) => ({
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isLoadingMyMatches: false });
+    }
+  },
+
+  getLikedUsers: async () => {
+    try {
+      set({ isLoadingLikedUsers: true });
+      const response = await axiosInstance.get("/matches/liked");
+      set({ likedUsers: response.data.data });
+    } catch (error) {
+      set({ likedUsers: [] });
+      toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      set({ isLoadingLikedUsers: false });
     }
   },
 
