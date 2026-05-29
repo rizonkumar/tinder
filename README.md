@@ -4,7 +4,7 @@ Swipe is a state-of-the-art, premium, and feature-rich Tinder clone designed for
 
 ---
 
-## ⚡ Technical Architecture & Data Flow
+## Technical Architecture & Data Flow
 
 ```mermaid
 graph TD
@@ -68,7 +68,7 @@ graph TD
 
 ---
 
-## 📊 WebRTC Signaling & Class Structure
+## WebRTC Signaling & Class Structure
 
 The following diagram illustrates the class mapping, store definitions, and socket events responsible for managing media feeds and connections:
 
@@ -119,43 +119,47 @@ classDiagram
 
 ---
 
-## ✨ Features Offered
+## Features Offered
 
-### 1. 🎙️ Secure WebRTC Video & Voice Calling
+### 1. Secure WebRTC Video & Voice Calling
 * **Description**: Call your matches instantly without sharing phone numbers. Supports full-screen high-resolution remote video with a draggable Picture-in-Picture (PiP) local video card that adapts dynamically on drag. If a voice call is made, it displays a beautiful glassmorphic avatar card with subtle breath-pulsing effects.
-* **Tech**: Peer-to-peer WebRTC connections (`RTCPeerConnection`), Google STUN signaling, camera/mic track toggle states, and global socket triggers.
+* **Tech**: Peer-to-peer WebRTC connections (RTCPeerConnection), Google STUN signaling, camera/mic track toggle states, and global socket triggers.
 
-### 2. 🧠 AI-Powered Icebreaker Generator (Gemini Integration)
+### 2. AI-Powered Icebreaker Generator (Gemini Integration)
 * **Description**: Never worry about what to say first. Analyze matching profiles dynamically to generate three personalized, charming conversation starters.
-* **Tech**: Integrates Google Gemini API (`gemini-1.5-flash`) via the `@google/generative-ai` SDK, with contextual fallback algorithms when offline or API keys are absent.
+* **Tech**: Integrates Google Gemini API (gemini-1.5-flash) via the @google/generative-ai SDK, with contextual fallback algorithms when offline or API keys are absent.
 
-### 3. ⭐ "Super Like" with Confetti & Glow Effects
-* **Description**: Express high interest with a premium swipe action. Highlights you in the target user's swipe deck with glowing gold/cyan borders and a "SUPER LIKED YOU! ⭐" badge.
+### 3. "Super Like" with Confetti & Glow Effects
+* **Description**: Express high interest with a premium swipe action. Highlights you in the target user's swipe deck with glowing gold/cyan borders and a "SUPER LIKED YOU!" badge.
 * **Tech**: Framer Motion gestures, canvas-confetti particle bursts, and persistent MongoDB tracking schemas.
 
-### 4. 🎉 Real-time Socket Match Celebrations
+### 4. Real-time Socket Match Celebrations
 * **Description**: Receive mutual match overlays instantly. Freezes the viewport with a dark glassmorphic overlay, slides mutual avatars together, streams floating hearts, and offers an direct chat bar.
 * **Tech**: Real-time Socket.io pushes synchronized between online client sessions.
 
-### 5. 🧭 Interest-Based Explore Hub
-* **Description**: Step out of the generic queue and find people matching your exact interests (e.g. *Gaming 🎮, Travel ✈️, Food 🍔, Coding 💻*).
-* **Tech**: SOLID Private match filters, dynamic gradient styling, and highly modular `CardSwiper` extractions.
+### 5. Interest-Based Explore Hub
+* **Description**: Step out of the generic queue and find people matching your exact interests (e.g. Gaming, Travel, Food, Coding).
+* **Tech**: SOLID Private match filters, dynamic gradient styling, and highly modular CardSwiper extractions.
 
-### 6. 💬 Instant Messaging & Live Notifications
+### 6. Instant Messaging & Live Notifications
 * **Description**: Text-based chatting with online presence indicators (active now / offline) and real-time message notifications using toast prompts.
 * **Tech**: Zustand state channels, Socket.io subscriptions, and Mongoose indexing.
 
+### 7. Swipe Gold Hub
+* **Description**: Unlock premium swiping features, including a blurred Who Liked You feed (which unblurs for members, allowing instant matches), toggleable Incognito Mode (making you visible only to users you swipe right on), and a real-time swipe performance statistics dashboard.
+* **Tech**: Strict incognito database query filters, transactional gold membership toggles, custom circular progress metrics, and dynamic canvas-confetti bursts.
+
 ---
 
-## 🛠️ Getting Started
+## Getting Started
 
 ### Prerequisites
 * Node.js (v18+)
 * MongoDB Instance
 
 ### Server Setup (backend)
-1. Navigate to `/backend`
-2. Create a `.env` file containing:
+1. Navigate to /backend
+2. Create a .env file containing:
    ```env
    PORT=3001
    MONGO_URI=your_mongodb_connection_string
@@ -169,8 +173,8 @@ classDiagram
 4. Start dev server: `npm run dev`
 
 ### Client Setup (frontend)
-1. Navigate to `/frontend`
-2. Create a `.env` file containing:
+1. Navigate to /frontend
+2. Create a .env file containing:
    ```env
    VITE_API_URL=http://localhost:3001
    ```
