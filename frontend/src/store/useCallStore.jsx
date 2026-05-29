@@ -239,7 +239,7 @@ export const useCallStore = create((set, get) => ({
         cameraActive: true,
         offer: null,
       });
-      toast("Call ended", { icon: "🔌" });
+      toast.error("Call ended");
     });
   },
 }));
