@@ -16,7 +16,9 @@ export const useMessageStore = create((set, get) => ({
   getMessages: async (userId) => {
     try {
       set({ isLoadingMessages: true });
-      const response = await axiosInstance.get(`/messages/conversation/${userId}`);
+      const response = await axiosInstance.get(
+        `/messages/conversation/${userId}`,
+      );
       set({ messages: response.data.data.conversation });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch messages");
@@ -45,7 +47,9 @@ export const useMessageStore = create((set, get) => ({
   getIcebreakers: async (userId) => {
     try {
       set({ isLoadingIcebreakers: true, icebreakers: [] });
-      const response = await axiosInstance.post(`/messages/icebreakers/${userId}`);
+      const response = await axiosInstance.post(
+        `/messages/icebreakers/${userId}`,
+      );
       set({ icebreakers: response.data.data });
     } catch {
       toast.error("Failed to generate icebreakers");

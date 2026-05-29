@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useAuthStore } from "../store/useAuthStore";
+import CompatibilityRadar from "./CompatibilityRadar";
 
 export default function CardSwiper({
   userProfiles,
@@ -245,6 +246,8 @@ export default function CardSwiper({
                         </p>
                       </div>
 
+                      <CompatibilityRadar profile={activeProfile} />
+
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                           Interests
@@ -339,7 +342,10 @@ function NoMoreProfiles({ onRefresh, onRewind }) {
         Speedy fingers!
       </h2>
       <p className="mb-8 text-lg text-gray-600 leading-relaxed flex items-center justify-center gap-1.5 flex-wrap">
-        <span>You've swiped through all available profiles in your preferences. Maybe it's time to take a break and touch some grass!</span>
+        <span>
+          You've swiped through all available profiles in your preferences.
+          Maybe it's time to take a break and touch some grass!
+        </span>
         <Leaf size={18} className="text-emerald-500 animate-bounce shrink-0" />
       </p>
       <div className="flex space-x-4">

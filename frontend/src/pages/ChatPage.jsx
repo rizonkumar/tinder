@@ -5,7 +5,16 @@ import { useMessageStore } from "../store/useMessageStore";
 import { useAuthStore } from "../store/useAuthStore";
 import Sidebar from "../components/Sidebar";
 import { Header } from "../components/Header";
-import { Send, ArrowLeft, Heart, Loader, Sparkles, Phone, Video, MessageCircle } from "lucide-react";
+import {
+  Send,
+  ArrowLeft,
+  Heart,
+  Loader,
+  Sparkles,
+  Phone,
+  Video,
+  MessageCircle,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallStore } from "../store/useCallStore";
 
@@ -157,11 +166,16 @@ const ChatPage = () => {
                   const isSentByMe =
                     message.sender === authUser?._id ||
                     message.sender?._id === authUser?._id;
-                  const isCallLog = message.messageType === "audio" || message.messageType === "video";
+                  const isCallLog =
+                    message.messageType === "audio" ||
+                    message.messageType === "video";
 
                   if (isCallLog) {
-                    const isMissed = message.content.toLowerCase().includes("missed");
-                    const CallIcon = message.messageType === "video" ? Video : Phone;
+                    const isMissed = message.content
+                      .toLowerCase()
+                      .includes("missed");
+                    const CallIcon =
+                      message.messageType === "video" ? Video : Phone;
 
                     return (
                       <div
@@ -169,13 +183,23 @@ const ChatPage = () => {
                         className="flex justify-center my-1.5"
                       >
                         <div className="flex items-center space-x-3 rounded-2xl bg-pink-50/20 border border-pink-100/30 px-4 py-2 text-xs font-bold text-gray-600 shadow-sm select-none">
-                          <CallIcon size={14} className={isMissed ? "text-red-500 animate-pulse" : "text-green-500"} />
+                          <CallIcon
+                            size={14}
+                            className={
+                              isMissed
+                                ? "text-red-500 animate-pulse"
+                                : "text-green-500"
+                            }
+                          />
                           <span>{message.content}</span>
                           <span className="text-[9px] text-gray-400 font-medium ml-1.5">
-                            {new Date(message.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(message.createdAt).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </span>
                         </div>
                       </div>
@@ -237,7 +261,10 @@ const ChatPage = () => {
                     </div>
                     {isLoadingIcebreakers ? (
                       <div className="flex py-2 justify-center">
-                        <Loader className="animate-spin text-pink-500" size={20} />
+                        <Loader
+                          className="animate-spin text-pink-500"
+                          size={20}
+                        />
                       </div>
                     ) : (
                       <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto">
@@ -325,7 +352,8 @@ const ChatPage = () => {
                     No Matches Yet
                   </h2>
                   <p className="max-w-xs text-xs text-gray-500 mt-1.5 leading-relaxed">
-                    Once you match with someone, they will appear here so you can start chatting!
+                    Once you match with someone, they will appear here so you
+                    can start chatting!
                   </p>
                 </div>
               ) : (

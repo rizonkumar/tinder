@@ -147,7 +147,7 @@ const ProfilePage = () => {
             <h1 className="mb-8 text-center text-2xl font-black bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent tracking-wide">
               Customize Your Profile
             </h1>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -242,7 +242,10 @@ const ProfilePage = () => {
 
               <div className="space-y-3">
                 <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  <Heart size={14} className="text-pink-500 fill-current animate-pulse" />
+                  <Heart
+                    size={14}
+                    className="text-pink-500 fill-current animate-pulse"
+                  />
                   <span>My Interests / Hobbies</span>
                 </label>
                 <div className="flex flex-wrap gap-2 p-4 rounded-3xl border border-pink-100/30 bg-pink-50/10 backdrop-blur-sm">

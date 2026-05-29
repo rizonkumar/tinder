@@ -46,7 +46,10 @@ export const useCallStore = create((set, get) => ({
         if (event.candidate) {
           const socket = useAuthStore.getState().socket;
           if (socket) {
-            socket.emit("sendIceCandidate", { targetId, candidate: event.candidate });
+            socket.emit("sendIceCandidate", {
+              targetId,
+              candidate: event.candidate,
+            });
           }
         }
       };
@@ -98,7 +101,10 @@ export const useCallStore = create((set, get) => ({
         if (event.candidate) {
           const socket = useAuthStore.getState().socket;
           if (socket) {
-            socket.emit("sendIceCandidate", { targetId, candidate: event.candidate });
+            socket.emit("sendIceCandidate", {
+              targetId,
+              candidate: event.candidate,
+            });
           }
         }
       };
@@ -132,7 +138,9 @@ export const useCallStore = create((set, get) => ({
 
     if (targetId && callType) {
       const content = `Missed ${callType === "video" ? "video" : "voice"} call`;
-      useMessageStore.getState().sendMessage(content, callType === "video" ? "video" : "audio");
+      useMessageStore
+        .getState()
+        .sendMessage(content, callType === "video" ? "video" : "audio");
     }
 
     set({
@@ -169,10 +177,13 @@ export const useCallStore = create((set, get) => ({
         const durationSecs = Math.floor((Date.now() - callStartTime) / 1000);
         const minutes = Math.floor(durationSecs / 60);
         const seconds = durationSecs % 60;
-        const durationStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        const durationStr =
+          minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
         content = `${callType === "video" ? "Video" : "Voice"} call ended (${durationStr})`;
       }
-      useMessageStore.getState().sendMessage(content, callType === "video" ? "video" : "audio");
+      useMessageStore
+        .getState()
+        .sendMessage(content, callType === "video" ? "video" : "audio");
     }
 
     set({

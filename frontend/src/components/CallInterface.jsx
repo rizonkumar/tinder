@@ -1,13 +1,6 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Phone,
-  PhoneOff,
-  Video,
-  VideoOff,
-  Mic,
-  MicOff,
-} from "lucide-react";
+import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff } from "lucide-react";
 import { useCallStore } from "../store/useCallStore";
 
 export default function CallInterface() {
@@ -117,7 +110,9 @@ export default function CallInterface() {
               </div>
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-bold tracking-wide">Calling...</h2>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-wide">
+              Calling...
+            </h2>
             <p className="mt-2 text-xs sm:text-sm text-blue-300 font-medium uppercase tracking-wider animate-pulse">
               Waiting for match to answer...
             </p>
@@ -192,10 +187,21 @@ export default function CallInterface() {
                   Connected
                 </p>
                 {localStream && (
-                  <video ref={localVideoRef} autoPlay playsInline muted className="hidden" />
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="hidden"
+                  />
                 )}
                 {remoteStream && (
-                  <video ref={remoteVideoRef} autoPlay playsInline className="hidden" />
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className="hidden"
+                  />
                 )}
               </div>
             )}
@@ -204,7 +210,9 @@ export default function CallInterface() {
               <button
                 onClick={toggleMic}
                 className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-colors ${
-                  micActive ? "bg-white/10 text-white hover:bg-white/20" : "bg-red-500 text-white hover:bg-red-600"
+                  micActive
+                    ? "bg-white/10 text-white hover:bg-white/20"
+                    : "bg-red-500 text-white hover:bg-red-600"
                 }`}
               >
                 {micActive ? <Mic size={18} /> : <MicOff size={18} />}
@@ -214,7 +222,9 @@ export default function CallInterface() {
                 <button
                   onClick={toggleCamera}
                   className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-colors ${
-                    cameraActive ? "bg-white/10 text-white hover:bg-white/20" : "bg-red-500 text-white hover:bg-red-600"
+                    cameraActive
+                      ? "bg-white/10 text-white hover:bg-white/20"
+                      : "bg-red-500 text-white hover:bg-red-600"
                   }`}
                 >
                   {cameraActive ? <Video size={18} /> : <VideoOff size={18} />}

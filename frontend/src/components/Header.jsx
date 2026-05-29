@@ -70,7 +70,9 @@ export const Header = () => {
                 <Link
                   to="/explore"
                   className={`relative p-1.5 rounded-full transition-colors ${
-                    location.pathname === "/explore" ? "text-pink-500 bg-pink-50/50" : "text-gray-500 hover:text-pink-500"
+                    location.pathname === "/explore"
+                      ? "text-pink-500 bg-pink-50/50"
+                      : "text-gray-500 hover:text-pink-500"
                   }`}
                 >
                   <Compass size={21} />
@@ -78,7 +80,9 @@ export const Header = () => {
                 <Link
                   to="/matches"
                   className={`relative p-1.5 rounded-full transition-colors ${
-                    location.pathname === "/matches" ? "text-pink-500 bg-pink-50/50" : "text-gray-500 hover:text-pink-500"
+                    location.pathname === "/matches"
+                      ? "text-pink-500 bg-pink-50/50"
+                      : "text-gray-500 hover:text-pink-500"
                   }`}
                 >
                   <Heart size={21} />
@@ -86,7 +90,9 @@ export const Header = () => {
                 <Link
                   to="/chat"
                   className={`relative p-1.5 rounded-full transition-colors ${
-                    location.pathname.startsWith("/chat") ? "text-pink-500 bg-pink-50/50" : "text-gray-500 hover:text-pink-500"
+                    location.pathname.startsWith("/chat")
+                      ? "text-pink-500 bg-pink-50/50"
+                      : "text-gray-500 hover:text-pink-500"
                   }`}
                 >
                   <MessageCircle size={21} />
@@ -120,7 +126,10 @@ export const Header = () => {
                   <span className="text-sm font-bold text-gray-700 pr-0.5">
                     {authUser.name.split(" ")[0]}
                   </span>
-                  <ChevronDown size={14} className="text-gray-500 transition-transform duration-200" />
+                  <ChevronDown
+                    size={14}
+                    className="text-gray-500 transition-transform duration-200"
+                  />
                 </motion.button>
 
                 <AnimatePresence>
