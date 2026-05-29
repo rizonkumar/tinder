@@ -5,13 +5,15 @@ import { useMessageStore } from "../store/useMessageStore";
 import { useAuthStore } from "../store/useAuthStore";
 import Sidebar from "../components/Sidebar";
 import { Header } from "../components/Header";
-import { Send, ArrowLeft, Heart, Loader, Sparkles } from "lucide-react";
+import { Send, ArrowLeft, Heart, Loader, Sparkles, Phone, Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCallStore } from "../store/useCallStore";
 
 const ChatPage = () => {
   const { id } = useParams();
   const { getMyMatches, matches } = useMatchStore();
   const { authUser, onlineUsers } = useAuthStore();
+  const initiateCall = useCallStore((state) => state.initiateCall);
   const {
     activeChatUser,
     setActiveChatUser,
@@ -109,6 +111,23 @@ const ChatPage = () => {
                   </p>
                 </div>
               </div>
+
+              {isOnline && (
+                <div className="flex items-center space-x-3.5 mr-2">
+                  <button
+                    onClick={() => initiateCall(activeChatUser._id, "voice")}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 hover:bg-pink-100 text-pink-500 transition-colors"
+                  >
+                    <Phone size={18} />
+                  </button>
+                  <button
+                    onClick={() => initiateCall(activeChatUser._id, "video")}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 hover:bg-pink-100 text-pink-500 transition-colors"
+                  >
+                    <Video size={18} />
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-pink-50/20 to-purple-50/20">
