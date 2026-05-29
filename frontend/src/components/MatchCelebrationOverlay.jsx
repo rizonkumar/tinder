@@ -38,7 +38,7 @@ export default function MatchCelebrationOverlay() {
 
     setActiveChatUser(matchData.matchedUser);
     await sendMessage(text.trim());
-    
+
     const targetId = matchData.matchedUser._id;
     setMatchData(null);
     setText("");
@@ -100,14 +100,21 @@ export default function MatchCelebrationOverlay() {
             className="relative flex w-full max-w-lg flex-col items-center text-center text-white px-4"
           >
             <div className="absolute top-[-55px] animate-pulse">
-              <Sparkles size={84} className="text-yellow-400 opacity-70 fill-current" />
+              <Sparkles
+                size={84}
+                className="text-yellow-400 opacity-70 fill-current"
+              />
             </div>
 
             <h1 className="bg-gradient-to-r from-red-400 via-pink-500 to-purple-400 bg-clip-text text-6xl font-extrabold tracking-wider text-transparent drop-shadow-xl font-serif">
               It's a Match!
             </h1>
             <p className="mt-4 text-xl font-light tracking-wide text-gray-300">
-              You and <span className="font-semibold text-pink-400">{matchData.matchedUser.name}</span> liked each other!
+              You and{" "}
+              <span className="font-semibold text-pink-400">
+                {matchData.matchedUser.name}
+              </span>{" "}
+              liked each other!
             </p>
 
             <div className="my-12 flex items-center justify-center -space-x-8">
@@ -147,7 +154,10 @@ export default function MatchCelebrationOverlay() {
               </motion.div>
             </div>
 
-            <form onSubmit={handleSend} className="w-full max-w-md space-y-4 px-4 pointer-events-auto">
+            <form
+              onSubmit={handleSend}
+              className="w-full max-w-md space-y-4 px-4 pointer-events-auto"
+            >
               <div className="flex items-center space-x-3 rounded-full border border-white/20 bg-white/10 px-5 py-3.5 backdrop-blur-md focus-within:border-pink-500 focus-within:bg-white/15">
                 <input
                   type="text"

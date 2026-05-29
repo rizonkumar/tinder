@@ -23,7 +23,6 @@ const Sidebar = () => {
         className={`fixed inset-y-0 left-0 z-20 w-64 overflow-hidden bg-white shadow-lg border-r border-pink-100 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:static lg:w-1/4 lg:translate-x-0`}
       >
         <div className="flex h-full flex-col">
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-pink-100 p-4 pb-6">
             <h2 className="text-2xl font-extrabold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
               Matches
@@ -36,7 +35,6 @@ const Sidebar = () => {
             </button>
           </div>
 
-          {/* List Area */}
           <div className="relative z-10 flex-grow overflow-y-auto p-3 space-y-1">
             {isLoadingMyMatches ? (
               <LoadingState />

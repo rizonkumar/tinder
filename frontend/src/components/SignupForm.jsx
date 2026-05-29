@@ -41,7 +41,6 @@ const SignUpForm = () => {
             className="space-y-6"
           >
             <div className="space-y-4">
-              {/* Name Field */}
               <div className="relative">
                 <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -55,7 +54,6 @@ const SignUpForm = () => {
                 />
               </div>
 
-              {/* Email Field */}
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -69,7 +67,6 @@ const SignUpForm = () => {
                 />
               </div>
 
-              {/* Password Field */}
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -83,7 +80,6 @@ const SignUpForm = () => {
                 />
               </div>
 
-              {/* Age Field */}
               <div className="relative">
                 <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -99,7 +95,6 @@ const SignUpForm = () => {
                 />
               </div>
 
-              {/* Gender Selection */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
                   I am a
@@ -128,7 +123,6 @@ const SignUpForm = () => {
                 </div>
               </div>
 
-              {/* Gender Preference */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
                   Interested in

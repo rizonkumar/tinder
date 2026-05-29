@@ -38,7 +38,9 @@ export const useMatchStore = create((set) => ({
   getExploreProfiles: async (interest) => {
     try {
       set({ isLoadingUserProfiles: true });
-      const res = await axiosInstance.get(`/matches/explore?interest=${encodeURIComponent(interest)}`);
+      const res = await axiosInstance.get(
+        `/matches/explore?interest=${encodeURIComponent(interest)}`,
+      );
       set({ userProfiles: res.data.data });
     } catch (error) {
       set({ userProfiles: [] });
@@ -53,7 +55,9 @@ export const useMatchStore = create((set) => ({
       set((state) => ({
         userProfiles: state.userProfiles.filter((p) => p._id !== user._id),
       }));
-      const response = await axiosInstance.post(`/matches/swipe-left/${user._id}`);
+      const response = await axiosInstance.post(
+        `/matches/swipe-left/${user._id}`,
+      );
       return response.data.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to swipe left");
@@ -65,7 +69,9 @@ export const useMatchStore = create((set) => ({
       set((state) => ({
         userProfiles: state.userProfiles.filter((p) => p._id !== user._id),
       }));
-      const response = await axiosInstance.post(`/matches/swipe-right/${user._id}`);
+      const response = await axiosInstance.post(
+        `/matches/swipe-right/${user._id}`,
+      );
       return response.data.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to swipe right");
@@ -77,7 +83,9 @@ export const useMatchStore = create((set) => ({
       set((state) => ({
         userProfiles: state.userProfiles.filter((p) => p._id !== user._id),
       }));
-      const response = await axiosInstance.post(`/matches/swipe-super/${user._id}`);
+      const response = await axiosInstance.post(
+        `/matches/swipe-super/${user._id}`,
+      );
       return response.data.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to super like");

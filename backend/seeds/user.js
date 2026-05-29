@@ -19,6 +19,24 @@ const maleNames = [
   "Vishal",
   "Karan",
   "Rohan",
+  "Kabir",
+  "Rohit",
+  "Akash",
+  "Dev",
+  "Sameer",
+  "Rahul",
+  "Kunal",
+  "Amit",
+  "Siddharth",
+  "Varun",
+  "Kartik",
+  "Yash",
+  "Gaurav",
+  "Nikhil",
+  "Pranav",
+  "Ranveer",
+  "Ranbir",
+  "Vikram",
 ];
 
 const femaleNames = [
@@ -34,6 +52,41 @@ const femaleNames = [
   "Kavya",
   "Neha",
   "Pooja",
+  "Tanvi",
+  "Shreya",
+  "Anjali",
+  "Divya",
+  "Aditi",
+  "Sneha",
+  "Kirti",
+  "Ritu",
+  "Simran",
+  "Sakshi",
+  "Kajal",
+  "Nikita",
+  "Payal",
+  "Preeti",
+  "Sonia",
+  "Kiran",
+  "Komal",
+  "Shilpa",
+];
+
+const interestsPool = [
+  "Gaming",
+  "Travel",
+  "Food",
+  "Coding",
+  "Music",
+  "Fitness",
+  "Reading",
+  "Art",
+  "Movies",
+  "Yoga",
+  "Photography",
+  "Hiking",
+  "Dancing",
+  "Cricket",
 ];
 
 const genderPreferences = ["male", "female", "both"];
@@ -54,58 +107,58 @@ const bioDescriptors = [
   "Cooking enthusiast",
   "Adventure seeker",
   "Nature lover",
-  "Meme queen/king",
+  "Meme queen",
+  "Meme king",
   "Weekend explorer",
   "Festivals fan",
   "Cricket lover",
   "Cultural enthusiast",
 ];
 
-// Generate Random Bio
 const generateBio = () => {
-  const descriptors = bioDescriptors
+  const descriptors = [...bioDescriptors]
     .sort(() => 0.5 - Math.random())
-    .slice(0, 3); // Select 3 random descriptors
+    .slice(0, 3);
   return descriptors.join(" | ");
 };
 
-// Generate Random User
+const getRandomInterests = () => {
+  const count = Math.floor(Math.random() * 4) + 3;
+  return [...interestsPool].sort(() => 0.5 - Math.random()).slice(0, count);
+};
+
 const generateRandomUser = (gender, index) => {
   const names = gender === "male" ? maleNames : femaleNames;
   const name = names[index];
-  const age = Math.floor(Math.random() * (45 - 21 + 1) + 21); // Random age between 21 and 45
+  const age = Math.floor(Math.random() * 20 + 21);
+  const imageNum = gender === "male" ? (index % 9) + 1 : (index % 12) + 1;
   return {
     name,
-    email: `${name.toLowerCase()}${age}@example.com`, // Generate email from name and age
-    password: bcrypt.hashSync("password123", 10), // Hardcoded password, hashed
+    email: `${name.toLowerCase()}${age}_${index + 1}@example.com`,
+    password: bcrypt.hashSync("password123", 10),
     age,
     gender,
     genderPreference:
-      genderPreferences[Math.floor(Math.random() * genderPreferences.length)], // Random gender preference
+      genderPreferences[Math.floor(Math.random() * genderPreferences.length)],
     bio: generateBio(),
-    image: `/${gender}/${index + 1}.jpg`, // Profile image path
+    interests: getRandomInterests(),
+    image: `/${gender}/${imageNum}.jpg`,
   };
 };
 
-// Seed Users into the Database
 const seedUsers = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
+    await User.deleteMany({});
 
-    await User.deleteMany({}); // Clear existing users
-
-    // Generate users for male and female names
     const maleUsers = maleNames.map((_, i) => generateRandomUser("male", i));
     const femaleUsers = femaleNames.map((_, i) =>
-      generateRandomUser("female", i)
+      generateRandomUser("female", i),
     );
-
-    // Combine all users
     const allUsers = [...maleUsers, ...femaleUsers];
 
-    await User.insertMany(allUsers); // Insert users into database
-
-    console.log("Database seeded successfully with Indian users and bios");
+    await User.insertMany(allUsers);
+    console.log("Database seeded successfully with 60 dummy profiles");
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {
@@ -113,5 +166,4 @@ const seedUsers = async () => {
   }
 };
 
-// Run the seeding function
 seedUsers();

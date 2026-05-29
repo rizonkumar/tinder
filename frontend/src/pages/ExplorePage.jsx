@@ -19,14 +19,54 @@ import {
 import { motion } from "framer-motion";
 
 const EXPLORE_CATEGORIES = [
-  { id: "Gaming", name: "Gamers", icon: Gamepad2, gradient: "from-indigo-500 to-purple-600" },
-  { id: "Travel", name: "Travelers", icon: Plane, gradient: "from-blue-500 to-cyan-500" },
-  { id: "Food", name: "Foodies", icon: Utensils, gradient: "from-amber-500 to-orange-600" },
-  { id: "Coding", name: "Coders", icon: Code2, gradient: "from-emerald-500 to-teal-600" },
-  { id: "Music", name: "Music Lovers", icon: Music, gradient: "from-pink-500 to-rose-600" },
-  { id: "Fitness", name: "Fitness", icon: Dumbbell, gradient: "from-red-500 to-pink-600" },
-  { id: "Reading", name: "Readers", icon: BookOpen, gradient: "from-sky-500 to-blue-600" },
-  { id: "Art", name: "Artists", icon: Palette, gradient: "from-violet-500 to-fuchsia-600" },
+  {
+    id: "Gaming",
+    name: "Gamers",
+    icon: Gamepad2,
+    gradient: "from-indigo-500 to-purple-600",
+  },
+  {
+    id: "Travel",
+    name: "Travelers",
+    icon: Plane,
+    gradient: "from-blue-500 to-cyan-500",
+  },
+  {
+    id: "Food",
+    name: "Foodies",
+    icon: Utensils,
+    gradient: "from-amber-500 to-orange-600",
+  },
+  {
+    id: "Coding",
+    name: "Coders",
+    icon: Code2,
+    gradient: "from-emerald-500 to-teal-600",
+  },
+  {
+    id: "Music",
+    name: "Music Lovers",
+    icon: Music,
+    gradient: "from-pink-500 to-rose-600",
+  },
+  {
+    id: "Fitness",
+    name: "Fitness",
+    icon: Dumbbell,
+    gradient: "from-red-500 to-pink-600",
+  },
+  {
+    id: "Reading",
+    name: "Readers",
+    icon: BookOpen,
+    gradient: "from-sky-500 to-blue-600",
+  },
+  {
+    id: "Art",
+    name: "Artists",
+    icon: Palette,
+    gradient: "from-violet-500 to-fuchsia-600",
+  },
 ];
 
 export default function ExplorePage() {
@@ -91,7 +131,8 @@ export default function ExplorePage() {
                 Vibe Explore Hub
               </h1>
               <p className="mt-2 text-base text-gray-600 max-w-md">
-                Find connections who match your exact interests and hobbies. Choose a vibe and start swiping!
+                Find connections who match your exact interests and hobbies.
+                Choose a vibe and start swiping!
               </p>
 
               <div className="mt-8 grid w-full grid-cols-2 gap-4 sm:grid-cols-4">
