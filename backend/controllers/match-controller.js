@@ -149,3 +149,21 @@ exports.rewind = async (req, res, next) => {
     });
   }
 };
+
+exports.getLikedUsers = async (req, res, next) => {
+  try {
+    const likedUsers = await matchService.getUserLikes(req.user._id);
+    sendResponse(res, 200, likedUsers, null, "Liked users retrieved successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving liked users",
+    });
+  }
+};

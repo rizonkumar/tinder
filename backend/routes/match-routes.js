@@ -10,6 +10,7 @@ const {
   getUserProfiles,
   getExploreProfiles,
   rewind,
+  getLikedUsers,
 } = require("../controllers/match-controller");
 
 const router = express.Router();
@@ -38,6 +39,7 @@ router.post(
   superLike,
 );
 
+router.get("/liked", protectRoute, getLikedUsers);
 router.get("/", protectRoute, getMatches);
 router.get("/user-profiles", protectRoute, getUserProfiles);
 router.get("/explore", protectRoute, getExploreProfiles);

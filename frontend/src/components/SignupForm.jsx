@@ -169,7 +169,6 @@ const SignUpForm = () => {
             </motion.button>
           </form>
 
-          {/* TODO: Add Terms of Service and Privacy Policy Link */}
           <p className="mt-4 text-center text-xs text-gray-500">
             By signing up, you agree to our{" "}
             <Link to="/terms" className="text-pink-500 hover:text-pink-700">
