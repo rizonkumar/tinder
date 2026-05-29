@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Flame,
   User,
@@ -8,11 +8,11 @@ import {
   Menu,
   X,
   Heart,
-  Mail,
   Settings,
   Bell,
   MessageCircle,
   Compass,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,6 +21,7 @@ export const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -41,105 +42,110 @@ export const Header = () => {
         {
           icon: <MessageCircle size={18} />,
           label: "Messages",
-          to: "/messages",
+          to: "/chat",
         },
-        { icon: <Settings size={18} />, label: "Settings", to: "/settings" },
+        { icon: <Settings size={18} />, label: "Settings", to: "/profile" },
       ]
     : [];
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-md">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-pink-100/50 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-4">
-          {/* Logo */}
+        <div className="flex items-center justify-between py-3.5">
           <Link to="/" className="group flex items-center space-x-2">
             <motion.div
-              whileHover={{ scale: 1.1, rotate: 10 }}
-              className="rounded-lg bg-gradient-to-r from-red-500 to-pink-500 p-2"
+              whileHover={{ scale: 1.08, rotate: 8 }}
+              className="rounded-xl bg-gradient-to-r from-red-500 to-pink-500 p-2 shadow-md shadow-pink-500/20"
             >
-              <Flame className="h-6 w-6 text-white" />
+              <Flame className="h-5.5 w-5.5 text-white" />
             </motion.div>
-            <span className="hidden bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-2xl font-bold text-transparent sm:inline">
+            <span className="hidden bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-2xl font-black tracking-wider text-transparent sm:inline">
               Swipe
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden items-center space-x-6 md:flex">
             {authUser && (
-              <>
+              <div className="flex items-center space-x-5 mr-1">
                 <Link
                   to="/explore"
-                  className="text-gray-600 transition-colors hover:text-pink-500"
+                  className={`relative p-1.5 rounded-full transition-colors ${
+                    location.pathname === "/explore" ? "text-pink-500 bg-pink-50/50" : "text-gray-500 hover:text-pink-500"
+                  }`}
                 >
-                  <Compass size={20} />
+                  <Compass size={21} />
                 </Link>
                 <Link
                   to="/matches"
-                  className="text-gray-600 transition-colors hover:text-pink-500"
+                  className={`relative p-1.5 rounded-full transition-colors ${
+                    location.pathname === "/matches" ? "text-pink-500 bg-pink-50/50" : "text-gray-500 hover:text-pink-500"
+                  }`}
                 >
-                  <Heart size={20} />
+                  <Heart size={21} />
                 </Link>
                 <Link
-                  to="/messages"
-                  className="text-gray-600 transition-colors hover:text-pink-500"
+                  to="/chat"
+                  className={`relative p-1.5 rounded-full transition-colors ${
+                    location.pathname.startsWith("/chat") ? "text-pink-500 bg-pink-50/50" : "text-gray-500 hover:text-pink-500"
+                  }`}
                 >
-                  <Mail size={20} />
+                  <MessageCircle size={21} />
                 </Link>
-                <div className="relative">
-                  <button className="text-gray-600 transition-colors hover:text-pink-500">
-                    <Bell size={20} />
+                <div className="relative p-1.5">
+                  <button className="flex items-center justify-center text-gray-500 hover:text-pink-500 transition-colors">
+                    <Bell size={21} />
                   </button>
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-xs text-white">
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[10px] font-black text-white shadow-sm ring-2 ring-white">
                     3
                   </span>
                 </div>
-              </>
+              </div>
             )}
 
             {authUser ? (
               <div className="relative" ref={dropdownRef}>
                 <motion.button
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-3 focus:outline-none"
+                  className="flex items-center space-x-2.5 rounded-full border border-pink-100/60 bg-pink-50/20 px-3.5 py-1.5 transition-all hover:bg-pink-50/50 focus:outline-none shadow-sm"
                 >
-                  <div className="relative">
+                  <div className="relative flex items-center justify-center">
                     <img
                       src={authUser.image || "/avatar.png"}
-                      className="h-10 w-10 rounded-full border-2 border-pink-500 object-cover"
+                      className="h-8 w-8 rounded-full border-2 border-pink-400 object-cover shadow-sm"
                       alt="Profile"
                     />
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-400"></span>
+                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-white bg-green-400 shadow-sm"></span>
                   </div>
-                  <span className="font-medium text-gray-700">
-                    {authUser.name}
+                  <span className="text-sm font-bold text-gray-700 pr-0.5">
+                    {authUser.name.split(" ")[0]}
                   </span>
+                  <ChevronDown size={14} className="text-gray-500 transition-transform duration-200" />
                 </motion.button>
 
                 <AnimatePresence>
                   {dropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-3 w-56 rounded-xl border border-gray-100 bg-white py-2 shadow-lg"
+                      exit={{ opacity: 0, y: 8 }}
+                      className="absolute right-0 mt-2 w-52 rounded-2xl border border-pink-50/50 bg-white py-2 shadow-xl backdrop-blur-md"
                     >
                       {menuItems.map((item, index) => (
                         <Link
                           key={index}
                           to={item.to}
-                          className="flex items-center space-x-3 px-4 py-3 text-gray-700 transition-colors hover:bg-gray-50"
+                          className="flex items-center space-x-3 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50/40 hover:text-pink-600"
                           onClick={() => setDropdownOpen(false)}
                         >
                           {item.icon}
                           <span>{item.label}</span>
                         </Link>
                       ))}
-                      <hr className="my-2" />
+                      <hr className="my-1.5 border-pink-50" />
                       <button
                         onClick={logout}
-                        className="flex w-full items-center space-x-3 px-4 py-3 text-red-500 transition-colors hover:bg-gray-50"
+                        className="flex w-full items-center space-x-3 px-4 py-2.5 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50/50"
                       >
                         <LogOut size={18} />
                         <span>Logout</span>
@@ -152,13 +158,13 @@ export const Header = () => {
               <div className="flex items-center space-x-4">
                 <Link
                   to="/auth/login"
-                  className="text-gray-700 transition-colors hover:text-pink-500"
+                  className="text-sm font-bold text-gray-600 transition-colors hover:text-pink-500"
                 >
                   Login
                 </Link>
                 <Link
                   to="/auth/signup"
-                  className="rounded-full bg-gradient-to-r from-red-500 to-pink-500 px-6 py-2 font-medium text-white transition-colors hover:from-red-600 hover:to-pink-600"
+                  className="rounded-full bg-gradient-to-r from-red-500 to-pink-500 px-5 py-2 text-sm font-bold text-white transition-all hover:from-red-600 hover:to-pink-600 shadow-md shadow-pink-500/10"
                 >
                   Sign Up
                 </Link>
@@ -166,61 +172,57 @@ export const Header = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="text-gray-700 focus:outline-none md:hidden"
+            className="text-gray-500 focus:outline-none md:hidden p-1 hover:text-pink-500 transition-colors"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </motion.button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="border-t border-gray-100 bg-white md:hidden"
+            className="border-t border-pink-50 bg-white md:hidden"
           >
-            <div className="space-y-1 px-4 py-2">
+            <div className="space-y-1.5 px-4 py-3">
               {authUser ? (
                 <>
-                  <div className="flex items-center space-x-3 px-4 py-3">
+                  <div className="flex items-center space-x-3 px-4 py-2">
                     <img
                       src={authUser.image || "/avatar.png"}
-                      className="h-10 w-10 rounded-full border-2 border-pink-500 object-cover"
+                      className="h-10 w-10 rounded-full border-2 border-pink-400 object-cover"
                       alt="Profile"
                     />
                     <div>
-                      <p className="font-medium text-gray-900">
-                        {authUser.name}
-                      </p>
-                      <p className="text-sm text-gray-500">{authUser.email}</p>
+                      <p className="font-bold text-gray-900">{authUser.name}</p>
+                      <p className="text-xs text-gray-500">{authUser.email}</p>
                     </div>
                   </div>
-                  <hr className="my-2" />
+                  <hr className="my-2 border-pink-50" />
                   {menuItems.map((item, index) => (
                     <Link
                       key={index}
                       to={item.to}
-                      className="flex items-center space-x-3 px-4 py-3 text-gray-700 transition-colors hover:bg-gray-50"
+                      className="flex items-center space-x-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-pink-50/30 hover:text-pink-600"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.icon}
                       <span>{item.label}</span>
                     </Link>
                   ))}
-                  <hr className="my-2" />
+                  <hr className="my-2 border-pink-50" />
                   <button
                     onClick={() => {
                       logout();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex w-full items-center space-x-3 px-4 py-3 text-red-500 transition-colors hover:bg-gray-50"
+                    className="flex w-full items-center space-x-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50/50"
                   >
                     <LogOut size={18} />
                     <span>Logout</span>
@@ -230,14 +232,14 @@ export const Header = () => {
                 <div className="space-y-2">
                   <Link
                     to="/auth/login"
-                    className="block w-full rounded-lg px-4 py-3 text-center text-gray-700 transition-colors hover:bg-gray-50"
+                    className="block w-full rounded-xl px-4 py-2.5 text-center text-sm font-bold text-gray-700 hover:bg-pink-50/30"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Login
                   </Link>
                   <Link
                     to="/auth/signup"
-                    className="block w-full rounded-lg bg-gradient-to-r from-red-500 to-pink-500 px-4 py-3 text-center font-medium text-white"
+                    className="block w-full rounded-xl bg-gradient-to-r from-red-500 to-pink-500 px-4 py-2.5 text-center text-sm font-bold text-white"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign Up

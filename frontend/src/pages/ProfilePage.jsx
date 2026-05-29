@@ -95,43 +95,42 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-red-50 pb-12">
       <Header />
 
-      {/* Back Navigation */}
-      <div className="mx-auto max-w-4xl px-4 pt-6">
+      <div className="mx-auto max-w-3xl px-4 pt-6 select-none">
         <Link
           to="/"
-          className="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-pink-500 transition-colors"
         >
-          <ArrowLeft size={20} />
-          <span>Back to Home</span>
+          <ArrowLeft size={16} />
+          <span>Back to Feed</span>
         </Link>
       </div>
 
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mx-auto max-w-3xl px-4 py-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-gray-100"
+          className="overflow-hidden rounded-3xl bg-white/70 shadow-2xl backdrop-blur-md border border-pink-100/50"
         >
-          {/* Profile Header */}
-          <div className="relative h-60 bg-gradient-to-r from-red-500 to-pink-500">
-            <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 transform">
+          <div className="relative h-48 sm:h-56 bg-gradient-to-r from-red-500 to-pink-500">
+            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 transform">
               <div className="relative">
                 <motion.img
-                  whileHover={{ scale: 1.05 }}
-                  src={formData.image || "/default-avatar.png"}
+                  whileHover={{ scale: 1.03 }}
+                  src={formData.image || "/avatar.png"}
                   alt="Profile"
-                  className="h-40 w-40 rounded-full border-4 border-white object-cover shadow-lg"
+                  className="h-32 w-32 sm:h-36 sm:w-36 rounded-full border-4 border-white object-cover shadow-xl ring-4 ring-pink-500/10"
                 />
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-2 right-2 rounded-full bg-white p-3 shadow-lg transition-colors hover:bg-gray-50"
+                  className="absolute bottom-1 right-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500 p-2.5 text-white shadow-lg shadow-pink-500/25 hover:from-red-600 hover:to-pink-600 focus:outline-none"
+                  type="button"
                 >
-                  <Camera size={20} className="text-gray-600" />
+                  <Camera size={18} />
                 </motion.button>
                 <input
                   ref={fileInputRef}
@@ -144,16 +143,16 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          <div className="px-8 pb-8 pt-24">
-            <h1 className="mb-8 text-center text-2xl font-bold text-gray-900">
-              Edit Your Profile
+          <div className="px-4 sm:px-8 pb-8 pt-20">
+            <h1 className="mb-8 text-center text-2xl font-black bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent tracking-wide">
+              Customize Your Profile
             </h1>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid gap-8 md:grid-cols-2">
-                {/* Name Field */}
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                    <User size={16} />
+                  <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <User size={14} className="text-pink-500" />
                     <span>Full Name</span>
                   </label>
                   <input
@@ -161,15 +160,14 @@ const ProfilePage = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-pink-500"
-                    placeholder="Your full name"
+                    className="w-full rounded-2xl border border-pink-100/50 bg-pink-50/10 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none transition-all hover:border-pink-200 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/5"
+                    placeholder="Enter your name"
                   />
                 </div>
 
-                {/* Age Field */}
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                    <Calendar size={16} />
+                  <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <Calendar size={14} className="text-pink-500" />
                     <span>Age</span>
                   </label>
                   <input
@@ -179,24 +177,23 @@ const ProfilePage = () => {
                     onChange={handleChange}
                     min="18"
                     max="120"
-                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-pink-500"
+                    className="w-full rounded-2xl border border-pink-100/50 bg-pink-50/10 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none transition-all hover:border-pink-200 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/5"
                   />
                 </div>
 
-                {/* Gender Selection */}
-                <div className="space-y-4">
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                    <Users size={16} />
-                    <span>Gender</span>
+                <div className="space-y-3">
+                  <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <Users size={14} className="text-pink-500" />
+                    <span>Your Gender</span>
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     {["male", "female"].map((option) => (
                       <label
                         key={option}
-                        className={`flex cursor-pointer items-center justify-center space-x-2 rounded-lg border p-3 transition-colors ${
+                        className={`flex cursor-pointer items-center justify-center space-x-2 rounded-2xl border p-3.5 text-xs font-bold transition-all shadow-sm ${
                           formData.gender === option
-                            ? "border-pink-500 bg-pink-50 text-pink-600"
-                            : "border-gray-200 hover:bg-gray-50"
+                            ? "border-pink-500 bg-gradient-to-r from-red-500/5 to-pink-500/5 text-pink-600 ring-2 ring-pink-500/10"
+                            : "border-pink-100/40 bg-pink-50/5 hover:bg-pink-50/20 text-gray-500"
                         }`}
                       >
                         <input
@@ -213,20 +210,19 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                {/* Gender Preference */}
-                <div className="space-y-4">
-                  <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                    <Heart size={16} />
+                <div className="space-y-3">
+                  <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <Heart size={14} className="text-pink-500" />
                     <span>Interested In</span>
                   </label>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-3">
                     {["male", "female", "both"].map((option) => (
                       <label
                         key={option}
-                        className={`flex cursor-pointer items-center justify-center space-x-2 rounded-lg border p-3 transition-colors ${
+                        className={`flex cursor-pointer items-center justify-center space-x-1 rounded-2xl border py-3.5 text-[11px] font-bold transition-all shadow-sm ${
                           formData.genderPreference === option
-                            ? "border-pink-500 bg-pink-50 text-pink-600"
-                            : "border-gray-200 hover:bg-gray-50"
+                            ? "border-pink-500 bg-gradient-to-r from-red-500/5 to-pink-500/5 text-pink-600 ring-2 ring-pink-500/10"
+                            : "border-pink-100/40 bg-pink-50/5 hover:bg-pink-50/20 text-gray-500"
                         }`}
                       >
                         <input
@@ -245,17 +241,19 @@ const ProfilePage = () => {
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                  <Heart size={16} className="text-pink-500" />
+                <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <Heart size={14} className="text-pink-500 fill-current animate-pulse" />
                   <span>My Interests / Hobbies</span>
                 </label>
-                <div className="flex flex-wrap gap-2 p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                <div className="flex flex-wrap gap-2 p-4 rounded-3xl border border-pink-100/30 bg-pink-50/10 backdrop-blur-sm">
                   {INTEREST_OPTIONS.map((tag) => {
                     const isSelected = formData.interests.includes(tag);
                     return (
-                      <button
+                      <motion.button
                         key={tag}
                         type="button"
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => {
                           setFormData((prev) => {
                             const newInterests = prev.interests.includes(tag)
@@ -264,23 +262,22 @@ const ProfilePage = () => {
                             return { ...prev, interests: newInterests };
                           });
                         }}
-                        className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide border transition-all duration-200 ${
+                        className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all duration-200 shadow-sm ${
                           isSelected
-                            ? "bg-gradient-to-r from-red-500 to-pink-500 text-white border-transparent shadow-sm"
-                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                            ? "bg-gradient-to-r from-red-500 to-pink-500 text-white border-transparent"
+                            : "bg-white text-gray-600 border-pink-100/50 hover:bg-pink-50/20 hover:text-pink-500"
                         }`}
                       >
                         {tag}
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Bio Field */}
               <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                  <Edit3 size={16} />
+                <label className="flex items-center space-x-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <Edit3 size={14} className="text-pink-500" />
                   <span>Bio</span>
                 </label>
                 <textarea
@@ -288,29 +285,28 @@ const ProfilePage = () => {
                   value={formData.bio}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-pink-500"
+                  className="w-full rounded-2xl border border-pink-100/50 bg-pink-50/10 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none transition-all hover:border-pink-200 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/5 leading-relaxed"
                   placeholder="Tell us about yourself..."
                 />
               </div>
 
-              {/* Submit Button */}
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 disabled={loading}
                 type="submit"
-                className="group relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-pink-500 px-8 py-4 font-medium text-white shadow-lg transition-all hover:from-red-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 disabled:opacity-70"
+                className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-red-500 to-pink-500 px-8 py-4 font-bold text-white shadow-xl shadow-pink-500/10 transition-all hover:from-red-600 hover:to-pink-600 focus:outline-none disabled:opacity-70"
               >
-                <span className="relative flex items-center justify-center space-x-2">
+                <div className="relative flex items-center justify-center space-x-2">
                   {loading ? (
                     <>
-                      <Loader className="animate-spin" size={20} />
+                      <Loader className="animate-spin" size={18} />
                       <span>Updating Profile...</span>
                     </>
                   ) : (
                     "Save Changes"
                   )}
-                </span>
+                </div>
               </motion.button>
             </form>
           </div>

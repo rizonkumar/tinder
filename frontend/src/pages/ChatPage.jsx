@@ -5,13 +5,13 @@ import { useMessageStore } from "../store/useMessageStore";
 import { useAuthStore } from "../store/useAuthStore";
 import Sidebar from "../components/Sidebar";
 import { Header } from "../components/Header";
-import { Send, ArrowLeft, Heart, Loader, Sparkles, Phone, Video } from "lucide-react";
+import { Send, ArrowLeft, Heart, Loader, Sparkles, Phone, Video, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallStore } from "../store/useCallStore";
 
 const ChatPage = () => {
   const { id } = useParams();
-  const { getMyMatches, matches } = useMatchStore();
+  const { getMyMatches, matches, isLoadingMyMatches } = useMatchStore();
   const { authUser, onlineUsers } = useAuthStore();
   const initiateCall = useCallStore((state) => state.initiateCall);
   const {
@@ -43,7 +43,11 @@ const ChatPage = () => {
         setActiveChatUser(match);
         getMessages(id);
         getIcebreakers(id);
+      } else {
+        setActiveChatUser(null);
       }
+    } else {
+      setActiveChatUser(null);
     }
   }, [id, matches, setActiveChatUser, getMessages, getIcebreakers]);
 
@@ -153,6 +157,31 @@ const ChatPage = () => {
                   const isSentByMe =
                     message.sender === authUser?._id ||
                     message.sender?._id === authUser?._id;
+                  const isCallLog = message.messageType === "audio" || message.messageType === "video";
+
+                  if (isCallLog) {
+                    const isMissed = message.content.toLowerCase().includes("missed");
+                    const CallIcon = message.messageType === "video" ? Video : Phone;
+
+                    return (
+                      <div
+                        key={message._id}
+                        className="flex justify-center my-1.5"
+                      >
+                        <div className="flex items-center space-x-3 rounded-2xl bg-pink-50/20 border border-pink-100/30 px-4 py-2 text-xs font-bold text-gray-600 shadow-sm select-none">
+                          <CallIcon size={14} className={isMissed ? "text-red-500 animate-pulse" : "text-green-500"} />
+                          <span>{message.content}</span>
+                          <span className="text-[9px] text-gray-400 font-medium ml-1.5">
+                            {new Date(message.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
                       key={message._id}
@@ -259,17 +288,82 @@ const ChatPage = () => {
             </form>
           </div>
         ) : (
-          <div className="hidden h-full flex-col items-center justify-center text-center p-8 bg-white/30 backdrop-blur-md rounded-3xl m-4 border border-pink-100 shadow-xl lg:flex">
-            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-pink-100 text-pink-500 shadow-inner">
-              <Heart size={36} className="fill-current animate-beat" />
+          <div className="flex flex-col flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 select-none">
+            <div className="hidden h-full flex-col items-center justify-center text-center p-8 bg-white/30 backdrop-blur-md rounded-3xl m-4 border border-pink-100 shadow-xl lg:flex lg:flex-grow">
+              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-pink-100 text-pink-500 shadow-inner">
+                <Heart size={36} className="fill-current animate-beat" />
+              </div>
+              <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight">
+                Your Chats
+              </h2>
+              <p className="text-gray-500 max-w-sm mt-2">
+                Select a match from the sidebar list to start exchanging sweet
+                messages and setting up dates!
+              </p>
             </div>
-            <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight">
-              Your Chats
-            </h2>
-            <p className="text-gray-500 max-w-sm mt-2">
-              Select a match from the sidebar list to start exchanging sweet
-              messages and setting up dates!
-            </p>
+
+            <div className="flex flex-col flex-grow lg:hidden">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="rounded-2xl bg-gradient-to-r from-red-500 to-pink-500 p-2.5 text-white shadow-md shadow-pink-500/10">
+                  <MessageCircle size={22} />
+                </div>
+                <h1 className="text-2xl font-black tracking-tight text-gray-800">
+                  Messages
+                </h1>
+              </div>
+
+              {isLoadingMyMatches ? (
+                <div className="flex flex-grow items-center justify-center py-20">
+                  <Loader className="animate-spin text-pink-500" size={32} />
+                </div>
+              ) : matches?.length === 0 ? (
+                <div className="flex flex-grow flex-col items-center justify-center rounded-3xl border border-pink-100 bg-white/60 p-6 text-center shadow-xl backdrop-blur-sm py-16">
+                  <div className="mb-3.5 flex h-16 w-16 items-center justify-center rounded-full bg-pink-100 text-pink-500 shadow-inner">
+                    <Heart size={28} className="fill-current animate-pulse" />
+                  </div>
+                  <h2 className="text-xl font-black text-gray-800">
+                    No Matches Yet
+                  </h2>
+                  <p className="max-w-xs text-xs text-gray-500 mt-1.5 leading-relaxed">
+                    Once you match with someone, they will appear here so you can start chatting!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {matches.map((match) => {
+                    const isOnline = onlineUsers.includes(match._id);
+                    return (
+                      <Link
+                        key={match._id}
+                        to={`/chat/${match._id}`}
+                        className="flex items-center rounded-2xl border border-pink-100/30 bg-white/80 p-3.5 shadow-sm transition-all hover:bg-pink-50/20 active:scale-[0.99]"
+                      >
+                        <div className="relative mr-3.5">
+                          <img
+                            src={match.image || "/avatar.png"}
+                            alt={match.name}
+                            className="h-12 w-12 rounded-full border-2 border-pink-200 object-cover shadow-sm"
+                          />
+                          <span
+                            className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm ${
+                              isOnline ? "bg-green-500" : "bg-gray-300"
+                            }`}
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <h3 className="font-bold text-gray-800 text-base leading-snug">
+                            {match.name}
+                          </h3>
+                          <p className="text-xs text-gray-500 leading-none mt-1">
+                            {isOnline ? "Active now" : "Offline"}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

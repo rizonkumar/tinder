@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import ChatPage from "./pages/ChatPage";
 import ExplorePage from "./pages/ExplorePage";
+import MatchesPage from "./pages/MatchesPage";
 import MatchCelebrationOverlay from "./components/MatchCelebrationOverlay";
 import CallInterface from "./components/CallInterface";
 import { useCallStore } from "./store/useCallStore";
@@ -96,6 +97,19 @@ export default function App() {
             }
           />
           <Route
+            path="/chat"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {authUser ? <ChatPage /> : <Navigate to="/auth" />}
+              </motion.div>
+            }
+          />
+          <Route
             path="/explore"
             element={
               <motion.div
@@ -108,8 +122,20 @@ export default function App() {
               </motion.div>
             }
           />
-          <Route path="/matches" element={<Navigate to="/" />} />
-          <Route path="/messages" element={<Navigate to="/" />} />
+          <Route
+            path="/matches"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {authUser ? <MatchesPage /> : <Navigate to="/auth" />}
+              </motion.div>
+            }
+          />
+          <Route path="/messages" element={<Navigate to="/chat" />} />
           <Route path="/settings" element={<Navigate to="/profile" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
