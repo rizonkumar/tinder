@@ -9,6 +9,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ChatPage from "./pages/ChatPage";
 import ExplorePage from "./pages/ExplorePage";
 import MatchesPage from "./pages/MatchesPage";
+import GoldHubPage from "./pages/GoldHubPage";
 import MatchCelebrationOverlay from "./components/MatchCelebrationOverlay";
 import CallInterface from "./components/CallInterface";
 import { useCallStore } from "./store/useCallStore";
@@ -132,6 +133,19 @@ export default function App() {
                 transition={{ duration: 0.3 }}
               >
                 {authUser ? <MatchesPage /> : <Navigate to="/auth" />}
+              </motion.div>
+            }
+          />
+          <Route
+            path="/gold"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {authUser ? <GoldHubPage /> : <Navigate to="/auth" />}
               </motion.div>
             }
           />

@@ -167,3 +167,21 @@ exports.getLikedUsers = async (req, res, next) => {
     });
   }
 };
+
+exports.getWhoLikedMe = async (req, res, next) => {
+  try {
+    const users = await matchService.getWhoLikedMe(req.user._id);
+    sendResponse(res, 200, users, null, "Users who liked you retrieved successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving users who liked you",
+    });
+  }
+};

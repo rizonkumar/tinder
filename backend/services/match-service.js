@@ -26,6 +26,12 @@ class MatchService {
           },
         ],
       },
+      {
+        $or: [
+          { incognitoMode: { $ne: true } },
+          { likes: currentUser._id },
+        ],
+      },
     ];
   }
 
@@ -364,6 +370,26 @@ class MatchService {
     return user.likes.filter(
       (likedUser) => !matchesSet.has(likedUser._id.toString())
     );
+  }
+
+  async getWhoLikedMe(userId) {
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      throw new AppError("User not found", 404);
+    }
+
+    const swipedUserIds = [
+      ...currentUser.likes.map((id) => id.toString()),
+      ...currentUser.dislikes.map((id) => id.toString()),
+      ...currentUser.matches.map((id) => id.toString()),
+    ];
+
+    const users = await User.find({
+      likes: currentUser._id,
+      _id: { $nin: swipedUserIds },
+    }).select("name age gender bio image interests");
+
+    return users;
   }
 }
 

@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Compass,
   ChevronDown,
+  Crown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -37,6 +38,7 @@ export const Header = () => {
   const menuItems = authUser
     ? [
         { icon: <User size={18} />, label: "Profile", to: "/profile" },
+        { icon: <Crown size={18} className="text-yellow-500 fill-current" />, label: "Gold Hub", to: "/gold" },
         { icon: <Compass size={18} />, label: "Explore Vibes", to: "/explore" },
         { icon: <Heart size={18} />, label: "Matches", to: "/matches" },
         {
@@ -67,6 +69,17 @@ export const Header = () => {
           <div className="hidden items-center space-x-6 md:flex">
             {authUser && (
               <div className="flex items-center space-x-5 mr-1">
+                <Link
+                  to="/gold"
+                  className={`relative p-1.5 rounded-full transition-all ${
+                    location.pathname === "/gold"
+                      ? "text-yellow-500 bg-yellow-500/10 shadow-[0_0_15px_rgba(234,179,8,0.2)] border border-yellow-500/30"
+                      : "text-gray-500 hover:text-yellow-500 hover:scale-105"
+                  }`}
+                  aria-label="Gold Hub"
+                >
+                  <Crown size={21} className={location.pathname === "/gold" ? "fill-current animate-pulse" : ""} />
+                </Link>
                 <Link
                   to="/explore"
                   className={`relative p-1.5 rounded-full transition-colors ${
@@ -118,7 +131,11 @@ export const Header = () => {
                   <div className="relative flex items-center justify-center">
                     <img
                       src={authUser.image || "/avatar.png"}
-                      className="h-8 w-8 rounded-full border-2 border-pink-400 object-cover shadow-sm"
+                      className={`h-8 w-8 rounded-full object-cover shadow-sm transition-all duration-300 ${
+                        authUser.isGold
+                          ? "border-2 border-yellow-400 ring-2 ring-yellow-400/40 shadow-[0_0_12px_rgba(234,179,8,0.55)]"
+                          : "border-2 border-pink-400"
+                      }`}
                       alt="Profile"
                     />
                     <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-white bg-green-400 shadow-sm"></span>

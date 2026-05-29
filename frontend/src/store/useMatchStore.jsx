@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../utils/axios";
+import { RotateCcw } from "lucide-react";
 
 export const useMatchStore = create((set) => ({
   matches: [],
@@ -114,7 +115,9 @@ export const useMatchStore = create((set) => ({
       set((state) => ({
         userProfiles: [rewoundUser, ...state.userProfiles],
       }));
-      toast.success(`Rewound ${rewoundUser.name}! ⏪`);
+      toast.success(`Rewound ${rewoundUser.name}!`, {
+        icon: <RotateCcw size={18} className="text-yellow-500 animate-spin-once" />,
+      });
       return rewoundUser;
     } catch (error) {
       toast.error(error.response?.data?.message || "Nothing to rewind");
