@@ -1,19 +1,19 @@
 const dotenv = require("dotenv");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const express = require("express");
 
 dotenv.config();
 
+const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const { app, server } = require("./socket/socket.js");
-
 const authRoutes = require("./routes/auth-routes.js");
 const userRoutes = require("./routes/user-routes.js");
 const matchRoutes = require("./routes/match-routes.js");
 const messageRoutes = require("./routes/message-routes.js");
 const connectDB = require("./config/db.js");
+const AppError = require("./utils/appError.js");
+const errorHandler = require("./middleware/errorHandler.js");
 
-// Middleware
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -24,34 +24,22 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/matches", matchRoutes);
 app.use("/api/messages", messageRoutes);
-// TODO: add like routes
-// app.use("/api/likes", likeRoutes);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    status: "error",
-    message: "Something went wrong!",
-  });
+app.all("*", (req, res, next) => {
+  next(new AppError("Route not found", 404));
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    status: "error",
-    message: "Route not found",
-  });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  connectDB();
-});
+(async () => {
+  await connectDB();
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+})();

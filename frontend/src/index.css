@@ -1,3 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    @apply antialiased transition-colors duration-300 font-sans h-screen w-screen overflow-hidden;
+    scrollbar-color: rgba(244, 63, 94, 0.2) transparent;
+  }
+
+  /* Premium scrollbar styles */
+  @supports not (scrollbar-color: auto) {
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(244, 63, 94, 0.2);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(244, 63, 94, 0.35);
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+
+  /* Selection style */
+  ::selection {
+    @apply bg-pink-500/20 text-pink-600 dark:text-pink-400;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 shadow-sm;
+  }
+  
+  .glass-card-hover {
+    @apply hover:border-pink-500/20 dark:hover:border-pink-500/20 transition-all duration-300;
+  }
+  
+  /* Utilities to hide scrollbars for clean minimal lists */
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

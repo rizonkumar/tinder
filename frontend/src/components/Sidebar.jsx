@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Heart, Loader, MessageCircle, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useMatchStore } from "../store/useMatchStore.jsx";
 import { useAuthStore } from "../store/useAuthStore.jsx";
 import { useMessageStore } from "../store/useMessageStore.jsx";
@@ -12,6 +12,8 @@ const Sidebar = () => {
   const { getMyMatches, matches, isLoadingMyMatches } = useMatchStore();
   const { onlineUsers } = useAuthStore();
   const { activeChatUser } = useMessageStore();
+  const location = useLocation();
+  const isChatRoom = location.pathname.startsWith("/chat/") && location.pathname !== "/chat";
 
   useEffect(() => {
     getMyMatches();
@@ -20,22 +22,25 @@ const Sidebar = () => {
   return (
     <>
       <div
-        className={`fixed inset-y-0 left-0 z-20 w-64 overflow-hidden bg-white shadow-lg border-r border-pink-100 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:static lg:w-1/4 lg:translate-x-0`}
+        className={`fixed inset-y-0 left-0 z-20 w-64 h-full overflow-hidden bg-white dark:bg-zinc-900 shadow-md border-r border-slate-100 dark:border-zinc-800/80 transition-all duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:static lg:w-1/4 lg:translate-x-0 flex flex-col shrink-0`}
       >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-pink-100/50 px-4 h-[72px]">
-            <h2 className="text-2xl font-extrabold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+        <div className="flex h-full flex-col overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 px-4 h-[72px] shrink-0">
+            <h2 className="text-2xl font-black bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent font-outfit uppercase">
               Matches
             </h2>
             <button
-              className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none lg:hidden"
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 focus:outline-none lg:hidden"
               onClick={toggleSidebar}
             >
               <X size={24} />
             </button>
           </div>
 
-          <div className="relative z-10 flex-grow overflow-y-auto p-3 space-y-1">
+          {/* Scrolling limited strictly to matches list wrapper */}
+          <div className="relative z-10 flex-grow overflow-y-auto p-3 space-y-1 scrollbar-none bg-slate-50/30 dark:bg-zinc-900/10">
             {isLoadingMyMatches ? (
               <LoadingState />
             ) : matches?.length === 0 ? (
@@ -53,30 +58,30 @@ const Sidebar = () => {
                     className="block"
                   >
                     <div
-                      className={`flex cursor-pointer items-center rounded-2xl p-3 transition-all duration-300 hover:bg-pink-50/60 ${
+                      className={`flex cursor-pointer items-center rounded-2xl p-3 transition-all duration-300 ${
                         isActive
-                          ? "bg-gradient-to-r from-pink-50 to-purple-50 border-l-4 border-pink-500 shadow-sm"
-                          : ""
+                          ? "bg-pink-50 dark:bg-pink-950/20 border-l-4 border-pink-500 shadow-sm"
+                          : "hover:bg-slate-100/50 dark:hover:bg-zinc-800/30"
                       }`}
                     >
                       <div className="relative mr-3.5">
                         <img
                           src={match.image || "/avatar.png"}
                           alt={match.name}
-                          className="size-12 rounded-full border-2 border-pink-200 object-cover shadow-sm"
+                          className="size-11 rounded-full border border-slate-200 dark:border-zinc-800 object-cover"
                         />
                         <span
-                          className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white shadow-sm ${
-                            isOnline ? "bg-green-500" : "bg-gray-300"
+                          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm ${
+                            isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
                           }`}
                         />
                       </div>
 
                       <div className="flex flex-col">
-                        <h3 className="font-bold text-gray-800 text-base">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
                           {match.name}
                         </h3>
-                        <p className="text-xs text-gray-500 line-clamp-1">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                           {isOnline ? "Active now" : "Offline"}
                         </p>
                       </div>
@@ -89,12 +94,14 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <button
-        className="fixed left-4 bottom-4 z-30 rounded-full bg-gradient-to-r from-red-500 to-pink-500 p-4 text-white shadow-2xl transition-transform hover:scale-105 active:scale-95 lg:hidden"
-        onClick={toggleSidebar}
-      >
-        <MessageCircle size={26} />
-      </button>
+      {!isChatRoom && (
+        <button
+          className="fixed left-4 bottom-4 z-30 rounded-full bg-pink-500 hover:bg-pink-600 p-4 text-white shadow-2xl transition-transform hover:scale-105 active:scale-95 lg:hidden"
+          onClick={toggleSidebar}
+        >
+          <MessageCircle size={26} />
+        </button>
+      )}
     </>
   );
 };
@@ -103,21 +110,22 @@ export default Sidebar;
 
 const NoMatchesFound = () => (
   <div className="flex h-full flex-col items-center justify-center text-center p-4 py-16">
-    <Heart className="mb-4 text-pink-300 animate-pulse" size={54} />
-    <h3 className="mb-2 text-lg font-bold text-gray-700">No Matches Yet</h3>
-    <p className="max-w-xs text-sm text-gray-500 leading-relaxed">
-      Keep swiping! Your perfect match is out there, waiting for you to swipe
-      right.
+    <div className="p-3.5 rounded-full bg-pink-50 dark:bg-pink-950/20 mb-4 animate-pulse">
+      <Heart className="text-pink-500 fill-current" size={28} />
+    </div>
+    <h3 className="mb-1 text-base font-black text-slate-800 dark:text-slate-200 uppercase font-outfit">No Matches Yet</h3>
+    <p className="max-w-[200px] text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed font-medium">
+      Keep swiping! Your perfect match is out there, waiting for you to swipe right.
     </p>
   </div>
 );
 
 const LoadingState = () => (
   <div className="flex h-full flex-col items-center justify-center text-center p-4 py-16">
-    <Loader className="mb-4 animate-spin text-pink-500" size={50} />
-    <h3 className="mb-2 text-lg font-semibold text-gray-700">
+    <Loader className="mb-3 animate-spin text-pink-500" size={32} />
+    <h3 className="mb-1 text-base font-bold text-slate-800 dark:text-slate-200 font-outfit">
       Loading Matches
     </h3>
-    <p className="max-w-xs text-sm text-gray-500">Finding your matches...</p>
+    <p className="max-w-xs text-[11px] text-slate-400 dark:text-slate-500">Finding your matches...</p>
   </div>
 );

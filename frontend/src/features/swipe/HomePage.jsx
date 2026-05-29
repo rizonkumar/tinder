@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { Header } from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import { useMatchStore } from "../store/useMatchStore";
-import CardSwiper from "../components/CardSwiper";
+import { Header } from "../../components/Header";
+import Sidebar from "../../components/Sidebar";
+import { useMatchStore } from "../../store/useMatchStore";
+import CardSwiper from "./CardSwiper";
 
-const HomePage = () => {
+export default function HomePage() {
   const {
     isLoadingUserProfiles,
     getUserProfiles,
@@ -20,11 +20,11 @@ const HomePage = () => {
   }, [getUserProfiles]);
 
   return (
-    <div className="flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-pink-50 via-purple-50 to-red-50 lg:flex-row">
+    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-slate-50 dark:bg-zinc-950 transition-colors duration-300 font-sans">
       <Sidebar />
-      <div className="flex flex-grow flex-col overflow-hidden">
+      <div className="flex flex-grow flex-col h-full overflow-hidden">
         <Header />
-        <main className="relative flex flex-grow flex-col items-center justify-center p-4">
+        <main className="relative flex-grow h-[calc(100vh-72px)] overflow-hidden flex items-center justify-center p-4 bg-slate-50/50 dark:bg-zinc-950/20">
           <CardSwiper
             userProfiles={userProfiles}
             isLoadingUserProfiles={isLoadingUserProfiles}
@@ -38,6 +38,4 @@ const HomePage = () => {
       </div>
     </div>
   );
-};
-
-export default HomePage;
+}

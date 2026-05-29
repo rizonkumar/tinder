@@ -32,7 +32,7 @@ class AuthService {
     return { user, token };
   }
 
-  async sign(email, password) {
+  async signIn(email, password) {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {

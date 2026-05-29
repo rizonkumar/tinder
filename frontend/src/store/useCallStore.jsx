@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { useAuthStore } from "./useAuthStore";
 import { useMessageStore } from "./useMessageStore";
-import toast from "react-hot-toast";
-
-let pc = null;
+import showToast from "../components/common/Toast";
+import webrtcService from "../services/webrtc";
+import socketService from "../services/socket";
 
 export const useCallStore = create((set, get) => ({
   callState: "idle",
@@ -36,34 +36,15 @@ export const useCallStore = create((set, get) => ({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       set({ localStream: stream });
 
-      pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      webrtcService.createPeerConnection(targetId, stream, (remoteStream) => {
+        set({ remoteStream });
       });
 
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          const socket = useAuthStore.getState().socket;
-          if (socket) {
-            socket.emit("sendIceCandidate", {
-              targetId,
-              candidate: event.candidate,
-            });
-          }
-        }
-      };
-
-      pc.ontrack = (event) => {
-        set({ remoteStream: event.streams[0] });
-      };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      const socket = useAuthStore.getState().socket;
+      const offer = await webrtcService.createOffer();
+      
+      const socket = socketService.getSocket();
       const authUser = useAuthStore.getState().authUser;
-      if (socket && authUser) {
+      if (socket && authUser && offer) {
         socket.emit("callUser", {
           targetId,
           offer,
@@ -74,8 +55,9 @@ export const useCallStore = create((set, get) => ({
           },
         });
       }
-    } catch {
-      toast.error("Could not access camera or microphone");
+    } catch (error) {
+      console.error(error);
+      showToast.error("Could not access camera or microphone");
       get().endCall();
     }
   },
@@ -93,45 +75,26 @@ export const useCallStore = create((set, get) => ({
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       set({ localStream: stream });
 
-      pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      webrtcService.createPeerConnection(targetId, stream, (remoteStream) => {
+        set({ remoteStream });
       });
 
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          const socket = useAuthStore.getState().socket;
-          if (socket) {
-            socket.emit("sendIceCandidate", {
-              targetId,
-              candidate: event.candidate,
-            });
-          }
-        }
-      };
+      const answer = await webrtcService.createAnswer(offer);
 
-      pc.ontrack = (event) => {
-        set({ remoteStream: event.streams[0] });
-      };
-
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      const socket = useAuthStore.getState().socket;
-      if (socket) {
+      const socket = socketService.getSocket();
+      if (socket && answer) {
         socket.emit("acceptCall", { targetId, answer });
       }
-    } catch {
-      toast.error("Could not access camera or microphone");
+    } catch (error) {
+      console.error(error);
+      showToast.error("Could not access camera or microphone");
       get().endCall();
     }
   },
 
   rejectIncomingCall: () => {
     const { targetId, callType } = get();
-    const socket = useAuthStore.getState().socket;
+    const socket = socketService.getSocket();
     if (socket && targetId) {
       socket.emit("disconnectCall", { targetId });
     }
@@ -157,7 +120,7 @@ export const useCallStore = create((set, get) => ({
 
   endCall: () => {
     const { targetId, localStream, callStartTime, callType } = get();
-    const socket = useAuthStore.getState().socket;
+    const socket = socketService.getSocket();
     if (socket && targetId) {
       socket.emit("disconnectCall", { targetId });
     }
@@ -166,10 +129,7 @@ export const useCallStore = create((set, get) => ({
       localStream.getTracks().forEach((track) => track.stop());
     }
 
-    if (pc) {
-      pc.close();
-      pc = null;
-    }
+    webrtcService.closeConnection();
 
     if (targetId && callType) {
       let content = `Missed ${callType === "video" ? "video" : "voice"} call`;
@@ -202,24 +162,14 @@ export const useCallStore = create((set, get) => ({
 
   toggleMic: () => {
     const { localStream, micActive } = get();
-    if (localStream) {
-      const audioTrack = localStream.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !micActive;
-        set({ micActive: !micActive });
-      }
-    }
+    webrtcService.toggleTrack(localStream, "audio", !micActive);
+    set({ micActive: !micActive });
   },
 
   toggleCamera: () => {
     const { localStream, cameraActive } = get();
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !cameraActive;
-        set({ cameraActive: !cameraActive });
-      }
-    }
+    webrtcService.toggleTrack(localStream, "video", !cameraActive);
+    set({ cameraActive: !cameraActive });
   },
 
   setupCallListeners: (socket) => {
@@ -243,15 +193,11 @@ export const useCallStore = create((set, get) => ({
 
     socket.on("callAccepted", async ({ answer }) => {
       set({ callState: "connected", callStartTime: Date.now() });
-      if (pc) {
-        await pc.setRemoteDescription(new RTCSessionDescription(answer));
-      }
+      await webrtcService.setRemoteDescription(answer);
     });
 
     socket.on("receiveIceCandidate", async ({ candidate }) => {
-      if (pc) {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      }
+      await webrtcService.addIceCandidate(candidate);
     });
 
     socket.on("callEnded", () => {
@@ -259,10 +205,7 @@ export const useCallStore = create((set, get) => ({
       if (localStream) {
         localStream.getTracks().forEach((track) => track.stop());
       }
-      if (pc) {
-        pc.close();
-        pc = null;
-      }
+      webrtcService.closeConnection();
       set({
         callState: "idle",
         callType: null,
@@ -275,7 +218,7 @@ export const useCallStore = create((set, get) => ({
         offer: null,
         callStartTime: null,
       });
-      toast.error("Call ended");
+      showToast.error("Call ended");
     });
   },
 }));

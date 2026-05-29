@@ -1,7 +1,6 @@
 import { create } from "zustand";
-import toast from "react-hot-toast";
-import { axiosInstance } from "../utils/axios";
-import { RotateCcw } from "lucide-react";
+import showToast from "../components/common/Toast";
+import { axiosInstance } from "../services/api";
 
 export const useMatchStore = create((set) => ({
   matches: [],
@@ -19,7 +18,7 @@ export const useMatchStore = create((set) => ({
       set({ matches: response.data.data });
     } catch (error) {
       set({ matches: [] });
-      toast.error(error.response?.data?.message || "Something went wrong");
+      showToast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isLoadingMyMatches: false });
     }
@@ -32,7 +31,7 @@ export const useMatchStore = create((set) => ({
       set({ likedUsers: response.data.data });
     } catch (error) {
       set({ likedUsers: [] });
-      toast.error(error.response?.data?.message || "Something went wrong");
+      showToast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isLoadingLikedUsers: false });
     }
@@ -45,7 +44,7 @@ export const useMatchStore = create((set) => ({
       set({ userProfiles: res.data.data });
     } catch (error) {
       set({ userProfiles: [] });
-      toast.error(error.response?.data?.message || "Something went wrong");
+      showToast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isLoadingUserProfiles: false });
     }
@@ -60,7 +59,7 @@ export const useMatchStore = create((set) => ({
       set({ userProfiles: res.data.data });
     } catch (error) {
       set({ userProfiles: [] });
-      toast.error(error.response?.data?.message || "Something went wrong");
+      showToast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       set({ isLoadingUserProfiles: false });
     }
@@ -76,7 +75,7 @@ export const useMatchStore = create((set) => ({
       );
       return response.data.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to swipe left");
+      showToast.error(error.response?.data?.message || "Failed to swipe left");
     }
   },
 
@@ -90,7 +89,7 @@ export const useMatchStore = create((set) => ({
       );
       return response.data.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to swipe right");
+      showToast.error(error.response?.data?.message || "Failed to swipe right");
     }
   },
 
@@ -104,7 +103,7 @@ export const useMatchStore = create((set) => ({
       );
       return response.data.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to super like");
+      showToast.error(error.response?.data?.message || "Failed to super like");
     }
   },
 
@@ -115,12 +114,10 @@ export const useMatchStore = create((set) => ({
       set((state) => ({
         userProfiles: [rewoundUser, ...state.userProfiles],
       }));
-      toast.success(`Rewound ${rewoundUser.name}!`, {
-        icon: <RotateCcw size={18} className="text-yellow-500 animate-spin-once" />,
-      });
+      showToast.info(`Rewound ${rewoundUser.name}!`);
       return rewoundUser;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Nothing to rewind");
+      showToast.error(error.response?.data?.message || "Nothing to rewind");
     }
   },
 }));

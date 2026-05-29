@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { axiosInstance } from "../utils/axios";
-import toast from "react-hot-toast";
+import { axiosInstance } from "../services/api";
+import showToast from "../components/common/Toast";
 import { useAuthStore } from "./useAuthStore";
 
 export const useMessageStore = create((set, get) => ({
@@ -10,8 +10,9 @@ export const useMessageStore = create((set, get) => ({
   unreadCount: 0,
   icebreakers: [],
   isLoadingIcebreakers: false,
+  isTypingUser: false,
 
-  setActiveChatUser: (user) => set({ activeChatUser: user }),
+  setActiveChatUser: (user) => set({ activeChatUser: user, isTypingUser: false }),
 
   getMessages: async (userId) => {
     try {
@@ -21,7 +22,7 @@ export const useMessageStore = create((set, get) => ({
       );
       set({ messages: response.data.data.conversation });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch messages");
+      showToast.error(error.response?.data?.message || "Failed to fetch messages");
     } finally {
       set({ isLoadingMessages: false });
     }
@@ -40,7 +41,7 @@ export const useMessageStore = create((set, get) => ({
       const newMessage = response.data.data;
       set({ messages: [...messages, newMessage] });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send message");
+      showToast.error(error.response?.data?.message || "Failed to send message");
     }
   },
 
@@ -52,9 +53,17 @@ export const useMessageStore = create((set, get) => ({
       );
       set({ icebreakers: response.data.data });
     } catch {
-      toast.error("Failed to generate icebreakers");
+      showToast.error("Failed to generate icebreakers");
     } finally {
       set({ isLoadingIcebreakers: false });
+    }
+  },
+
+  sendTypingStatus: (isTyping) => {
+    const socket = useAuthStore.getState().socket;
+    const { activeChatUser } = get();
+    if (socket && activeChatUser) {
+      socket.emit("typing", { targetId: activeChatUser._id, isTyping });
     }
   },
 
@@ -68,10 +77,15 @@ export const useMessageStore = create((set, get) => ({
       if (activeChatUser && newMessage.sender._id === activeChatUser._id) {
         set({ messages: [...messages, newMessage] });
       } else {
-        toast(`New message from ${newMessage.sender.name}! 💬`, {
-          icon: "💬",
-          duration: 3000,
-        });
+        showToast.match(`New message from ${newMessage.sender.name}! 💬`);
+      }
+    });
+
+    socket.off("userTyping");
+    socket.on("userTyping", ({ senderId, isTyping }) => {
+      const { activeChatUser } = get();
+      if (activeChatUser && senderId === activeChatUser._id) {
+        set({ isTypingUser: isTyping });
       }
     });
   },
@@ -80,6 +94,7 @@ export const useMessageStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
     if (socket) {
       socket.off("newMessage");
+      socket.off("userTyping");
     }
   },
 
