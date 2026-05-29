@@ -13,21 +13,21 @@ const {
 const router = express.Router();
 
 const swipeLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 swipes per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
 
 router.post(
   "/swipe-right/:likedUserId",
   protectRoute,
   swipeLimiter,
-  swipeRight
+  swipeRight,
 );
 router.post(
   "/swipe-left/:dislikedUserId",
   swipeLimiter,
   protectRoute,
-  swipeLeft
+  swipeLeft,
 );
 
 router.get("/", protectRoute, getMatches);

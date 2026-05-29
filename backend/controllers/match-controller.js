@@ -7,7 +7,7 @@ exports.swipeRight = async (req, res, next) => {
     const { likedUserId } = req.params;
     const result = await matchService.handleSwipeRight(
       req.user._id,
-      likedUserId
+      likedUserId,
     );
 
     const message = result.isMatch ? "It's a match!" : "Swipe right successful";
@@ -33,7 +33,7 @@ exports.swipeLeft = async (req, res, next) => {
     const { dislikedUserId } = req.params;
     const match = await matchService.handleSwipeLeft(
       req.user._id,
-      dislikedUserId
+      dislikedUserId,
     );
 
     sendResponse(res, 200, match, null, "Swipe left successfully");
@@ -84,7 +84,6 @@ exports.getUserProfiles = async (req, res, next) => {
         message: error.message,
       });
     }
-    // Handle unexpected errors
     return res.status(500).json({
       success: false,
       message: "An error occurred while retrieving profiles",
