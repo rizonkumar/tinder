@@ -51,7 +51,7 @@ export const Header = () => {
     : [];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-pink-100/50 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white border-b border-pink-100/50 shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3.5">
           <Link to="/" className="group flex items-center space-x-2">
