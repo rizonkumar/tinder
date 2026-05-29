@@ -7,6 +7,8 @@ import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import ChatPage from "./pages/ChatPage";
+import ExplorePage from "./pages/ExplorePage";
+import MatchCelebrationOverlay from "./components/MatchCelebrationOverlay";
 
 export default function App() {
   const { checkAuth, authUser, checkingAuth } = useAuthStore();
@@ -83,12 +85,26 @@ export default function App() {
               </motion.div>
             }
           />
+          <Route
+            path="/explore"
+            element={
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {authUser ? <ExplorePage /> : <Navigate to="/auth" />}
+              </motion.div>
+            }
+          />
           <Route path="/matches" element={<Navigate to="/" />} />
           <Route path="/messages" element={<Navigate to="/" />} />
           <Route path="/settings" element={<Navigate to="/profile" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AnimatePresence>
+      <MatchCelebrationOverlay />
       <Toaster position="bottom-right" />
     </div>
   );

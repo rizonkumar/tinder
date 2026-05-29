@@ -1,10 +1,11 @@
 const messageService = require("../services/message-service");
+const aiService = require("../services/ai-service");
 const AppError = require("../utils/appError");
 const sendResponse = require("../utils/responseHandler.JS");
 
 exports.sendMessage = async (req, res, next) => {
   try {
-    const { content, receiverId } = req.body;
+    const { content, receiverId, messageType, mediaUrl } = req.body;
 
     if (!receiverId) {
       throw new AppError("Receiver ID is required", 400);
@@ -14,6 +15,8 @@ exports.sendMessage = async (req, res, next) => {
       req.user._id,
       receiverId,
       content,
+      messageType,
+      mediaUrl
     );
 
     sendResponse(res, 200, message, null, "Message sent successfully");
@@ -88,6 +91,31 @@ exports.getUnreadCount = async (req, res, next) => {
     return res.status(500).json({
       success: false,
       message: "Error retrieving unread count",
+    });
+  }
+};
+
+exports.generateIcebreakers = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      throw new AppError("Target User ID is required", 400);
+    }
+
+    const icebreakers = await aiService.generateIcebreakers(req.user._id, userId);
+
+    sendResponse(res, 200, icebreakers, null, "Icebreakers generated successfully");
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Error generating icebreakers",
     });
   }
 };

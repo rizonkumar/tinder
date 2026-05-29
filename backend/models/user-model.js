@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
         },
         action: {
           type: String,
-          enum: ["like", "nope"],
+          enum: ["like", "nope", "superlike"],
         },
         timestamp: {
           type: Date,
@@ -65,6 +65,12 @@ const userSchema = new mongoose.Schema(
       },
     ],
     dislikes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    superLikes: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

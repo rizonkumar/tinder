@@ -5,8 +5,10 @@ const { protectRoute } = require("../middleware/auth-middleware");
 const {
   swipeRight,
   swipeLeft,
+  superLike,
   getMatches,
   getUserProfiles,
+  getExploreProfiles,
   rewind,
 } = require("../controllers/match-controller");
 
@@ -29,9 +31,16 @@ router.post(
   protectRoute,
   swipeLeft,
 );
+router.post(
+  "/swipe-super/:likedUserId",
+  swipeLimiter,
+  protectRoute,
+  superLike,
+);
 
 router.get("/", protectRoute, getMatches);
 router.get("/user-profiles", protectRoute, getUserProfiles);
+router.get("/explore", protectRoute, getExploreProfiles);
 router.post("/rewind", protectRoute, rewind);
 
 module.exports = router;

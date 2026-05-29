@@ -3,17 +3,21 @@ const AppError = require("../utils/appError");
 const { getReceiverSocketId, io } = require("../socket/socket");
 
 class MessageService {
-  async sendMessage(senderId, receiverId, content) {
-    if (!content.trim()) {
-      throw new AppError("Message content cannot be empty", 400);
+  async sendMessage(senderId, receiverId, content, messageType = "text", mediaUrl = "") {
+    if (messageType === "text" && (!content || !content.trim())) {
+      throw new AppError("Message content cannot be empty for text messages", 400);
     }
+
+    const messageContent = content ? content.trim() : (messageType === "image" ? "Sent an image" : "Sent a voice note");
+
     const newMessage = await Message.create({
       sender: senderId,
       receiver: receiverId,
-      content: content.trim(),
+      content: messageContent,
+      messageType,
+      mediaUrl,
     });
 
-    // Populate sender and receiver details
     const populatedMessage = await newMessage.populate([
       { path: "sender", select: "name image" },
       { path: "receiver", select: "name image" },
@@ -38,9 +42,8 @@ class MessageService {
         { path: "sender", select: "name image" },
         { path: "receiver", select: "name image" },
       ])
-      .sort({ createdAt: 1 }); // Sort by timestamp ascending
+      .sort({ createdAt: 1 });
 
-    //   Mark unread messages as read
     await Message.updateMany(
       {
         sender: otherUserId,
