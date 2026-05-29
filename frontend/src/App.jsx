@@ -9,13 +9,23 @@ import ProfilePage from "./pages/ProfilePage";
 import ChatPage from "./pages/ChatPage";
 import ExplorePage from "./pages/ExplorePage";
 import MatchCelebrationOverlay from "./components/MatchCelebrationOverlay";
+import CallInterface from "./components/CallInterface";
+import { useCallStore } from "./store/useCallStore";
 
 export default function App() {
   const { checkAuth, authUser, checkingAuth } = useAuthStore();
+  const socket = useAuthStore((state) => state.socket);
+  const setupCallListeners = useCallStore((state) => state.setupCallListeners);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  useEffect(() => {
+    if (socket) {
+      setupCallListeners(socket);
+    }
+  }, [socket, setupCallListeners]);
 
   if (checkingAuth) {
     return (
@@ -105,6 +115,7 @@ export default function App() {
         </Routes>
       </AnimatePresence>
       <MatchCelebrationOverlay />
+      <CallInterface />
       <Toaster position="bottom-right" />
     </div>
   );
