@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff } from "lucide-react";
-import { useCallStore } from "../store/useCallStore";
+import { useCallStore } from "../../store/useCallStore";
 
 export default function CallInterface() {
   const {
@@ -167,7 +167,7 @@ export default function CallInterface() {
                 )}
               </div>
             ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center space-y-6 bg-gradient-to-b from-gray-900 via-purple-950/20 to-gray-900 rounded-3xl px-4">
+              <div className="h-full w-full flex flex-col items-center justify-center space-y-6 bg-zinc-900 rounded-3xl px-4">
                 <div className="relative">
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}

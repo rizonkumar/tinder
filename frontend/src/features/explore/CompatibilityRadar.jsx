@@ -12,11 +12,13 @@ import {
   Calendar,
   MessageSquare
 } from "lucide-react";
-import { calculateCompatibility } from "../utils/compatibility";
-import { useAuthStore } from "../store/useAuthStore";
+import { calculateCompatibility } from "../../utils/compatibility";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useThemeStore } from "../../store/useThemeStore";
 
 export default function CompatibilityRadar({ profile }) {
   const { authUser } = useAuthStore();
+  const { theme } = useThemeStore();
   const [activeAxis, setActiveAxis] = useState(0);
 
   const { scores, metadata } = calculateCompatibility(authUser, profile);
@@ -28,8 +30,7 @@ export default function CompatibilityRadar({ profile }) {
       score: scores.socialHobbies,
       icon: Gamepad2,
       activeIcon: Sparkles,
-      color: "from-pink-500 to-rose-500",
-      bgLight: "bg-pink-50 border-pink-100 text-pink-600",
+      color: "text-pink-500 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/20",
       description: (() => {
         const shared = metadata.sharedInterests;
         if (shared.length >= 3) {
@@ -50,8 +51,7 @@ export default function CompatibilityRadar({ profile }) {
       score: scores.culturalVibes,
       icon: Compass,
       activeIcon: Heart,
-      color: "from-purple-500 to-indigo-500",
-      bgLight: "bg-purple-50 border-purple-100 text-purple-600",
+      color: "text-purple-500 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20",
       description: scores.culturalVibes >= 85
         ? "Absolute kindred spirits! Your general vibes, humor, and lifestyle indicators are highly synced."
         : scores.culturalVibes >= 75
@@ -64,8 +64,7 @@ export default function CompatibilityRadar({ profile }) {
       score: scores.activeHours,
       icon: Clock,
       activeIcon: Sun,
-      color: "from-amber-500 to-orange-500",
-      bgLight: "bg-amber-50 border-amber-100 text-amber-600",
+      color: "text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20",
       description: metadata.scheduleA === metadata.scheduleB
         ? `Both of you are ${metadata.scheduleA}s! You'll be online and ready to chat at the exact same hours.`
         : `One of you is an ${metadata.scheduleA} and the other is an ${metadata.scheduleB}. A perfect blend of daytime energy and late-night thoughts!`
@@ -76,8 +75,7 @@ export default function CompatibilityRadar({ profile }) {
       score: scores.ageFit,
       icon: UserCheck,
       activeIcon: Calendar,
-      color: "from-blue-500 to-cyan-500",
-      bgLight: "bg-blue-50 border-blue-100 text-blue-600",
+      color: "text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20",
       description: metadata.ageDiff <= 1
         ? "Perfect peer-to-peer alignment! Being almost the same age makes sharing life stages effortless."
         : metadata.ageDiff <= 4
@@ -90,8 +88,7 @@ export default function CompatibilityRadar({ profile }) {
       score: scores.conversationEnergy,
       icon: Zap,
       activeIcon: MessageSquare,
-      color: "from-emerald-500 to-teal-500",
-      bgLight: "bg-emerald-50 border-emerald-100 text-emerald-600",
+      color: "text-emerald-500 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20",
       description: scores.conversationEnergy >= 85
         ? "Vibrant text chemistry! High responsiveness and engaging, warm communication styles."
         : scores.conversationEnergy >= 75
@@ -142,12 +139,12 @@ export default function CompatibilityRadar({ profile }) {
   const ActiveIcon = activeAxisObj.activeIcon;
 
   return (
-    <div className="w-full flex flex-col items-center bg-white/40 backdrop-blur-md border border-gray-100/50 p-5 rounded-3xl shadow-sm select-none">
+    <div className="w-full flex flex-col items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-5 rounded-3xl shadow-sm select-none transition-colors duration-300">
       <div className="flex items-center justify-between w-full mb-3">
-        <h4 className="text-xs font-extrabold uppercase tracking-wider text-gray-400">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Compatibility Vibe Matrix
         </h4>
-        <span className="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm shadow-pink-100">
+        <span className="flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-black bg-pink-500 text-white shadow-sm">
           <Heart size={10} className="fill-current text-white animate-pulse" />
           <span>{metadata.overallScore}% MATCH</span>
         </span>
@@ -157,12 +154,8 @@ export default function CompatibilityRadar({ profile }) {
         <svg className="w-[240px] h-[240px] drop-shadow-sm pointer-events-auto">
           <defs>
             <linearGradient id="compatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#ec4899" stopOpacity="0.4" />
-            </linearGradient>
-            <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#eab308" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#ec4899" stopOpacity="0.45" />
             </linearGradient>
           </defs>
 
@@ -171,7 +164,7 @@ export default function CompatibilityRadar({ profile }) {
               key={idx}
               points={points}
               fill="none"
-              stroke="rgba(244, 63, 94, 0.08)"
+              stroke={theme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(244, 63, 94, 0.08)"}
               strokeWidth="1"
             />
           ))}
@@ -186,7 +179,7 @@ export default function CompatibilityRadar({ profile }) {
                 y1={cy}
                 x2={x}
                 y2={y}
-                stroke="rgba(244, 63, 94, 0.08)"
+                stroke={theme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(244, 63, 94, 0.08)"}
                 strokeWidth="1"
                 strokeDasharray="2 2"
               />
@@ -217,7 +210,7 @@ export default function CompatibilityRadar({ profile }) {
                   cy={y}
                   r={isActive ? 8 : 5}
                   className={`transition-all duration-300 ${
-                    isActive ? "fill-yellow-400 stroke-white stroke-2" : "fill-pink-500 hover:fill-pink-600"
+                    isActive ? "fill-yellow-400 stroke-white dark:stroke-zinc-900 stroke-2" : "fill-pink-500 hover:fill-pink-600"
                   }`}
                 />
                 {isActive && (
@@ -236,17 +229,17 @@ export default function CompatibilityRadar({ profile }) {
           })}
         </svg>
 
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-[84px] h-[84px] rounded-full bg-white/90 border border-pink-100 shadow-md backdrop-blur-md">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center w-[84px] h-[84px] rounded-full bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 shadow-md transition-colors duration-300">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">
             Match
           </span>
-          <span className="text-2xl font-black bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mt-0.5 leading-none">
+          <span className="text-2xl font-black bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent mt-0.5 leading-none font-outfit">
             {metadata.overallScore}%
           </span>
         </div>
       </div>
 
-      <div className="flex justify-between w-full px-1 py-2 gap-1 overflow-x-auto scrollbar-none">
+      <div className="flex justify-between w-full px-1 py-2 gap-1.5 overflow-x-auto scrollbar-none shrink-0">
         {axes.map((axis, idx) => {
           const Icon = axis.icon;
           const isActive = activeAxis === idx;
@@ -256,12 +249,12 @@ export default function CompatibilityRadar({ profile }) {
               onClick={() => setActiveAxis(idx)}
               className={`flex flex-col items-center justify-center p-2.5 rounded-2xl flex-1 min-w-[50px] transition-all border outline-none ${
                 isActive
-                  ? "bg-gradient-to-br from-pink-500 to-rose-500 border-pink-500 text-white shadow-md shadow-pink-100 scale-105"
-                  : "bg-gray-50 border-gray-100 hover:bg-gray-100/60 text-gray-400 hover:text-gray-600"
+                  ? "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400 shadow-sm scale-102 font-bold"
+                  : "bg-slate-50 dark:bg-zinc-950/40 border-slate-100 dark:border-zinc-800 hover:bg-slate-100/50 dark:hover:bg-zinc-900/50 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
               }`}
             >
-              <Icon size={16} className={isActive ? "animate-bounce" : ""} />
-              <span className="text-[9px] font-extrabold tracking-wide mt-1 whitespace-nowrap hidden xs:block">
+              <Icon size={16} className={isActive ? "animate-bounce text-pink-500" : ""} />
+              <span className="text-[9px] font-extrabold tracking-wide mt-1.5 whitespace-nowrap hidden xs:block">
                 {axis.name.split(" ")[0]}
               </span>
             </button>
@@ -269,7 +262,7 @@ export default function CompatibilityRadar({ profile }) {
         })}
       </div>
 
-      <div className="w-full mt-3">
+      <div className="w-full mt-3 shrink-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeAxisObj.id}
@@ -277,21 +270,21 @@ export default function CompatibilityRadar({ profile }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className={`p-4 rounded-2xl border flex items-start space-x-3 text-left ${activeAxisObj.bgLight}`}
+            className="p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950/40 flex items-start space-x-3 text-left transition-colors duration-300"
           >
-            <div className="p-2 rounded-xl bg-white border border-inherit/40 shadow-sm flex items-center justify-center shrink-0">
+            <div className={`p-2 rounded-xl border border-slate-100/20 shadow-sm flex items-center justify-center shrink-0 ${activeAxisObj.color}`}>
               <ActiveIcon size={18} className="stroke-[2.5]" />
             </div>
             <div className="flex-grow space-y-0.5">
               <div className="flex items-baseline justify-between">
-                <span className="text-xs font-bold text-gray-800 tracking-wide">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wide">
                   {activeAxisObj.name}
                 </span>
-                <span className="text-xs font-extrabold text-inherit">
+                <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
                   {activeAxisObj.score}%
                 </span>
               </div>
-              <p className="text-[11px] font-medium leading-relaxed opacity-90">
+              <p className="text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
                 {activeAxisObj.description}
               </p>
             </div>

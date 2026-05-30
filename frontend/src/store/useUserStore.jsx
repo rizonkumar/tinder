@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { axiosInstance } from "../utils/axios";
-import { toast } from "react-hot-toast";
+import { axiosInstance } from "../services/api";
+import showToast from "../components/common/Toast";
 import { useAuthStore } from "./useAuthStore";
 
 export const useUserStore = create((set) => ({
@@ -18,10 +18,10 @@ export const useUserStore = create((set) => ({
 
       useAuthStore.setState({ authUser: updatedUser });
 
-      toast.success("Profile updated successfully");
+      showToast.success("Profile updated successfully");
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update profile");
+      showToast.error(error.response?.data?.message || "Failed to update profile");
       throw error;
     } finally {
       set({ loading: false });
@@ -34,14 +34,14 @@ export const useUserStore = create((set) => ({
       const response = await axiosInstance.put("/users/toggle-incognito");
       const updatedUser = response.data.data;
       useAuthStore.setState({ authUser: updatedUser });
-      toast.success(
+      showToast.success(
         updatedUser.incognitoMode
           ? "Incognito Mode activated! 🕵️"
           : "Incognito Mode deactivated!"
       );
       return updatedUser;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to toggle incognito mode");
+      showToast.error(error.response?.data?.message || "Failed to toggle incognito mode");
     } finally {
       set({ loading: false });
     }
@@ -53,14 +53,14 @@ export const useUserStore = create((set) => ({
       const response = await axiosInstance.put("/users/toggle-gold");
       const updatedUser = response.data.data;
       useAuthStore.setState({ authUser: updatedUser });
-      toast.success(
+      showToast.success(
         updatedUser.isGold
           ? "Welcome to Tinder Gold! 💛"
           : "Gold membership canceled!"
       );
       return updatedUser;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to toggle gold membership");
+      showToast.error(error.response?.data?.message || "Failed to toggle gold membership");
     } finally {
       set({ loading: false });
     }
@@ -72,7 +72,7 @@ export const useUserStore = create((set) => ({
       const response = await axiosInstance.get("/users/stats");
       set({ swipeStats: response.data.data });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch stats");
+      showToast.error(error.response?.data?.message || "Failed to fetch stats");
     } finally {
       set({ isLoadingStats: false });
     }
@@ -84,7 +84,7 @@ export const useUserStore = create((set) => ({
       const response = await axiosInstance.get("/matches/who-liked-me");
       set({ whoLikedMe: response.data.data });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch 'Who Liked You' feed");
+      showToast.error(error.response?.data?.message || "Failed to fetch 'Who Liked You' feed");
     } finally {
       set({ isLoadingWhoLikedMe: false });
     }

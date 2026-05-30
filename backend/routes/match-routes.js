@@ -29,14 +29,14 @@ router.post(
 );
 router.post(
   "/swipe-left/:dislikedUserId",
-  swipeLimiter,
   protectRoute,
+  swipeLimiter,
   swipeLeft,
 );
 router.post(
   "/swipe-super/:likedUserId",
-  swipeLimiter,
   protectRoute,
+  swipeLimiter,
   superLike,
 );
 

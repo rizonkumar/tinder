@@ -59,6 +59,16 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("typing", ({ targetId, isTyping }) => {
+    const receiverSocketId = getReceiverSocketId(targetId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("userTyping", {
+        senderId: userId,
+        isTyping,
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     if (userId) {
       delete userSocketMap[userId];

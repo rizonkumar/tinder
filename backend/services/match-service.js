@@ -3,6 +3,17 @@ const AppError = require("../utils/appError");
 const { getReceiverSocketId, io } = require("../socket/socket");
 
 class MatchService {
+  _emitMatchCelebration(userA, userB) {
+    const socketA = getReceiverSocketId(userA._id);
+    const socketB = getReceiverSocketId(userB._id);
+    const payload = (current, matched) => ({
+      currentUser: { _id: current._id, name: current.name, image: current.image },
+      matchedUser: { _id: matched._id, name: matched.name, image: matched.image },
+    });
+    if (socketA) io.to(socketA).emit("matchCelebration", payload(userA, userB));
+    if (socketB) io.to(socketB).emit("matchCelebration", payload(userB, userA));
+  }
+
   _getProfileMatchFilter(currentUser) {
     return [
       { _id: { $ne: currentUser._id } },
@@ -78,37 +89,7 @@ class MatchService {
         await Promise.all([currentUser.save(), likedUser.save()]);
         isMatch = true;
 
-        const currentSocketId = getReceiverSocketId(userId);
-        const likedSocketId = getReceiverSocketId(likedUserId);
-
-        if (currentSocketId) {
-          io.to(currentSocketId).emit("matchCelebration", {
-            currentUser: {
-              _id: currentUser._id,
-              name: currentUser.name,
-              image: currentUser.image,
-            },
-            matchedUser: {
-              _id: likedUser._id,
-              name: likedUser.name,
-              image: likedUser.image,
-            },
-          });
-        }
-        if (likedSocketId) {
-          io.to(likedSocketId).emit("matchCelebration", {
-            currentUser: {
-              _id: likedUser._id,
-              name: likedUser.name,
-              image: likedUser.image,
-            },
-            matchedUser: {
-              _id: currentUser._id,
-              name: currentUser.name,
-              image: currentUser.image,
-            },
-          });
-        }
+        this._emitMatchCelebration(currentUser, likedUser);
       } else {
         await currentUser.save();
       }
@@ -204,37 +185,7 @@ class MatchService {
         await Promise.all([currentUser.save(), targetUser.save()]);
         isMatch = true;
 
-        const currentSocketId = getReceiverSocketId(userId);
-        const targetSocketId = getReceiverSocketId(targetUserId);
-
-        if (currentSocketId) {
-          io.to(currentSocketId).emit("matchCelebration", {
-            currentUser: {
-              _id: currentUser._id,
-              name: currentUser.name,
-              image: currentUser.image,
-            },
-            matchedUser: {
-              _id: targetUser._id,
-              name: targetUser.name,
-              image: targetUser.image,
-            },
-          });
-        }
-        if (targetSocketId) {
-          io.to(targetSocketId).emit("matchCelebration", {
-            currentUser: {
-              _id: targetUser._id,
-              name: targetUser.name,
-              image: targetUser.image,
-            },
-            matchedUser: {
-              _id: currentUser._id,
-              name: currentUser.name,
-              image: currentUser.image,
-            },
-          });
-        }
+        this._emitMatchCelebration(currentUser, targetUser);
       } else {
         await currentUser.save();
         const targetSocketId = getReceiverSocketId(targetUserId);

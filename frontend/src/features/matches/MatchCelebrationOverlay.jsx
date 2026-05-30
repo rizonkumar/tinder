@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles, Send, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/useAuthStore";
-import { useMessageStore } from "../store/useMessageStore";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useMessageStore } from "../../store/useMessageStore";
 import confetti from "canvas-confetti";
 
 export default function MatchCelebrationOverlay() {
@@ -174,7 +174,6 @@ export default function MatchCelebrationOverlay() {
                   <Send size={18} />
                 </button>
               </div>
-
               <div className="flex flex-col space-y-3 pt-2">
                 <button
                   type="button"
@@ -191,3 +190,5 @@ export default function MatchCelebrationOverlay() {
     </AnimatePresence>
   );
 }
+
+
