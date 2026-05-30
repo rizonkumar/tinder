@@ -69,6 +69,16 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("callReaction", ({ targetId, reaction }) => {
+    const receiverSocketId = getReceiverSocketId(targetId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("callReaction", {
+        senderId: userId,
+        reaction,
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     if (userId) {
       delete userSocketMap[userId];

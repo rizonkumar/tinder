@@ -1,3 +1,5 @@
+import { Coffee, Utensils, Martini, Film, Footprints, Calendar } from "lucide-react";
+
 export const INTEREST_OPTIONS = [
   "Travel",
   "Music",
@@ -94,3 +96,70 @@ export const EXPLORE_CATEGORIES = [
     gradient: "from-violet-500 to-fuchsia-600",
   },
 ];
+
+export const fallbackGifs = [
+  { id: "1", title: "Love Bear", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3N2c2t3N3UycDNwdDJ2N29oOTl0Mnl5aTRjcmhrdDQ2ZnE0MGY0NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/du3J3cXyzhj75IOgvA/giphy.gif" },
+  { id: "2", title: "Cute Wave", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHpqZDR5OHg2aDZndHFpMXZ2cXR0NDl4cnZ5cjI1M2R4M294MXpxNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/VuoqO5g159T93G140C/giphy.gif" },
+  { id: "3", title: "Cat Hug", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVwdThnaDB6cG51NWxnaGR5OHoycGJ5aG05OXN2bDVpYTQ2NXJ0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/CKe3B7Bvx1sS4/giphy.gif" },
+  { id: "4", title: "Wink Dog", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzJydHJid3N2czBpc3hrY2VyeDRkYWtucnpsMGNod2F6bnF1ZjZpbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/13CoXDiaCcC2EA/giphy.gif" },
+  { id: "5", title: "Excited Dance", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTZoZnQycXZ2OHY3cjQ0OXh2cjE5eWNjajZ6ZnpxOGdndXRtcHhqZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/blSTtZehjAZ8I/giphy.gif" },
+  { id: "6", title: "Heart Pop", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWp3ZnRnbXpxNm9nd2Jyd2NtdHA2cXR2ZzJ5djE5MTRxMXAxdGpxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/l41JWd1xzcx437nmw/giphy.gif" }
+];
+
+export const ACTIVITY_OPTIONS = {
+  Coffee: {
+    bg: "from-amber-400 to-orange-500",
+    icon: Coffee,
+    label: "Coffee Date",
+    emoji: "☕"
+  },
+  Dinner: {
+    bg: "from-rose-400 to-pink-600",
+    icon: Utensils,
+    label: "Dinner Date",
+    emoji: "🍽️"
+  },
+  Drinks: {
+    bg: "from-indigo-500 to-purple-600",
+    icon: Martini,
+    label: "Drinks Date",
+    emoji: "🍸"
+  },
+  Movie: {
+    bg: "from-cyan-400 to-blue-600",
+    icon: Film,
+    label: "Movie Night",
+    emoji: "🎬"
+  },
+  Walk: {
+    bg: "from-emerald-400 to-teal-600",
+    icon: Footprints,
+    label: "Walk & Talk",
+    emoji: "🌳"
+  }
+};
+
+export const DEFAULT_ACTIVITY = {
+  bg: "from-pink-400 to-rose-500",
+  icon: Calendar,
+  label: "Date Plan",
+  emoji: "📅"
+};
+
+export const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export const DAYS_OF_WEEK = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+

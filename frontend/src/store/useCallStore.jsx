@@ -16,6 +16,25 @@ export const useCallStore = create((set, get) => ({
   cameraActive: true,
   offer: null,
   callStartTime: null,
+  activeReactions: [],
+
+  sendCallReaction: (reaction) => {
+    const { targetId } = get();
+    const socket = socketService.getSocket();
+    if (socket && targetId) {
+      socket.emit("callReaction", { targetId, reaction });
+      
+      const id = Date.now() + Math.random().toString(36).substr(2, 9);
+      const newReaction = { id, reaction };
+      set((state) => ({ activeReactions: [...state.activeReactions, newReaction] }));
+      
+      setTimeout(() => {
+        set((state) => ({
+          activeReactions: state.activeReactions.filter((r) => r.id !== id),
+        }));
+      }, 4000);
+    }
+  },
 
   initiateCall: async (targetId, callType) => {
     try {
@@ -179,6 +198,7 @@ export const useCallStore = create((set, get) => ({
     socket.off("callAccepted");
     socket.off("receiveIceCandidate");
     socket.off("callEnded");
+    socket.off("callReaction");
 
     socket.on("incomingCall", ({ callerId, offer, callType, callerInfo }) => {
       set({
@@ -200,6 +220,18 @@ export const useCallStore = create((set, get) => ({
       await webrtcService.addIceCandidate(candidate);
     });
 
+    socket.on("callReaction", ({ reaction }) => {
+      const id = Date.now() + Math.random().toString(36).substr(2, 9);
+      const newReaction = { id, reaction };
+      set((state) => ({ activeReactions: [...state.activeReactions, newReaction] }));
+      
+      setTimeout(() => {
+        set((state) => ({
+          activeReactions: state.activeReactions.filter((r) => r.id !== id),
+        }));
+      }, 4000);
+    });
+
     socket.on("callEnded", () => {
       const { localStream } = get();
       if (localStream) {
@@ -217,6 +249,7 @@ export const useCallStore = create((set, get) => ({
         cameraActive: true,
         offer: null,
         callStartTime: null,
+        activeReactions: [],
       });
       showToast.error("Call ended");
     });

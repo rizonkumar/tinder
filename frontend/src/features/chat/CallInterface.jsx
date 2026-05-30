@@ -17,6 +17,8 @@ export default function CallInterface() {
     endCall,
     toggleMic,
     toggleCamera,
+    activeReactions,
+    sendCallReaction,
   } = useCallStore();
 
   const localVideoRef = useRef(null);
@@ -205,6 +207,47 @@ export default function CallInterface() {
                 )}
               </div>
             )}
+
+            {/* Floating Call Reactions Overlay */}
+            <div className="absolute inset-0 pointer-events-none z-[45] overflow-hidden">
+              <AnimatePresence>
+                {activeReactions.map((r) => (
+                  <motion.div
+                    key={r.id}
+                    initial={{ y: "100%", x: "50%", scale: 0.5, opacity: 0 }}
+                    animate={{
+                      y: ["100%", "-20%"],
+                      x: ["50%", Math.random() > 0.5 ? "25%" : "75%"],
+                      scale: [0.8, 2.2, 1.4],
+                      opacity: [0, 1, 1, 0],
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      duration: 3.5,
+                      ease: "easeOut",
+                    }}
+                    className="absolute bottom-10 left-1/2 -translate-x-1/2 text-5xl"
+                  >
+                    {r.reaction}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* call reaction emoji panel */}
+            <div className="absolute bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-3.5 rounded-2xl bg-black/50 border border-white/10 px-4.5 py-2 backdrop-blur-md shadow-2xl">
+              {["💖", "🎉", "😂", "🔥", "😮"].map((emoji) => (
+                <motion.button
+                  key={emoji}
+                  whileHover={{ scale: 1.3, rotate: 6 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => sendCallReaction(emoji)}
+                  className="text-2xl cursor-pointer hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.7)] transition-all select-none"
+                >
+                  {emoji}
+                </motion.button>
+              ))}
+            </div>
 
             <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-4 sm:space-x-6 rounded-full border border-white/10 bg-black/60 px-5 sm:px-8 py-2.5 sm:py-3.5 backdrop-blur-md shadow-2xl">
               <button
