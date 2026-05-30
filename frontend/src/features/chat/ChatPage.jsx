@@ -42,6 +42,7 @@ export default function ChatPage() {
 
   const [text, setText] = useState("");
   const [showIcebreakers, setShowIcebreakers] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const [isCurrentlyTypingEmit, setIsCurrentlyTypingEmit] = useState(false);
@@ -63,6 +64,7 @@ export default function ChatPage() {
     } else {
       setActiveChatUser(null);
     }
+    setIsProfileModalOpen(false);
   }, [id, matches, setActiveChatUser, getMessages, getIcebreakers]);
 
   useEffect(() => {
@@ -131,39 +133,45 @@ export default function ChatPage() {
         {activeChatUser ? (
           <div className="flex flex-grow flex-col overflow-hidden bg-white dark:bg-zinc-900 border-t border-slate-200/60 dark:border-zinc-800 lg:border-l lg:border-t-0 transition-colors duration-300">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 p-4 shrink-0 bg-white dark:bg-zinc-900 z-10">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3 flex-grow overflow-hidden">
                 <Link
                   to="/chat"
-                  className="text-slate-400 hover:text-pink-500 lg:hidden transition-colors"
+                  className="text-slate-400 hover:text-pink-500 lg:hidden transition-colors shrink-0"
                 >
                   <ArrowLeft size={22} />
                 </Link>
-                <div className="relative">
-                  <img
-                    src={activeChatUser.image || "/avatar.png"}
-                    alt={activeChatUser.name}
-                    className="h-11 w-11 rounded-full border border-slate-200/50 dark:border-zinc-800 object-cover shadow-sm"
-                  />
-                  <span
-                    className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 ${
-                      isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit">
-                    {activeChatUser.name}
-                  </h2>
-                  <div className="text-[11px] mt-0.5 font-medium">
-                    {isOnline ? (
-                      <span className="text-green-500 font-semibold font-outfit">
-                        Active now
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 dark:text-slate-500 font-outfit">
-                        Offline
-                      </span>
-                    )}
+                
+                <div 
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="flex items-center space-x-3 cursor-pointer select-none group flex-grow overflow-hidden"
+                >
+                  <div className="relative shrink-0">
+                    <img
+                      src={activeChatUser.image || "/avatar.png"}
+                      alt={activeChatUser.name}
+                      className="h-11 w-11 rounded-full border border-slate-200/50 dark:border-zinc-800 object-cover shadow-sm transition-transform duration-300 group-hover:scale-103"
+                    />
+                    <span
+                      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 ${
+                        isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
+                      }`}
+                    />
+                  </div>
+                  <div className="overflow-hidden">
+                    <h2 className="text-base font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors truncate">
+                      {activeChatUser.name}
+                    </h2>
+                    <div className="text-[11px] mt-0.5 font-medium truncate">
+                      {isOnline ? (
+                        <span className="text-green-500 font-semibold font-outfit">
+                          Active now
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 dark:text-slate-500 font-outfit">
+                          Offline
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -303,36 +311,32 @@ export default function ChatPage() {
                   >
                     <div className="flex items-center justify-between text-xs font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider font-outfit shrink-0">
                       <span className="whitespace-nowrap">AI Icebreakers ✨</span>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <button
                         type="button"
                         onClick={() => getIcebreakers(id)}
-                        className="text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 font-bold transition-colors focus:outline-none select-none shrink-0 whitespace-nowrap"
+                        className="text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 font-bold transition-colors duration-200 focus:outline-none select-none shrink-0 whitespace-nowrap"
                       >
                         Regenerate
-                      </motion.button>
+                      </button>
                     </div>
                     {isLoadingIcebreakers ? (
                       <div className="flex py-2 justify-center">
                         <LoadingState message="" type="inline" />
                       </div>
                     ) : (
-                      <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto">
+                      <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto overflow-x-hidden">
                         {icebreakers.map((starter, idx) => (
-                          <motion.button
+                          <button
                             key={idx}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.99 }}
                             type="button"
                             onClick={() => {
                               setText(starter);
                               setShowIcebreakers(false);
                             }}
-                            className="w-full text-left bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-pink-500/30 dark:hover:border-pink-500/30 transition-all font-medium leading-relaxed shadow-sm font-sans"
+                            className="w-full text-left bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-pink-500/30 dark:hover:border-pink-500/30 transition-all font-medium leading-relaxed shadow-sm font-sans whitespace-normal break-words"
                           >
                             {starter}
-                          </motion.button>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -419,7 +423,7 @@ export default function ChatPage() {
                           />
                           <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm ${
-                              isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
+                              isOnline ? "bg-green-500" : "bg-slate-350 dark:bg-zinc-700"
                             }`}
                           />
                         </div>
@@ -440,6 +444,133 @@ export default function ChatPage() {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {isProfileModalOpen && activeChatUser && (
+          <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800/80 shadow-2xl flex flex-col sm:flex-row font-sans text-slate-800 dark:text-zinc-100 max-h-[90vh] sm:h-[450px]"
+            >
+              <div className="w-full sm:w-[220px] bg-slate-50 dark:bg-zinc-950 border-b sm:border-b-0 sm:border-r border-slate-200/50 dark:border-zinc-800/80 p-5 flex flex-col shrink-0">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 font-outfit mb-4">
+                  Contact
+                </h3>
+                <div className="space-y-1">
+                  <button className="w-full text-left bg-pink-500/10 text-pink-600 dark:text-pink-400 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none select-none font-outfit">
+                    Info
+                  </button>
+                  <button className="w-full text-left text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none select-none font-outfit">
+                    Media, links and docs
+                  </button>
+                  <button className="w-full text-left text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none select-none font-outfit">
+                    Encryption
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-grow p-6 flex flex-col justify-between overflow-hidden">
+                <div className="overflow-y-auto pr-1 space-y-5 flex-grow scrollbar-none">
+                  <div className="flex flex-col items-center text-center space-y-3 shrink-0">
+                    <div className="relative">
+                      <img
+                        src={activeChatUser.image || "/avatar.png"}
+                        alt={activeChatUser.name}
+                        className="h-20 w-20 rounded-full border-2 border-pink-500 dark:border-pink-400 object-cover shadow-sm"
+                      />
+                      <span
+                        className={`absolute bottom-0 right-0 h-4.5 w-4.5 rounded-full border-4 border-white dark:border-zinc-900 ${
+                          isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit">
+                        {activeChatUser.name}, <span className="font-semibold">{activeChatUser.age}</span>
+                      </h2>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium font-sans">
+                        {isOnline ? "Active now" : "Offline"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
+                        About
+                      </h4>
+                      <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-300 font-medium font-sans">
+                        {activeChatUser.bio || "No bio available."}
+                      </p>
+                    </div>
+
+                    {activeChatUser.interests && activeChatUser.interests.length > 0 && (
+                      <div className="space-y-1.5">
+                        <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
+                          Interests / Hobbies
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto scrollbar-none">
+                          {activeChatUser.interests.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 border-t border-slate-100 dark:border-zinc-800/80 pt-4 flex items-center justify-between shrink-0">
+                  {isOnline ? (
+                    <div className="flex items-center space-x-3">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setIsProfileModalOpen(false);
+                          initiateCall(activeChatUser._id, "voice");
+                        }}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
+                      >
+                        <Phone size={15} />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          setIsProfileModalOpen(false);
+                          initiateCall(activeChatUser._id, "video");
+                        }}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
+                      >
+                        <Video size={15} />
+                      </motion.button>
+                    </div>
+                  ) : (
+                    <div />
+                  )}
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setIsProfileModalOpen(false)}
+                    className="px-5 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 active:bg-pink-700 text-white text-xs font-bold shadow-sm focus:outline-none font-outfit"
+                  >
+                    Done
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

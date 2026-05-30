@@ -156,7 +156,7 @@ export default function MatchesPage() {
                           </div>
 
                           <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-8 font-medium font-sans">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-10 font-medium font-sans">
                               {match.bio || "No bio available."}
                             </p>
 
@@ -245,7 +245,7 @@ export default function MatchesPage() {
                           </div>
 
                           <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-8 font-medium font-sans">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-10 font-medium font-sans">
                               {liked.bio || "No bio available."}
                             </p>
 

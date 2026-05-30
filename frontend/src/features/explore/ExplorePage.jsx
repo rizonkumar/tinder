@@ -59,7 +59,7 @@ export default function ExplorePage() {
             <div className="flex flex-col items-center w-full max-w-sm h-full justify-center">
               <button
                 onClick={handleBack}
-                className="self-start mb-4 flex items-center space-x-2 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-bold text-slate-655 dark:text-slate-300 shadow-sm transition-all hover:scale-105 active:scale-95 focus:outline-none"
+                className="self-start mb-4 flex items-center space-x-2 rounded-full border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-300 shadow-sm transition-all hover:scale-105 active:scale-95 focus:outline-none"
               >
                 <ArrowLeft size={14} className="stroke-[2.5]" />
                 <span>Vibes Hub</span>

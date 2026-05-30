@@ -12,14 +12,12 @@ export const webrtcService = {
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
 
-    // Add local tracks to peer connection
     if (localStream) {
       localStream.getTracks().forEach((track) => {
         pc.addTrack(track, localStream);
       });
     }
 
-    // ICE Candidate handler
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         const socket = socketService.getSocket();
@@ -32,7 +30,6 @@ export const webrtcService = {
       }
     };
 
-    // Remote stream track handler
     pc.ontrack = (event) => {
       if (onRemoteStream && event.streams[0]) {
         onRemoteStream(event.streams[0]);
@@ -78,9 +75,10 @@ export const webrtcService = {
 
   toggleTrack: (stream, type, enabled) => {
     if (stream) {
-      const track = type === "audio" 
-        ? stream.getAudioTracks()[0] 
-        : stream.getVideoTracks()[0];
+      const track =
+        type === "audio"
+          ? stream.getAudioTracks()[0]
+          : stream.getVideoTracks()[0];
       if (track) {
         track.enabled = enabled;
       }

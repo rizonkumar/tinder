@@ -402,17 +402,17 @@ export default function GoldHubPage() {
 
               <div className="p-5 space-y-5">
                 <div>
-                  <h4 className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-555">
+                  <h4 className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Bio
                   </h4>
-                  <p className="mt-1.5 text-sm text-slate-655 dark:text-slate-300 leading-relaxed font-medium">
+                  <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-300 leading-relaxed font-medium">
                     {activeProfile.bio || "No bio available."}
                   </p>
                 </div>
 
                 {activeProfile.interests && activeProfile.interests.length > 0 && (
                   <div>
-                    <h4 className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-555 mb-2">
+                    <h4 className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
                       Interests
                     </h4>
                     <div className="flex flex-wrap gap-2">
