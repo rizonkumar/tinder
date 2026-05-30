@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { fallbackGifs, ACTIVITY_OPTIONS, DEFAULT_ACTIVITY } from "../../constants";
 import { useMatchStore } from "../../store/useMatchStore";
 import { useMessageStore } from "../../store/useMessageStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -13,26 +14,21 @@ import {
   Phone,
   Video,
   MessageCircle,
-  Camera,
-  Image as ImageIcon,
   Calendar,
   MapPin,
   Clock,
+  Paperclip,
+  Smile,
+  X,
+  Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallStore } from "../../store/useCallStore";
 import LoadingState from "../../components/common/LoadingState";
 import FallbackState from "../../components/common/FallbackState";
+import CustomDatePicker from "../../components/common/CustomDatePicker";
+import CustomTimePicker from "../../components/common/CustomTimePicker";
 import confetti from "canvas-confetti";
-
-const fallbackGifs = [
-  { id: "1", title: "Love Bear", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3N2c2t3N3UycDNwdDJ2N29oOTl0Mnl5aTRjcmhrdDQ2ZnE0MGY0NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/du3J3cXyzhj75IOgvA/giphy.gif" },
-  { id: "2", title: "Cute Wave", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHpqZDR5OHg2aDZndHFpMXZ2cXR0NDl4cnZ5cjI1M2R4M294MXpxNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/VuoqO5g159T93G140C/giphy.gif" },
-  { id: "3", title: "Cat Hug", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmVwdThnaDB6cG51NWxnaGR5OHoycGJ5aG05OXN2bDVpYTQ2NXJ0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/CKe3B7Bvx1sS4/giphy.gif" },
-  { id: "4", title: "Wink Dog", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzJydHJid3N2czBpc3hrY2VyeDRkYWtucnpsMGNod2F6bnF1ZjZpbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/13CoXDiaCcC2EA/giphy.gif" },
-  { id: "5", title: "Excited Dance", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTZoZnQycXZ2OHY3cjQ0OXh2cjE5eWNjajZ6ZnpxOGdndXRtcHhqZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/blSTtZehjAZ8I/giphy.gif" },
-  { id: "6", title: "Heart Pop", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWp3ZnRnbXpxNm9nd2Jyd2NtdHA2cXR2ZzJ5djE5MTRxMXAxdGpxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/l41JWd1xzcx437nmw/giphy.gif" }
-];
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -60,52 +56,50 @@ export default function ChatPage() {
   } = useMessageStore();
 
   const [text, setText] = useState("");
-  const [showIcebreakers, setShowIcebreakers] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [aiTab, setAiTab] = useState("replies"); // "replies" | "icebreakers"
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const [isCurrentlyTypingEmit, setIsCurrentlyTypingEmit] = useState(false);
 
-  // Date Planner States
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState("Coffee");
   const [dateInput, setDateInput] = useState("");
   const [timeInput, setTimeInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
 
-  // GIPHY & Rich Media States
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [gifQuery, setGifQuery] = useState("");
   const [gifs, setGifs] = useState([]);
   const [isLoadingGifs, setIsLoadingGifs] = useState(false);
 
-  // AI Smart Replies States
-  const [showSmartReplies, setShowSmartReplies] = useState(false);
-
-  // GIPHY API Search Hook
   useEffect(() => {
     if (!showGifPicker) return;
-    
+
     const fetchGifs = async () => {
       setIsLoadingGifs(true);
       try {
         const query = gifQuery.trim() || "love";
         const res = await fetch(
-          `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(query)}&limit=12`
+          `https://api.giphy.com/v1/gifs/search?api_key=dc6zaTOxFJmzC&q=${encodeURIComponent(query)}&limit=12`,
         );
         const data = await res.json();
         if (data && data.data && data.data.length > 0) {
-          const formatted = data.data.map(item => ({
+          const formatted = data.data.map((item) => ({
             id: item.id,
             title: item.title,
-            url: item.images.fixed_height.url
+            url: item.images.fixed_height.url,
           }));
           setGifs(formatted);
         } else {
           setGifs(fallbackGifs);
         }
       } catch (err) {
-        console.warn("GIPHY API key or fetch failed, fallback to presets:", err);
+        console.warn(
+          "GIPHY API key or fetch failed, fallback to presets:",
+          err,
+        );
         setGifs(fallbackGifs);
       } finally {
         setIsLoadingGifs(false);
@@ -119,13 +113,12 @@ export default function ChatPage() {
     return () => clearTimeout(delayDebounce);
   }, [gifQuery, showGifPicker]);
 
-  // Image Upload base64 -> Cloudinary Handler
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File is too large. Max size is 5MB");
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File is too large. Max size is 2MB");
       return;
     }
 
@@ -136,7 +129,6 @@ export default function ChatPage() {
     reader.readAsDataURL(file);
   };
 
-  // Date Proposal Submission Handler
   const handleSendDateProposal = async (e) => {
     e.preventDefault();
     if (!dateInput || !timeInput || !locationInput) {
@@ -153,13 +145,12 @@ export default function ChatPage() {
     };
 
     await sendMessage(
-      `Proposed a date: ${selectedActivity} 📅`,
+      `Proposed a date: ${selectedActivity}`,
       "date_proposal",
       "",
-      proposal
+      proposal,
     );
 
-    // Reset date fields and modal
     setDateInput("");
     setTimeInput("");
     setLocationInput("");
@@ -259,8 +250,8 @@ export default function ChatPage() {
                 >
                   <ArrowLeft size={22} />
                 </Link>
-                
-                <div 
+
+                <div
                   onClick={() => setIsProfileModalOpen(true)}
                   className="flex items-center space-x-3 cursor-pointer select-none group flex-grow overflow-hidden"
                 >
@@ -272,7 +263,9 @@ export default function ChatPage() {
                     />
                     <span
                       className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 ${
-                        isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
+                        isOnline
+                          ? "bg-green-500"
+                          : "bg-slate-300 dark:bg-zinc-700"
                       }`}
                     />
                   </div>
@@ -373,14 +366,8 @@ export default function ChatPage() {
 
                   if (message.messageType === "date_proposal") {
                     const info = message.dateInfo || {};
-                    const activityGradients = {
-                      Coffee: { bg: "from-amber-400 to-orange-500", icon: "☕", label: "Coffee Date" },
-                      Dinner: { bg: "from-rose-400 to-pink-600", icon: "🍽️", label: "Dinner Date" },
-                      Drinks: { bg: "from-indigo-500 to-purple-600", icon: "🍸", label: "Drinks Date" },
-                      Movie: { bg: "from-cyan-400 to-blue-600", icon: "🎬", label: "Movie Night" },
-                      Walk: { bg: "from-emerald-400 to-teal-600", icon: "🌳", label: "Walk / Park" },
-                    };
-                    const act = activityGradients[info.activity] || { bg: "from-pink-400 to-rose-500", icon: "📅", label: "Plan" };
+                    const act = ACTIVITY_OPTIONS[info.activity] || DEFAULT_ACTIVITY;
+                    const IconComponent = act.icon || Calendar;
 
                     const handleRespond = (status) => {
                       respondToDateProposal(message._id, status);
@@ -388,7 +375,7 @@ export default function ChatPage() {
                         confetti({
                           particleCount: 150,
                           spread: 80,
-                          origin: { y: 0.6 }
+                          origin: { y: 0.6 },
                         });
                       }
                     };
@@ -403,100 +390,121 @@ export default function ChatPage() {
                         className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-4`}
                       >
                         <div
-                          className={`w-full max-w-[300px] rounded-3xl p-5 shadow-md border backdrop-blur-xl relative overflow-hidden transition-all duration-300 ${
+                          className={`w-full max-w-[310px] rounded-2xl p-5 shadow-sm border relative overflow-hidden transition-all duration-200 ${
                             isAccepted
-                              ? "bg-gradient-to-br from-pink-500/10 to-rose-500/10 border-pink-500/80 shadow-pink-500/10 scale-[1.02]"
+                              ? "bg-white dark:bg-zinc-900 border-emerald-200 dark:border-emerald-800/40"
                               : isDeclined
-                              ? "bg-slate-100/40 dark:bg-zinc-900/40 border-slate-200/40 dark:border-zinc-800/40 opacity-60"
-                              : "bg-white dark:bg-zinc-900 border-slate-200/60 dark:border-zinc-800/80 shadow-sm"
+                                ? "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 opacity-50"
+                                : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800"
                           }`}
                         >
-                          <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${act.bg}`} />
-                          
-                          <div className="flex items-center justify-between mb-4 mt-0.5">
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                          <div
+                            className={`absolute top-0 left-0 right-0 h-[3px] ${
+                              isAccepted
+                                ? "bg-emerald-500"
+                                : isDeclined
+                                  ? "bg-slate-300 dark:bg-zinc-700"
+                                  : "bg-pink-500"
+                            }`}
+                          />
+
+                          <div className="flex items-center justify-between mb-4 mt-0.5 select-none">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500 font-outfit">
                               Date Proposal
                             </span>
                             {isAccepted && (
-                              <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500">
-                                Confirmed 💖
+                              <span className="flex items-center space-x-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                <span>Confirmed</span>
                               </span>
                             )}
                             {isDeclined && (
-                              <span className="rounded-full bg-slate-500/10 border border-slate-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                                Declined
+                              <span className="flex items-center space-x-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-zinc-600" />
+                                <span>Declined</span>
                               </span>
                             )}
                             {isPending && (
-                              <span className="rounded-full bg-pink-500/10 border border-pink-500/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-500 animate-pulse">
-                                Pending
+                              <span className="flex items-center space-x-1.5 rounded-full bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                <span>Pending</span>
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${act.bg} text-xl shadow-sm transform -rotate-2 shrink-0`}>
-                              {act.icon}
+                          <div className="flex items-center space-x-3.5 mb-4">
+                            <div
+                              className={`relative flex h-11 w-11 items-center justify-center rounded-xl ${
+                                isAccepted
+                                  ? "bg-emerald-500"
+                                  : isDeclined
+                                    ? "bg-slate-300 dark:bg-zinc-700"
+                                    : "bg-pink-500"
+                              } text-white shrink-0`}
+                            >
+                              <IconComponent size={20} className="stroke-[2.2]" />
                             </div>
                             <div className="overflow-hidden">
-                              <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-200 font-outfit truncate">
+                              <h4 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 font-outfit tracking-tight leading-none mb-1.5">
                                 {act.label}
                               </h4>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                              <p className="text-[9px] text-slate-400 dark:text-zinc-500 truncate font-bold font-outfit uppercase tracking-wider">
                                 Suggested by {isSentByMe ? "You" : activeChatUser.name}
                               </p>
                             </div>
                           </div>
 
-                          <div className="space-y-2 text-[11px] text-slate-600 dark:text-zinc-300 font-medium font-sans mb-4 border-t border-b border-slate-100 dark:border-zinc-800/80 py-2.5">
-                            <div className="flex items-center space-x-2">
-                              <Calendar size={12} className="text-pink-500/80 shrink-0" />
+                          <div className="space-y-2 text-xs text-slate-600 dark:text-zinc-300 font-medium font-sans mb-4 border-t border-b border-slate-100 dark:border-zinc-800 py-3 mt-1 select-none">
+                            <div className="flex items-center space-x-2.5">
+                              <Calendar size={13} className="text-slate-400 dark:text-zinc-500 shrink-0" />
                               <span className="truncate">{info.date}</span>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <Clock size={12} className="text-pink-500/80 shrink-0" />
-                              <span>{info.time}</span>
+                            <div className="flex items-center space-x-2.5">
+                              <Clock size={13} className="text-slate-400 dark:text-zinc-500 shrink-0" />
+                              <span className="truncate">{info.time}</span>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <MapPin size={12} className="text-pink-500/80 shrink-0" />
-                              <span className="truncate">{info.location || "To be decided"}</span>
+                            <div className="flex items-center space-x-2.5">
+                              <MapPin size={13} className="text-slate-400 dark:text-zinc-500 shrink-0" />
+                              <span className="truncate font-semibold">{info.location || "To be decided"}</span>
                             </div>
                           </div>
 
                           {isPending && (
                             <div className="w-full mt-2">
                               {isSentByMe ? (
-                                <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 italic py-1 font-outfit font-semibold">
-                                  Waiting for reply...
+                                <div className="flex items-center justify-center space-x-2 text-center text-[10px] text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-800/50 rounded-xl py-2.5 font-outfit font-semibold tracking-wide">
+                                  <Clock size={12} />
+                                  <span>Awaiting {activeChatUser.name}'s reply</span>
                                 </div>
                               ) : (
-                                <div className="flex items-center space-x-2 w-full">
-                                  <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                                <div className="flex items-center space-x-2.5 w-full">
+                                  <button
                                     onClick={() => handleRespond("declined")}
-                                    className="flex-1 py-1.5 text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-zinc-800 rounded-xl hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-red-500 transition-all font-outfit focus:outline-none"
+                                    className="flex-1 py-2 rounded-xl text-[10px] font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-700 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
                                   >
-                                    Decline
-                                  </motion.button>
-                                  <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                                    <X size={12} />
+                                    <span>Decline</span>
+                                  </button>
+                                  <button
                                     onClick={() => handleRespond("accepted")}
-                                    className="flex-1 py-1.5 text-center text-[10px] font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl hover:shadow-md hover:shadow-pink-500/10 hover:from-pink-600 hover:to-rose-600 transition-all font-outfit focus:outline-none"
+                                    className="flex-1 py-2 rounded-xl text-[10px] font-bold text-white bg-pink-500 hover:bg-pink-600 active:bg-pink-700 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
                                   >
-                                    Accept 💖
-                                  </motion.button>
+                                    <Heart size={12} className="fill-white" />
+                                    <span>Accept</span>
+                                  </button>
                                 </div>
                               )}
                             </div>
                           )}
 
                           <span className="block text-[8px] mt-2.5 text-right font-medium text-slate-400 dark:text-slate-550 font-sans">
-                            {new Date(message.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(message.createdAt).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </span>
                         </div>
                       </div>
@@ -524,13 +532,18 @@ export default function ChatPage() {
                           />
                           <span
                             className={`block text-[9px] mt-1 pr-1 text-right font-medium font-sans ${
-                              isSentByMe ? "text-pink-100" : "text-slate-400 dark:text-slate-500"
+                              isSentByMe
+                                ? "text-pink-100"
+                                : "text-slate-400 dark:text-slate-500"
                             }`}
                           >
-                            {new Date(message.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(message.createdAt).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
                           </span>
                         </div>
                       </div>
@@ -552,7 +565,9 @@ export default function ChatPage() {
                         <p>{message.content}</p>
                         <span
                           className={`block text-[9px] mt-1.5 text-right font-medium font-sans ${
-                            isSentByMe ? "text-pink-100" : "text-slate-400 dark:text-slate-550"
+                            isSentByMe
+                              ? "text-pink-100"
+                              : "text-slate-400 dark:text-slate-550"
                           }`}
                         >
                           {new Date(message.createdAt).toLocaleTimeString([], {
@@ -569,11 +584,37 @@ export default function ChatPage() {
               {isTypingUser && (
                 <div className="flex justify-start my-2 animate-pulse">
                   <div className="bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border border-slate-200/40 dark:border-zinc-800/80 rounded-2xl rounded-tl-none px-4 py-2.5 shadow-sm text-xs flex items-center space-x-1.5 font-outfit">
-                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit pr-0.5">{activeChatUser.name} is typing</span>
+                    <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit pr-0.5">
+                      {activeChatUser.name} is typing
+                    </span>
                     <div className="flex items-center space-x-1 h-3">
-                      <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                      <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-                      <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                      <motion.div
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 0.6,
+                          delay: 0,
+                        }}
+                        className="w-1.5 h-1.5 rounded-full bg-pink-500"
+                      />
+                      <motion.div
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 0.6,
+                          delay: 0.15,
+                        }}
+                        className="w-1.5 h-1.5 rounded-full bg-pink-500"
+                      />
+                      <motion.div
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 0.6,
+                          delay: 0.3,
+                        }}
+                        className="w-1.5 h-1.5 rounded-full bg-pink-500"
+                      />
                     </div>
                   </div>
                 </div>
@@ -587,45 +628,125 @@ export default function ChatPage() {
               className="border-t border-slate-200/60 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shrink-0 relative flex flex-col z-10 select-none"
             >
               <AnimatePresence>
-                {/* AI Smart Replies Suggestions Bar */}
-                {showSmartReplies && (
+                {/* Unified AI Assistant Panel */}
+                {showAIAssistant && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="border-b border-slate-200/50 dark:border-zinc-800 p-3 bg-pink-50/20 dark:bg-zinc-900/60 space-y-2 rounded-t-2xl overflow-hidden shrink-0"
+                    className="border-b border-slate-200/50 dark:border-zinc-800 p-3 bg-pink-50/10 dark:bg-zinc-950/20 space-y-3 rounded-t-3xl overflow-hidden shrink-0 border-t border-t-pink-100/10 dark:border-t-zinc-900/20 shadow-inner"
                   >
-                    <div className="flex items-center justify-between text-xs font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider font-outfit shrink-0">
-                      <span className="whitespace-nowrap flex items-center gap-1">
-                        AI Wingman Suggestions ✨
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => getSmartReplies(id)}
-                        className="text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 font-bold transition-colors duration-200 focus:outline-none select-none shrink-0"
-                      >
-                        Regenerate
-                      </button>
+                    {/* Tab Header */}
+                    <div className="flex items-center justify-between shrink-0 font-outfit border-b border-slate-100 dark:border-zinc-800/80 pb-2">
+                      <div className="flex space-x-1 bg-slate-100 dark:bg-zinc-900/60 p-0.5 rounded-xl">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAiTab("replies");
+                            getSmartReplies(id);
+                          }}
+                          className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 ${
+                            aiTab === "replies"
+                              ? "bg-white dark:bg-zinc-800 text-pink-500 shadow-sm"
+                              : "text-slate-400 hover:text-slate-655 dark:hover:text-zinc-300"
+                          }`}
+                        >
+                          <Sparkles size={11} />
+                          <span>Smart Replies</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAiTab("icebreakers");
+                            if (icebreakers.length === 0) {
+                              getIcebreakers(id);
+                            }
+                          }}
+                          className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase transition-all duration-200 ${
+                            aiTab === "icebreakers"
+                              ? "bg-white dark:bg-zinc-800 text-pink-500 shadow-sm"
+                              : "text-slate-400 hover:text-slate-655 dark:hover:text-zinc-300"
+                          }`}
+                        >
+                          <MessageCircle size={11} />
+                          <span>Icebreakers</span>
+                        </button>
+                      </div>
+
+                      {aiTab === "icebreakers" && (
+                        <button
+                          type="button"
+                          onClick={() => getIcebreakers(id)}
+                          className="text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 text-[10px] font-bold transition-colors duration-200 focus:outline-none select-none shrink-0"
+                        >
+                          Regenerate
+                        </button>
+                      )}
+                      {aiTab === "replies" && (
+                        <button
+                          type="button"
+                          onClick={() => getSmartReplies(id)}
+                          className="text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 text-[10px] font-bold transition-colors duration-200 focus:outline-none select-none shrink-0"
+                        >
+                          Regenerate
+                        </button>
+                      )}
                     </div>
-                    {isLoadingSmartReplies ? (
-                      <div className="flex py-2 justify-center">
+
+                    {/* Tab Contents */}
+                    {aiTab === "replies" ? (
+                      isLoadingSmartReplies ? (
+                        <div className="flex py-4 justify-center">
+                          <LoadingState message="" type="inline" />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto overflow-x-hidden scrollbar-none pb-1">
+                          {smartReplies.length > 0 ? (
+                            smartReplies.map((reply, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setText(reply);
+                                  setShowAIAssistant(false);
+                                }}
+                                className="w-full text-left bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800/80 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-pink-50/20 dark:hover:bg-zinc-800 hover:border-pink-500/30 dark:hover:border-pink-500/30 transition-all font-medium leading-relaxed shadow-sm font-sans"
+                              >
+                                {reply}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="text-center text-[10px] text-slate-400 py-3 italic font-medium">
+                              No suggestions available. Try chatting more first!
+                            </div>
+                          )}
+                        </div>
+                      )
+                    ) : isLoadingIcebreakers ? (
+                      <div className="flex py-4 justify-center">
                         <LoadingState message="" type="inline" />
                       </div>
                     ) : (
-                      <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto overflow-x-hidden scrollbar-none">
-                        {smartReplies.map((reply, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              setText(reply);
-                              setShowSmartReplies(false);
-                            }}
-                            className="w-full text-left bg-white dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-pink-500/30 dark:hover:border-pink-500/30 transition-all font-medium leading-relaxed shadow-sm font-sans"
-                          >
-                            {reply}
-                          </button>
-                        ))}
+                      <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto overflow-x-hidden scrollbar-none pb-1">
+                        {icebreakers.length > 0 ? (
+                          icebreakers.map((starter, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setText(starter);
+                                setShowAIAssistant(false);
+                              }}
+                              className="w-full text-left bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800/80 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-pink-50/20 dark:hover:bg-zinc-800 hover:border-pink-500/30 dark:hover:border-pink-500/30 transition-all font-medium leading-relaxed shadow-sm font-sans whitespace-normal break-words"
+                            >
+                              {starter}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="text-center text-[10px] text-slate-400 py-3 italic font-medium">
+                            No icebreakers available. Click regenerate to fetch!
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>
@@ -641,7 +762,7 @@ export default function ChatPage() {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-outfit uppercase tracking-wider">
-                        Search GIPHY GIFs 🎬
+                        Search GIPHY GIFs
                       </span>
                       <button
                         type="button"
@@ -674,7 +795,7 @@ export default function ChatPage() {
                           <div
                             key={g.id}
                             onClick={() => {
-                              sendMessage("Sent a GIF 🎬", "image", g.url);
+                              sendMessage("Sent a GIF", "image", g.url);
                               setShowGifPicker(false);
                             }}
                             className="aspect-square rounded-lg overflow-hidden cursor-pointer border border-slate-100 dark:border-zinc-800/80 hover:border-pink-500 hover:scale-[1.02] active:scale-[0.98] transition-all bg-slate-50 dark:bg-zinc-955 shrink-0"
@@ -689,47 +810,6 @@ export default function ChatPage() {
                         ))
                       )}
                     </div>
-                  </motion.div>
-                )}
-
-                {showIcebreakers && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="border-b border-slate-200/50 dark:border-zinc-800 p-3 bg-slate-50 dark:bg-zinc-900/80 space-y-2 rounded-t-2xl overflow-hidden shrink-0"
-                  >
-                    <div className="flex items-center justify-between text-xs font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider font-outfit shrink-0">
-                      <span className="whitespace-nowrap">AI Icebreakers ✨</span>
-                      <button
-                        type="button"
-                        onClick={() => getIcebreakers(id)}
-                        className="text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 font-bold transition-colors duration-200 focus:outline-none select-none shrink-0 whitespace-nowrap"
-                      >
-                        Regenerate
-                      </button>
-                    </div>
-                    {isLoadingIcebreakers ? (
-                      <div className="flex py-2 justify-center">
-                        <LoadingState message="" type="inline" />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col space-y-1.5 max-h-36 overflow-y-auto overflow-x-hidden scrollbar-none">
-                        {icebreakers.map((starter, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              setText(starter);
-                              setShowIcebreakers(false);
-                            }}
-                            className="w-full text-left bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-pink-500/30 dark:hover:border-pink-500/30 transition-all font-medium leading-relaxed shadow-sm font-sans whitespace-normal break-words"
-                          >
-                            {starter}
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -747,86 +827,67 @@ export default function ChatPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="button"
-                  onClick={() => document.getElementById("chat-photo-input").click()}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-505 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
-                  title="Share Photo"
+                  onClick={() =>
+                    document.getElementById("chat-photo-input").click()
+                  }
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+                  title="Attach Photo"
                 >
-                  <Camera size={17} />
+                  <Paperclip size={17} />
                 </motion.button>
 
-                {/* GIPHY Picker trigger */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => {
                     setShowGifPicker(!showGifPicker);
-                    setShowIcebreakers(false);
-                    setShowSmartReplies(false);
+                    setShowAIAssistant(false);
                   }}
                   className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus:outline-none shrink-0 ${
                     showGifPicker
                       ? "bg-pink-500 border-pink-500 text-white"
-                      : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-505 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
+                      : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
                   }`}
                   title="Share GIF"
                 >
-                  <ImageIcon size={17} />
+                  <Smile size={17} />
                 </motion.button>
 
-                {/* Date Planner Modal trigger */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="button"
-                  onClick={() => setIsDateModalOpen(true)}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-505 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+                  onClick={() => {
+                    setIsDateModalOpen(true);
+                    setShowGifPicker(false);
+                    setShowAIAssistant(false);
+                  }}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
                   title="Plan a Date"
                 >
                   <Calendar size={17} />
                 </motion.button>
 
-                {/* Smart Replies trigger */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={() => {
-                    setShowSmartReplies(!showSmartReplies);
-                    setShowIcebreakers(false);
+                    setShowAIAssistant(!showAIAssistant);
                     setShowGifPicker(false);
-                    if (!showSmartReplies) {
+                    if (!showAIAssistant && aiTab === "replies") {
                       getSmartReplies(id);
                     }
                   }}
                   className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus:outline-none shrink-0 ${
-                    showSmartReplies
-                      ? "bg-pink-500 border-pink-500 text-white"
-                      : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-505 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
+                    showAIAssistant
+                      ? "bg-pink-500 border-pink-500 text-white shadow-md shadow-pink-500/25"
+                      : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
                   }`}
-                  title="AI Wingman"
+                  title="AI Assistant"
                 >
                   <Sparkles size={17} />
-                </motion.button>
-
-                {/* Icebreakers trigger */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  onClick={() => {
-                    setShowIcebreakers(!showIcebreakers);
-                    setShowSmartReplies(false);
-                    setShowGifPicker(false);
-                  }}
-                  className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus:outline-none shrink-0 ${
-                    showIcebreakers
-                      ? "bg-pink-500 border-pink-500 text-white"
-                      : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-505 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
-                  }`}
-                  title="AI Icebreakers"
-                >
-                  <MessageCircle size={17} />
                 </motion.button>
 
                 <input
@@ -897,7 +958,9 @@ export default function ChatPage() {
                           />
                           <span
                             className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm ${
-                              isOnline ? "bg-green-500" : "bg-slate-350 dark:bg-zinc-700"
+                              isOnline
+                                ? "bg-green-500"
+                                : "bg-slate-350 dark:bg-zinc-700"
                             }`}
                           />
                         </div>
@@ -957,13 +1020,18 @@ export default function ChatPage() {
                       />
                       <span
                         className={`absolute bottom-0 right-0 h-4.5 w-4.5 rounded-full border-4 border-white dark:border-zinc-900 ${
-                          isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
+                          isOnline
+                            ? "bg-green-500"
+                            : "bg-slate-300 dark:bg-zinc-700"
                         }`}
                       />
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit">
-                        {activeChatUser.name}, <span className="font-semibold">{activeChatUser.age}</span>
+                        {activeChatUser.name},{" "}
+                        <span className="font-semibold">
+                          {activeChatUser.age}
+                        </span>
                       </h2>
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium font-sans">
                         {isOnline ? "Active now" : "Offline"}
@@ -981,23 +1049,24 @@ export default function ChatPage() {
                       </p>
                     </div>
 
-                    {activeChatUser.interests && activeChatUser.interests.length > 0 && (
-                      <div className="space-y-1.5">
-                        <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
-                          Interests / Hobbies
-                        </h4>
-                        <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto scrollbar-none">
-                          {activeChatUser.interests.map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
-                            >
-                              {tag}
-                            </span>
-                          ))}
+                    {activeChatUser.interests &&
+                      activeChatUser.interests.length > 0 && (
+                        <div className="space-y-1.5">
+                          <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
+                            Interests / Hobbies
+                          </h4>
+                          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto scrollbar-none">
+                            {activeChatUser.interests.map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </div>
 
@@ -1052,94 +1121,87 @@ export default function ChatPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="w-full max-w-md overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800/80 shadow-2xl p-6 font-sans text-slate-800 dark:text-zinc-100"
+              className="w-full max-w-md bg-white dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800/80 shadow-2xl p-6 font-sans text-slate-800 dark:text-zinc-100 rounded-[32px] relative overflow-visible"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100 font-outfit">
-                  Plan a Social Date 📅
+                <h3 className="text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100 font-outfit flex items-center gap-2">
+                  <Calendar size={18} className="text-pink-500" />
+                  <span>Plan a Social Date</span>
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIsDateModalOpen(false)}
-                  className="text-xs font-bold text-slate-400 hover:text-slate-650 dark:hover:text-slate-350 focus:outline-none"
+                  className="text-xs font-bold text-slate-400 hover:text-slate-650 dark:hover:text-slate-355 focus:outline-none"
                 >
                   Cancel
                 </button>
               </div>
-              
+
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-5 font-sans leading-relaxed">
-                Choose a cute activity, pick a date and time, and suggest a nice venue to meet {activeChatUser.name}!
+                Choose a cute activity, pick a date and time, and suggest a nice
+                venue to meet {activeChatUser.name}!
               </p>
 
               <form onSubmit={handleSendDateProposal} className="space-y-5">
-                {/* Activity Selector */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-outfit block">
                     Choose Activity
                   </label>
                   <div className="flex flex-wrap gap-2 select-none">
-                    {[
-                      { name: "Coffee", icon: "☕", gradient: "from-amber-400 to-orange-500" },
-                      { name: "Dinner", icon: "🍽️", gradient: "from-rose-400 to-pink-600" },
-                      { name: "Drinks", icon: "🍸", gradient: "from-indigo-500 to-purple-600" },
-                      { name: "Movie", icon: "🎬", gradient: "from-cyan-400 to-blue-600" },
-                      { name: "Walk", icon: "🌳", gradient: "from-emerald-400 to-teal-600" },
-                    ].map((act) => {
-                      const isSelected = selectedActivity === act.name;
+                    {Object.entries(ACTIVITY_OPTIONS).map(([key, act]) => {
+                      const isSelected = selectedActivity === key;
+                      const IconComponent = act.icon;
                       return (
                         <button
-                          key={act.name}
+                          key={key}
                           type="button"
-                          onClick={() => setSelectedActivity(act.name)}
-                          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold font-outfit border transition-all ${
+                          onClick={() => setSelectedActivity(key)}
+                          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-outfit border transition-colors ${
                             isSelected
-                              ? `bg-gradient-to-r ${act.gradient} text-white border-transparent scale-103 shadow-md`
-                              : "bg-slate-50 dark:bg-zinc-950 border-slate-200/60 dark:border-zinc-800/80 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900"
+                              ? "bg-pink-500 text-white border-pink-500"
+                              : "bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900 hover:border-slate-300 dark:hover:border-zinc-700"
                           }`}
                         >
-                          <span>{act.icon}</span>
-                          <span>{act.name}</span>
+                          <IconComponent size={14} className={isSelected ? "text-white" : "text-slate-400 dark:text-zinc-500"} />
+                          <span>{act.label}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Date & Time Picker */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-outfit block">
                       Date
                     </label>
-                    <input
-                      type="date"
+                    <CustomDatePicker
                       value={dateInput}
-                      onChange={(e) => setDateInput(e.target.value)}
-                      required
-                      className="w-full text-xs rounded-xl border border-slate-200/60 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/40 px-3.5 py-2.5 outline-none focus:border-pink-500 text-slate-800 dark:text-zinc-100"
+                      onChange={setDateInput}
+                      placeholder="Select Date"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-outfit block">
                       Time
                     </label>
-                    <input
-                      type="time"
+                    <CustomTimePicker
                       value={timeInput}
-                      onChange={(e) => setTimeInput(e.target.value)}
-                      required
-                      className="w-full text-xs rounded-xl border border-slate-200/60 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/40 px-3.5 py-2.5 outline-none focus:border-pink-500 text-slate-800 dark:text-zinc-100"
+                      onChange={setTimeInput}
+                      placeholder="Select Time"
                     />
                   </div>
                 </div>
 
-                {/* Location Picker */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-widest font-outfit block">
                     Suggested Venue / Location
                   </label>
                   <div className="relative">
-                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-pink-500/80 pointer-events-none" />
+                    <MapPin
+                      size={14}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-pink-500/80 pointer-events-none"
+                    />
                     <input
                       type="text"
                       value={locationInput}
@@ -1151,7 +1213,6 @@ export default function ChatPage() {
                   </div>
                 </div>
 
-                {/* Submit Proposal Button */}
                 <div className="pt-2 flex items-center space-x-3 w-full">
                   <button
                     type="button"
@@ -1160,14 +1221,13 @@ export default function ChatPage() {
                   >
                     Cancel
                   </button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
                     type="submit"
-                    className="flex-1 py-2.5 text-center text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl hover:shadow-lg hover:shadow-pink-500/10 hover:from-pink-600 hover:to-rose-600 transition-all font-outfit focus:outline-none"
+                    className="flex-1 py-2.5 text-center text-xs font-bold text-white bg-pink-500 hover:bg-pink-600 active:bg-pink-700 rounded-xl transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-2"
                   >
-                    Send Proposal 📅
-                  </motion.button>
+                    <Calendar size={14} />
+                    <span>Send Proposal</span>
+                  </button>
                 </div>
               </form>
             </motion.div>

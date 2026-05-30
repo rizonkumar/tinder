@@ -61,7 +61,7 @@ export const useMessageStore = create((set, get) => ({
         m._id === messageId ? updatedMessage : m
       );
       set({ messages: newMessages });
-      showToast.success(`Date proposal ${status}! 📅`);
+      showToast.success(`Date proposal ${status}!`);
     } catch (error) {
       showToast.error(error.response?.data?.message || "Failed to respond to date proposal");
     }
@@ -111,7 +111,7 @@ export const useMessageStore = create((set, get) => ({
       if (activeChatUser && newMessage.sender._id === activeChatUser._id) {
         set({ messages: [...messages, newMessage] });
       } else {
-        showToast.match(`New message from ${newMessage.sender.name}! 💬`);
+        showToast.match(`New message from ${newMessage.sender.name}!`);
       }
     });
 
@@ -133,7 +133,7 @@ export const useMessageStore = create((set, get) => ({
 
       // If active chat and date accepted, we can celebrate!
       if (status === "accepted" && activeChatUser && message.sender._id === activeChatUser._id) {
-        showToast.match(`💖 Date Proposal Confirmed with ${activeChatUser.name}!`);
+        showToast.match(`Date Proposal Confirmed with ${activeChatUser.name}!`);
       }
     });
   },
