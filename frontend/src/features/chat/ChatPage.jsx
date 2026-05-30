@@ -138,7 +138,7 @@ export default function ChatPage() {
     return parts.join(" ");
   };
 
-  const handleSearch = (query) => {
+  const handleSearch = async (query) => {
     setSearchQuery(query);
     if (!query.trim()) {
       setSearchMatches([]);
@@ -147,11 +147,7 @@ export default function ChatPage() {
       return;
     }
 
-    const matchesList = messages.filter(
-      (m) =>
-        m.messageType === "text" &&
-        m.content.toLowerCase().includes(query.toLowerCase()),
-    );
+    const matchesList = await useMessageStore.getState().searchMessages(id, query);
 
     setSearchMatches(matchesList);
     if (matchesList.length > 0) {

@@ -7,6 +7,7 @@ const {
   generateIcebreakers,
   respondToDateProposal,
   generateSmartReplies,
+  searchMessages,
 } = require("../controllers/message-controller");
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.get("/unread-count", getUnreadCount);
 router.post("/icebreakers/:userId", generateIcebreakers);
 router.post("/date/respond", respondToDateProposal);
 router.post("/smart-replies/:userId", generateSmartReplies);
+router.get("/search/:userId", searchMessages);
 
 module.exports = router;

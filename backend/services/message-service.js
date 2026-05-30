@@ -130,6 +130,24 @@ class MessageService {
 
     return populatedMessage;
   }
+
+  async searchMessages(currentUserId, otherUserId, query) {
+    const messages = await Message.find({
+      $or: [
+        { sender: currentUserId, receiver: otherUserId },
+        { sender: otherUserId, receiver: currentUserId },
+      ],
+      messageType: "text",
+      content: { $regex: query, $options: "i" },
+    })
+      .populate([
+        { path: "sender", select: "name image" },
+        { path: "receiver", select: "name image" },
+      ])
+      .sort({ createdAt: 1 });
+
+    return messages;
+  }
 }
 
 module.exports = new MessageService();
