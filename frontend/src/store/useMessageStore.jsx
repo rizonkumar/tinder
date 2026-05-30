@@ -155,4 +155,16 @@ export const useMessageStore = create((set, get) => ({
       console.log("Error getting unread count:", error);
     }
   },
+
+  searchMessages: async (userId, query) => {
+    try {
+      const response = await axiosInstance.get(
+        `/messages/search/${userId}?query=${encodeURIComponent(query)}`
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to search messages in store:", error);
+      return [];
+    }
+  },
 }));

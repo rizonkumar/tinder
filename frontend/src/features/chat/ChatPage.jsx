@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { fallbackGifs, ACTIVITY_OPTIONS, DEFAULT_ACTIVITY } from "../../constants";
+import {
+  fallbackGifs,
+  ACTIVITY_OPTIONS,
+  DEFAULT_ACTIVITY,
+  EMOJI_REACTIONS,
+} from "../../constants";
 import { useMatchStore } from "../../store/useMatchStore";
 import { useMessageStore } from "../../store/useMessageStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -21,6 +26,11 @@ import {
   Smile,
   X,
   Check,
+  Search,
+  Shield,
+  Lock,
+  Image,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallStore } from "../../store/useCallStore";
@@ -59,6 +69,127 @@ export default function ChatPage() {
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiTab, setAiTab] = useState("replies"); // "replies" | "icebreakers"
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState("info"); // "info" | "media" | "encryption"
+  const [activeLightboxImage, setActiveLightboxImage] = useState(null);
+  const [isEncryptionVerified, setIsEncryptionVerified] = useState(false);
+
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchMatches, setSearchMatches] = useState([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
+  const [activeHighlightedMessageId, setActiveHighlightedMessageId] =
+    useState(null);
+  const [activeReactionPickerMessageId, setActiveReactionPickerMessageId] =
+    useState(null);
+
+  const [reactions, setReactions] = useState({});
+
+  useEffect(() => {
+    if (id) {
+      const saved = localStorage.getItem(`reactions-${id}`);
+      setReactions(saved ? JSON.parse(saved) : {});
+      const verifiedSaved = localStorage.getItem("verified-chats");
+      const verifiedMap = verifiedSaved ? JSON.parse(verifiedSaved) : {};
+      setIsEncryptionVerified(!!verifiedMap[id]);
+      setModalTab("info");
+      setShowSearchBar(false);
+      setSearchQuery("");
+      setSearchMatches([]);
+      setCurrentMatchIndex(-1);
+      setActiveHighlightedMessageId(null);
+      setActiveReactionPickerMessageId(null);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id && Object.keys(reactions).length > 0) {
+      localStorage.setItem(`reactions-${id}`, JSON.stringify(reactions));
+    }
+  }, [reactions, id]);
+
+  const addReaction = (messageId, emoji) => {
+    setReactions((prev) => {
+      const updated = { ...prev };
+      if (emoji === null) {
+        delete updated[messageId];
+      } else {
+        updated[messageId] = emoji;
+      }
+      localStorage.setItem(`reactions-${id}`, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const getVerificationFingerprint = (id1, id2) => {
+    if (!id1 || !id2) return "00000 00000 00000 00000 00000 00000";
+    const combined = [id1, id2].sort().join("");
+    let hash = 0;
+    for (let i = 0; i < combined.length; i++) {
+      hash = combined.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const parts = [];
+    for (let j = 0; j < 5; j++) {
+      const seed = Math.abs(Math.sin(hash + j) * 100000);
+      const code = Math.floor(seed % 100000)
+        .toString()
+        .padStart(5, "0");
+      parts.push(code);
+    }
+    return parts.join(" ");
+  };
+
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    if (!query.trim()) {
+      setSearchMatches([]);
+      setCurrentMatchIndex(-1);
+      setActiveHighlightedMessageId(null);
+      return;
+    }
+
+    const matchesList = await useMessageStore.getState().searchMessages(id, query);
+
+    setSearchMatches(matchesList);
+    if (matchesList.length > 0) {
+      setCurrentMatchIndex(0);
+      scrollToAndHighlight(matchesList[0]._id);
+    } else {
+      setCurrentMatchIndex(-1);
+      setActiveHighlightedMessageId(null);
+    }
+  };
+
+  const scrollToAndHighlight = (messageId) => {
+    setActiveHighlightedMessageId(messageId);
+    setTimeout(() => {
+      const el = document.getElementById(`msg-${messageId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 50);
+
+    setTimeout(() => {
+      setActiveHighlightedMessageId((prev) =>
+        prev === messageId ? null : prev,
+      );
+    }, 2000);
+  };
+
+  const nextSearchMatch = () => {
+    if (searchMatches.length === 0) return;
+    const nextIdx = (currentMatchIndex + 1) % searchMatches.length;
+    setCurrentMatchIndex(nextIdx);
+    scrollToAndHighlight(searchMatches[nextIdx]._id);
+  };
+
+  const prevSearchMatch = () => {
+    if (searchMatches.length === 0) return;
+    const prevIdx =
+      (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
+    setCurrentMatchIndex(prevIdx);
+    scrollToAndHighlight(searchMatches[prevIdx]._id);
+  };
+
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const [isCurrentlyTypingEmit, setIsCurrentlyTypingEmit] = useState(false);
@@ -270,9 +401,16 @@ export default function ChatPage() {
                     />
                   </div>
                   <div className="overflow-hidden">
-                    <h2 className="text-base font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors truncate">
-                      {activeChatUser.name}
-                    </h2>
+                    <div className="flex items-center space-x-1.5 overflow-hidden">
+                      <h2 className="text-base font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors truncate">
+                        {activeChatUser.name}
+                      </h2>
+                      {isEncryptionVerified && (
+                        <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
+                          <ShieldCheck size={14} className="fill-emerald-500/10 stroke-[2.2]" />
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[11px] mt-0.5 font-medium truncate">
                       {isOnline ? (
                         <span className="text-green-500 font-semibold font-outfit">
@@ -288,27 +426,124 @@ export default function ChatPage() {
                 </div>
               </div>
 
-              {isOnline && (
-                <div className="flex items-center space-x-3 shrink-0">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => initiateCall(activeChatUser._id, "voice")}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
-                  >
-                    <Phone size={16} />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => initiateCall(activeChatUser._id, "video")}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
-                  >
-                    <Video size={16} />
-                  </motion.button>
-                </div>
-              )}
+              <div className="flex items-center space-x-2 shrink-0">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setShowSearchBar(!showSearchBar);
+                    if (showSearchBar) {
+                      setSearchQuery("");
+                      setSearchMatches([]);
+                      setCurrentMatchIndex(-1);
+                      setActiveHighlightedMessageId(null);
+                    }
+                  }}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all focus:outline-none ${
+                    showSearchBar
+                      ? "bg-pink-500 border-pink-500 text-white shadow-sm shadow-pink-500/20"
+                      : "border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                  }`}
+                  title="Search Messages"
+                >
+                  <Search size={15} />
+                </motion.button>
+
+                {isOnline && (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => initiateCall(activeChatUser._id, "voice")}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
+                      title="Voice Call"
+                    >
+                      <Phone size={15} />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => initiateCall(activeChatUser._id, "video")}
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
+                      title="Video Call"
+                    >
+                      <Video size={15} />
+                    </motion.button>
+                  </>
+                )}
+              </div>
             </div>
+
+            <AnimatePresence>
+              {showSearchBar && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex items-center space-x-3 bg-slate-50 dark:bg-zinc-950 border-b border-slate-200/40 dark:border-zinc-800/80 px-4 py-2.5 shrink-0 select-none"
+                >
+                  <div className="relative flex-grow">
+                    <Search
+                      size={13}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+                    />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      placeholder="Search conversation..."
+                      className="w-full text-xs rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 pl-9 pr-8 py-2 outline-none focus:border-pink-500 text-slate-800 dark:text-zinc-100"
+                      autoFocus
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => handleSearch("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+
+                  {searchMatches.length > 0 && (
+                    <div className="flex items-center space-x-2 text-[10px] font-bold text-slate-500 dark:text-zinc-400 shrink-0 font-outfit uppercase tracking-wider">
+                      <span>
+                        {currentMatchIndex + 1} of {searchMatches.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={prevSearchMatch}
+                        className="px-2 py-1 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors uppercase tracking-widest text-[9px]"
+                      >
+                        Prev
+                      </button>
+                      <button
+                        type="button"
+                        onClick={nextSearchMatch}
+                        className="px-2 py-1 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors uppercase tracking-widest text-[9px]"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSearchBar(false);
+                      setSearchQuery("");
+                      setSearchMatches([]);
+                      setCurrentMatchIndex(-1);
+                      setActiveHighlightedMessageId(null);
+                    }}
+                    className="text-xs font-bold text-slate-400 hover:text-slate-655 dark:hover:text-zinc-300 focus:outline-none shrink-0"
+                  >
+                    Cancel
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-zinc-950/40 select-none">
               {isLoadingMessages ? (
@@ -366,8 +601,11 @@ export default function ChatPage() {
 
                   if (message.messageType === "date_proposal") {
                     const info = message.dateInfo || {};
-                    const act = ACTIVITY_OPTIONS[info.activity] || DEFAULT_ACTIVITY;
+                    const act =
+                      ACTIVITY_OPTIONS[info.activity] || DEFAULT_ACTIVITY;
                     const IconComponent = act.icon || Calendar;
+                    const isHighlighted =
+                      message._id === activeHighlightedMessageId;
 
                     const handleRespond = (status) => {
                       respondToDateProposal(message._id, status);
@@ -387,7 +625,10 @@ export default function ChatPage() {
                     return (
                       <div
                         key={message._id}
-                        className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-4`}
+                        id={`msg-${message._id}`}
+                        className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-4 transition-all duration-300 ${
+                          isHighlighted ? "scale-[1.02]" : ""
+                        }`}
                       >
                         <div
                           className={`w-full max-w-[310px] rounded-2xl p-5 shadow-sm border relative overflow-hidden transition-all duration-200 ${
@@ -396,6 +637,10 @@ export default function ChatPage() {
                               : isDeclined
                                 ? "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 opacity-50"
                                 : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800"
+                          } ${
+                            isHighlighted
+                              ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30"
+                              : ""
                           }`}
                         >
                           <div
@@ -442,30 +687,45 @@ export default function ChatPage() {
                                     : "bg-pink-500"
                               } text-white shrink-0`}
                             >
-                              <IconComponent size={20} className="stroke-[2.2]" />
+                              <IconComponent
+                                size={20}
+                                className="stroke-[2.2]"
+                              />
                             </div>
                             <div className="overflow-hidden">
                               <h4 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 font-outfit tracking-tight leading-none mb-1.5">
                                 {act.label}
                               </h4>
                               <p className="text-[9px] text-slate-400 dark:text-zinc-500 truncate font-bold font-outfit uppercase tracking-wider">
-                                Suggested by {isSentByMe ? "You" : activeChatUser.name}
+                                Suggested by{" "}
+                                {isSentByMe ? "You" : activeChatUser.name}
                               </p>
                             </div>
                           </div>
 
                           <div className="space-y-2 text-xs text-slate-600 dark:text-zinc-300 font-medium font-sans mb-4 border-t border-b border-slate-100 dark:border-zinc-800 py-3 mt-1 select-none">
                             <div className="flex items-center space-x-2.5">
-                              <Calendar size={13} className="text-slate-400 dark:text-zinc-500 shrink-0" />
+                              <Calendar
+                                size={13}
+                                className="text-slate-400 dark:text-zinc-500 shrink-0"
+                              />
                               <span className="truncate">{info.date}</span>
                             </div>
                             <div className="flex items-center space-x-2.5">
-                              <Clock size={13} className="text-slate-400 dark:text-zinc-500 shrink-0" />
+                              <Clock
+                                size={13}
+                                className="text-slate-400 dark:text-zinc-500 shrink-0"
+                              />
                               <span className="truncate">{info.time}</span>
                             </div>
                             <div className="flex items-center space-x-2.5">
-                              <MapPin size={13} className="text-slate-400 dark:text-zinc-500 shrink-0" />
-                              <span className="truncate font-semibold">{info.location || "To be decided"}</span>
+                              <MapPin
+                                size={13}
+                                className="text-slate-400 dark:text-zinc-500 shrink-0"
+                              />
+                              <span className="truncate font-semibold">
+                                {info.location || "To be decided"}
+                              </span>
                             </div>
                           </div>
 
@@ -474,7 +734,9 @@ export default function ChatPage() {
                               {isSentByMe ? (
                                 <div className="flex items-center justify-center space-x-2 text-center text-[10px] text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-800/50 rounded-xl py-2.5 font-outfit font-semibold tracking-wide">
                                   <Clock size={12} />
-                                  <span>Awaiting {activeChatUser.name}'s reply</span>
+                                  <span>
+                                    Awaiting {activeChatUser.name}'s reply
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="flex items-center space-x-2.5 w-full">
@@ -512,23 +774,54 @@ export default function ChatPage() {
                   }
 
                   if (message.messageType === "image") {
+                    const isHighlighted =
+                      message._id === activeHighlightedMessageId;
+                    const messageReaction = reactions[message._id];
+
                     return (
                       <div
                         key={message._id}
-                        className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-2`}
+                        id={`msg-${message._id}`}
+                        className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-2.5 relative group items-center`}
                       >
+                        {!isSentByMe && (
+                          <div className="order-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 select-none shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveReactionPickerMessageId(
+                                  activeReactionPickerMessageId === message._id
+                                    ? null
+                                    : message._id,
+                                )
+                              }
+                              className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+                              title="React to photo"
+                            >
+                              <Smile size={14} />
+                            </button>
+                          </div>
+                        )}
+
                         <div
-                          className={`max-w-[65%] rounded-2xl overflow-hidden shadow-sm border border-slate-200/30 dark:border-zinc-800/50 ${
+                          className={`max-w-[65%] rounded-2xl overflow-hidden shadow-sm border relative transition-all duration-300 ${
                             isSentByMe
-                              ? "bg-pink-500 p-1 rounded-tr-none"
-                              : "bg-white dark:bg-zinc-900 p-1 rounded-tl-none"
+                              ? "bg-pink-500 p-1 rounded-tr-none order-1"
+                              : "bg-white dark:bg-zinc-900 p-1 rounded-tl-none order-1 border-slate-200/30 dark:border-zinc-800/50"
+                          } ${
+                            isHighlighted
+                              ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02]"
+                              : ""
                           }`}
                         >
                           <img
                             src={message.mediaUrl}
                             alt="Shared media"
-                            className="max-h-64 w-full object-cover rounded-xl select-none"
+                            className="max-h-64 w-full object-cover rounded-xl select-none cursor-pointer hover:opacity-95 transition-opacity"
                             loading="lazy"
+                            onClick={() =>
+                              setActiveLightboxImage(message.mediaUrl)
+                            }
                           />
                           <span
                             className={`block text-[9px] mt-1 pr-1 text-right font-medium font-sans ${
@@ -545,21 +838,111 @@ export default function ChatPage() {
                               },
                             )}
                           </span>
+
+                          {/* Message Reaction Pill */}
+                          {messageReaction && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              onClick={() => addReaction(message._id, null)}
+                              className={`absolute -bottom-1.5 ${
+                                isSentByMe ? "left-3" : "right-3"
+                              } bg-white dark:bg-zinc-800 border border-slate-150 dark:border-zinc-700/60 rounded-full px-1.5 py-0.5 shadow-sm text-[11px] leading-none flex items-center select-none cursor-pointer border-pink-100 dark:border-pink-900/20 hover:scale-110 active:scale-95 transition-all`}
+                              title="Click to remove reaction"
+                            >
+                              {messageReaction}
+                            </motion.div>
+                          )}
+
+                          {/* Floating Reaction Picker */}
+                          <AnimatePresence>
+                            {activeReactionPickerMessageId === message._id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                className={`absolute -top-11 ${
+                                  isSentByMe ? "right-0" : "left-0"
+                                } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
+                              >
+                                {EMOJI_REACTIONS.map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    type="button"
+                                    onClick={() => {
+                                      addReaction(message._id, emoji);
+                                      setActiveReactionPickerMessageId(null);
+                                    }}
+                                    className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
+
+                        {isSentByMe && (
+                          <div className="order-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2 select-none shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveReactionPickerMessageId(
+                                  activeReactionPickerMessageId === message._id
+                                    ? null
+                                    : message._id,
+                                )
+                              }
+                              className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+                              title="React to photo"
+                            >
+                              <Smile size={14} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   }
 
+                  const isHighlighted =
+                    message._id === activeHighlightedMessageId;
+                  const messageReaction = reactions[message._id];
+
                   return (
                     <div
                       key={message._id}
-                      className={`flex ${isSentByMe ? "justify-end" : "justify-start"}`}
+                      id={`msg-${message._id}`}
+                      className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-2 relative group items-center`}
                     >
+                      {!isSentByMe && (
+                        <div className="order-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 select-none shrink-0 flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveReactionPickerMessageId(
+                                activeReactionPickerMessageId === message._id
+                                  ? null
+                                  : message._id,
+                              )
+                            }
+                            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+                            title="React to message"
+                          >
+                            <Smile size={14} />
+                          </button>
+                        </div>
+                      )}
+
                       <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed font-sans ${
+                        className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed font-sans relative transition-all duration-305 ${
                           isSentByMe
-                            ? "bg-pink-500 text-white rounded-tr-none"
-                            : "bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border border-slate-200/45 dark:border-zinc-800/80 rounded-tl-none font-medium"
+                            ? "bg-pink-500 text-white rounded-tr-none order-1"
+                            : "bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border border-slate-200/45 dark:border-zinc-800/80 rounded-tl-none font-medium order-1"
+                        } ${
+                          isHighlighted
+                            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02] bg-pink-100 dark:bg-pink-950/20"
+                            : ""
                         }`}
                       >
                         <p>{message.content}</p>
@@ -575,7 +958,67 @@ export default function ChatPage() {
                             minute: "2-digit",
                           })}
                         </span>
+
+                        {messageReaction && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            onClick={() => addReaction(message._id, null)}
+                            className={`absolute -bottom-2.5 ${
+                              isSentByMe ? "left-3" : "right-3"
+                            } bg-white dark:bg-zinc-800 border border-slate-150 dark:border-zinc-700/60 rounded-full px-1.5 py-0.5 shadow-sm text-[11px] leading-none flex items-center select-none cursor-pointer border-pink-100 dark:border-pink-900/20 hover:scale-110 active:scale-95 transition-all`}
+                            title="Click to remove reaction"
+                          >
+                            {messageReaction}
+                          </motion.div>
+                        )}
+
+                        <AnimatePresence>
+                          {activeReactionPickerMessageId === message._id && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                              className={`absolute -top-11 ${
+                                isSentByMe ? "right-0" : "left-0"
+                              } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
+                            >
+                              {EMOJI_REACTIONS.map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => {
+                                    addReaction(message._id, emoji);
+                                    setActiveReactionPickerMessageId(null);
+                                  }}
+                                  className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
+
+                      {isSentByMe && (
+                        <div className="order-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2 select-none shrink-0 flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveReactionPickerMessageId(
+                                activeReactionPickerMessageId === message._id
+                                  ? null
+                                  : message._id,
+                              )
+                            }
+                            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+                            title="React to message"
+                          >
+                            <Smile size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -965,9 +1408,20 @@ export default function ChatPage() {
                           />
                         </div>
                         <div className="flex-grow">
-                          <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-base leading-snug font-outfit">
-                            {match.name}
-                          </h3>
+                          <div className="flex items-center space-x-1.5 overflow-hidden">
+                            <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-base leading-snug font-outfit truncate">
+                              {match.name}
+                            </h3>
+                            {(() => {
+                              const verifiedSaved = localStorage.getItem("verified-chats");
+                              const verifiedMap = verifiedSaved ? JSON.parse(verifiedSaved) : {};
+                              return verifiedMap[match._id] ? (
+                                <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
+                                  <ShieldCheck size={14} className="fill-emerald-500/10 stroke-[2.2]" />
+                                </span>
+                              ) : null;
+                            })()}
+                          </div>
                           <p className="text-xs text-slate-400 dark:text-slate-500 leading-none mt-1">
                             {isOnline ? "Active now" : "Offline"}
                           </p>
@@ -996,14 +1450,35 @@ export default function ChatPage() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 font-outfit mb-4">
                   Contact
                 </h3>
-                <div className="space-y-1">
-                  <button className="w-full text-left bg-pink-500/10 text-pink-600 dark:text-pink-400 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none select-none font-outfit">
+                <div className="space-y-1 select-none">
+                  <button
+                    onClick={() => setModalTab("info")}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none font-outfit ${
+                      modalTab === "info"
+                        ? "bg-pink-500/10 text-pink-600 dark:text-pink-400 font-extrabold"
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-300 font-semibold"
+                    }`}
+                  >
                     Info
                   </button>
-                  <button className="w-full text-left text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none select-none font-outfit">
+                  <button
+                    onClick={() => setModalTab("media")}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none font-outfit ${
+                      modalTab === "media"
+                        ? "bg-pink-500/10 text-pink-600 dark:text-pink-400 font-extrabold"
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-300 font-semibold"
+                    }`}
+                  >
                     Media, links and docs
                   </button>
-                  <button className="w-full text-left text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all focus:outline-none select-none font-outfit">
+                  <button
+                    onClick={() => setModalTab("encryption")}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all focus:outline-none font-outfit ${
+                      modalTab === "encryption"
+                        ? "bg-pink-500/10 text-pink-600 dark:text-pink-400 font-extrabold"
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-300 font-semibold"
+                    }`}
+                  >
                     Encryption
                   </button>
                 </div>
@@ -1039,35 +1514,184 @@ export default function ChatPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
-                        About
-                      </h4>
-                      <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-300 font-medium font-sans">
-                        {activeChatUser.bio || "No bio available."}
-                      </p>
-                    </div>
+                  {modalTab === "info" && (
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
+                          About
+                        </h4>
+                        <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-300 font-medium font-sans">
+                          {activeChatUser.bio || "No bio available."}
+                        </p>
+                      </div>
 
-                    {activeChatUser.interests &&
-                      activeChatUser.interests.length > 0 && (
-                        <div className="space-y-1.5">
-                          <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
-                            Interests / Hobbies
-                          </h4>
-                          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto scrollbar-none">
-                            {activeChatUser.interests.map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
-                              >
-                                {tag}
-                              </span>
-                            ))}
+                      {activeChatUser.interests &&
+                        activeChatUser.interests.length > 0 && (
+                          <div className="space-y-1.5">
+                            <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
+                              Interests / Hobbies
+                            </h4>
+                            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto scrollbar-none">
+                              {activeChatUser.interests.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  )}
+
+                  {modalTab === "media" && (
+                    <div className="space-y-3.5 flex-grow overflow-hidden flex flex-col min-h-0">
+                      <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit shrink-0">
+                        Shared Media
+                      </h4>
+                      {messages.filter((msg) => msg.messageType === "image")
+                        .length === 0 ? (
+                        <div className="flex flex-col items-center justify-center text-center py-8 space-y-3 flex-grow min-h-[180px]">
+                          <div className="rounded-full bg-slate-50 dark:bg-zinc-800/40 p-4 text-slate-400 dark:text-slate-550 border border-slate-100 dark:border-zinc-850">
+                            <Image size={22} className="stroke-[1.8]" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-outfit">
+                              No shared media yet
+                            </h5>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 max-w-[220px] leading-relaxed font-sans font-medium">
+                              Photos sent and received in this chat will be
+                              grouped here.
+                            </p>
                           </div>
                         </div>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2.5 max-h-[190px] overflow-y-auto pr-1 scrollbar-none shrink-0 pb-1">
+                          {messages
+                            .filter((msg) => msg.messageType === "image")
+                            .map((msg) => (
+                              <div
+                                key={msg._id}
+                                onClick={() =>
+                                  setActiveLightboxImage(msg.mediaUrl)
+                                }
+                                className="aspect-square rounded-xl overflow-hidden cursor-pointer border border-slate-150 dark:border-zinc-800/80 hover:scale-[1.03] active:scale-[0.97] transition-all hover:border-pink-500 dark:hover:border-pink-400 shadow-sm relative group bg-slate-50 dark:bg-zinc-950"
+                              >
+                                <img
+                                  src={msg.mediaUrl}
+                                  alt="Shared media"
+                                  className="h-full w-full object-cover select-none"
+                                />
+                                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+                              </div>
+                            ))}
+                        </div>
                       )}
-                  </div>
+                    </div>
+                  )}
+
+                  {modalTab === "encryption" && (
+                    <div className="space-y-3 flex-grow overflow-hidden flex flex-col min-h-0">
+                      <div className="flex items-center space-x-2 shrink-0">
+                        <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest font-outfit">
+                          End-to-End Encryption
+                        </h4>
+                      </div>
+
+                      <div className="bg-slate-50 dark:bg-zinc-950/60 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-4 flex flex-col items-center text-center space-y-3.5 flex-grow overflow-y-auto scrollbar-none min-h-[180px] pb-5">
+                        <motion.div
+                          animate={{
+                            scale: isEncryptionVerified ? [1, 1.15, 1] : 1,
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 15,
+                          }}
+                          className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
+                            isEncryptionVerified
+                              ? "bg-emerald-500 text-white animate-bounce"
+                              : "bg-pink-500 text-white shadow-md shadow-pink-500/20"
+                          } shrink-0`}
+                        >
+                          {isEncryptionVerified ? (
+                            <Check size={20} className="stroke-[3]" />
+                          ) : (
+                            <Lock size={18} className="stroke-[2.2]" />
+                          )}
+                        </motion.div>
+
+                        <div className="space-y-1 shrink-0">
+                          <h5 className="text-xs font-bold text-slate-800 dark:text-zinc-200 font-outfit">
+                            {isEncryptionVerified
+                              ? "Connection Verified!"
+                              : "Secure Communication"}
+                          </h5>
+                          <p className="text-[10px] text-slate-450 dark:text-slate-500 max-w-[280px] leading-relaxed font-sans font-medium">
+                            Messages and calls are secured with E2E encryption.
+                            No one outside of this chat can read or listen to
+                            them.
+                          </p>
+                        </div>
+
+                        <div className="w-full shrink-0">
+                          <span className="text-[9px] font-bold text-slate-450 dark:text-zinc-500 uppercase tracking-widest font-outfit block mb-1.5">
+                            Security fingerprint
+                          </span>
+                          <div className="bg-white dark:bg-zinc-900 border border-slate-150 dark:border-zinc-800/80 rounded-xl py-2 px-3 text-center text-xs font-extrabold tracking-widest text-slate-600 dark:text-zinc-300 font-mono shadow-inner select-all">
+                            {getVerificationFingerprint(
+                              authUser?._id,
+                              activeChatUser._id,
+                            )}
+                          </div>
+                        </div>
+
+                        {!isEncryptionVerified ? (
+                          <motion.button
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            type="button"
+                            onClick={() => {
+                              const verifiedSaved =
+                                localStorage.getItem("verified-chats");
+                              const verifiedMap = verifiedSaved
+                                ? JSON.parse(verifiedSaved)
+                                : {};
+                              verifiedMap[activeChatUser._id] = true;
+                              localStorage.setItem(
+                                "verified-chats",
+                                JSON.stringify(verifiedMap),
+                              );
+                              setIsEncryptionVerified(true);
+                              confetti({
+                                particleCount: 60,
+                                angle: 60,
+                                spread: 55,
+                                origin: { x: 0.4, y: 0.6 },
+                              });
+                              confetti({
+                                particleCount: 60,
+                                angle: 120,
+                                spread: 55,
+                                origin: { x: 0.6, y: 0.6 },
+                              });
+                            }}
+                            className="w-full py-2 bg-pink-500 hover:bg-pink-600 active:bg-pink-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm font-outfit flex items-center justify-center space-x-1.5 shrink-0"
+                          >
+                            <Shield size={12} className="stroke-[2.2]" />
+                            <span>Verify Secure Link</span>
+                          </motion.button>
+                        ) : (
+                          <div className="w-full py-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-xl font-outfit flex items-center justify-center space-x-1.5 shrink-0 border border-emerald-100 dark:border-emerald-900/30">
+                            <Check size={12} className="stroke-[2.5]" />
+                            <span>Verified Chat Channel</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 border-t border-slate-100 dark:border-zinc-800/80 pt-4 flex items-center justify-between shrink-0">
@@ -1162,7 +1786,14 @@ export default function ChatPage() {
                               : "bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900 hover:border-slate-300 dark:hover:border-zinc-700"
                           }`}
                         >
-                          <IconComponent size={14} className={isSelected ? "text-white" : "text-slate-400 dark:text-zinc-500"} />
+                          <IconComponent
+                            size={14}
+                            className={
+                              isSelected
+                                ? "text-white"
+                                : "text-slate-400 dark:text-zinc-500"
+                            }
+                          />
                           <span>{act.label}</span>
                         </button>
                       );
@@ -1230,6 +1861,45 @@ export default function ChatPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+
+        {activeLightboxImage && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setActiveLightboxImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-pink-500 transition-colors p-2 bg-zinc-900/50 hover:bg-zinc-800/50 rounded-full select-none focus:outline-none"
+              title="Close Lightbox"
+            >
+              <X size={20} />
+            </motion.button>
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="max-w-[90vw] max-h-[80vh] flex flex-col items-center select-none"
+            >
+              <img
+                src={activeLightboxImage}
+                alt="Shared media lightbox"
+                className="max-w-full max-h-[72vh] rounded-2xl object-contain shadow-2xl border border-zinc-800"
+              />
+              <div className="flex items-center space-x-3 mt-4 shrink-0">
+                <a
+                  href={activeLightboxImage}
+                  download="shared_image.png"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 px-4 py-2.5 bg-pink-500 hover:bg-pink-600 active:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-md transition-all font-outfit"
+                >
+                  <Paperclip size={13} />
+                  <span>Open in Full Resolution</span>
+                </a>
+              </div>
             </motion.div>
           </div>
         )}

@@ -91,3 +91,23 @@ exports.generateSmartReplies = asyncHandler(async (req, res) => {
   const replies = await aiService.generateSmartReplies(req.user._id, userId);
   sendResponse(res, 200, replies, null, "Smart replies generated successfully");
 });
+
+exports.searchMessages = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { query } = req.query;
+
+  if (!userId) {
+    throw new AppError("Target User ID is required", 400);
+  }
+  if (!query || !query.trim()) {
+    throw new AppError("Search query is required", 400);
+  }
+
+  const results = await messageService.searchMessages(
+    req.user._id,
+    userId,
+    query.trim()
+  );
+
+  sendResponse(res, 200, results, null, "Messages searched successfully");
+});
