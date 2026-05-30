@@ -4,6 +4,7 @@ import {
   fallbackGifs,
   ACTIVITY_OPTIONS,
   DEFAULT_ACTIVITY,
+  EMOJI_REACTIONS,
 } from "../../constants";
 import { useMatchStore } from "../../store/useMatchStore";
 import { useMessageStore } from "../../store/useMessageStore";
@@ -29,6 +30,7 @@ import {
   Shield,
   Lock,
   Image,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallStore } from "../../store/useCallStore";
@@ -86,7 +88,9 @@ export default function ChatPage() {
     if (id) {
       const saved = localStorage.getItem(`reactions-${id}`);
       setReactions(saved ? JSON.parse(saved) : {});
-      setIsEncryptionVerified(false);
+      const verifiedSaved = localStorage.getItem("verified-chats");
+      const verifiedMap = verifiedSaved ? JSON.parse(verifiedSaved) : {};
+      setIsEncryptionVerified(!!verifiedMap[id]);
       setModalTab("info");
       setShowSearchBar(false);
       setSearchQuery("");
@@ -401,9 +405,16 @@ export default function ChatPage() {
                     />
                   </div>
                   <div className="overflow-hidden">
-                    <h2 className="text-base font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors truncate">
-                      {activeChatUser.name}
-                    </h2>
+                    <div className="flex items-center space-x-1.5 overflow-hidden">
+                      <h2 className="text-base font-bold text-slate-800 dark:text-zinc-200 leading-tight font-outfit group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors truncate">
+                        {activeChatUser.name}
+                      </h2>
+                      {isEncryptionVerified && (
+                        <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
+                          <ShieldCheck size={14} className="fill-emerald-500/10 stroke-[2.2]" />
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[11px] mt-0.5 font-medium truncate">
                       {isOnline ? (
                         <span className="text-green-500 font-semibold font-outfit">
@@ -858,21 +869,19 @@ export default function ChatPage() {
                                   isSentByMe ? "right-0" : "left-0"
                                 } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
                               >
-                                {["❤️", "👍", "😂", "😮", "😢", "🔥"].map(
-                                  (emoji) => (
-                                    <button
-                                      key={emoji}
-                                      type="button"
-                                      onClick={() => {
-                                        addReaction(message._id, emoji);
-                                        setActiveReactionPickerMessageId(null);
-                                      }}
-                                      className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
-                                    >
-                                      {emoji}
-                                    </button>
-                                  ),
-                                )}
+                                {EMOJI_REACTIONS.map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    type="button"
+                                    onClick={() => {
+                                      addReaction(message._id, emoji);
+                                      setActiveReactionPickerMessageId(null);
+                                    }}
+                                    className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -978,21 +987,19 @@ export default function ChatPage() {
                                 isSentByMe ? "right-0" : "left-0"
                               } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
                             >
-                              {["❤️", "👍", "😂", "😮", "😢", "🔥"].map(
-                                (emoji) => (
-                                  <button
-                                    key={emoji}
-                                    type="button"
-                                    onClick={() => {
-                                      addReaction(message._id, emoji);
-                                      setActiveReactionPickerMessageId(null);
-                                    }}
-                                    className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
-                                  >
-                                    {emoji}
-                                  </button>
-                                ),
-                              )}
+                              {EMOJI_REACTIONS.map((emoji) => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => {
+                                    addReaction(message._id, emoji);
+                                    setActiveReactionPickerMessageId(null);
+                                  }}
+                                  className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -1405,9 +1412,20 @@ export default function ChatPage() {
                           />
                         </div>
                         <div className="flex-grow">
-                          <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-base leading-snug font-outfit">
-                            {match.name}
-                          </h3>
+                          <div className="flex items-center space-x-1.5 overflow-hidden">
+                            <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-base leading-snug font-outfit truncate">
+                              {match.name}
+                            </h3>
+                            {(() => {
+                              const verifiedSaved = localStorage.getItem("verified-chats");
+                              const verifiedMap = verifiedSaved ? JSON.parse(verifiedSaved) : {};
+                              return verifiedMap[match._id] ? (
+                                <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
+                                  <ShieldCheck size={14} className="fill-emerald-500/10 stroke-[2.2]" />
+                                </span>
+                              ) : null;
+                            })()}
+                          </div>
                           <p className="text-xs text-slate-400 dark:text-slate-500 leading-none mt-1">
                             {isOnline ? "Active now" : "Offline"}
                           </p>
@@ -1640,6 +1658,16 @@ export default function ChatPage() {
                             whileTap={{ scale: 0.97 }}
                             type="button"
                             onClick={() => {
+                              const verifiedSaved =
+                                localStorage.getItem("verified-chats");
+                              const verifiedMap = verifiedSaved
+                                ? JSON.parse(verifiedSaved)
+                                : {};
+                              verifiedMap[activeChatUser._id] = true;
+                              localStorage.setItem(
+                                "verified-chats",
+                                JSON.stringify(verifiedMap),
+                              );
                               setIsEncryptionVerified(true);
                               confetti({
                                 particleCount: 60,

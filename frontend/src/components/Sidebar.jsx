@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, Loader, MessageCircle, X } from "lucide-react";
+import { Heart, Loader, MessageCircle, X, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useMatchStore } from "../store/useMatchStore.jsx";
 import { useAuthStore } from "../store/useAuthStore.jsx";
@@ -49,6 +49,9 @@ const Sidebar = () => {
               matches?.map((match) => {
                 const isOnline = onlineUsers.includes(match._id);
                 const isActive = activeChatUser?._id === match._id;
+                const verifiedSaved = localStorage.getItem("verified-chats");
+                const verifiedMap = verifiedSaved ? JSON.parse(verifiedSaved) : {};
+                const isChatVerified = !!verifiedMap[match._id];
 
                 return (
                   <Link
@@ -77,10 +80,17 @@ const Sidebar = () => {
                         />
                       </div>
 
-                      <div className="flex flex-col">
-                        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
-                          {match.name}
-                        </h3>
+                      <div className="flex flex-col overflow-hidden">
+                        <div className="flex items-center space-x-1 overflow-hidden">
+                          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">
+                            {match.name}
+                          </h3>
+                          {isChatVerified && (
+                            <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
+                              <ShieldCheck size={13} className="fill-emerald-500/10 stroke-[2.5]" />
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                           {isOnline ? "Active now" : "Offline"}
                         </p>
