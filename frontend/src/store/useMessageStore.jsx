@@ -10,6 +10,8 @@ export const useMessageStore = create((set, get) => ({
   unreadCount: 0,
   icebreakers: [],
   isLoadingIcebreakers: false,
+  smartReplies: [],
+  isLoadingSmartReplies: false,
   isTypingUser: false,
 
   setActiveChatUser: (user) => set({ activeChatUser: user, isTypingUser: false }),
@@ -28,7 +30,7 @@ export const useMessageStore = create((set, get) => ({
     }
   },
 
-  sendMessage: async (content, messageType = "text", mediaUrl = "") => {
+  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null) => {
     const { activeChatUser, messages } = get();
     if (!activeChatUser) return;
     try {
@@ -37,11 +39,43 @@ export const useMessageStore = create((set, get) => ({
         content,
         messageType,
         mediaUrl,
+        dateInfo,
       });
       const newMessage = response.data.data;
       set({ messages: [...messages, newMessage] });
     } catch (error) {
       showToast.error(error.response?.data?.message || "Failed to send message");
+    }
+  },
+
+  respondToDateProposal: async (messageId, status) => {
+    try {
+      const response = await axiosInstance.post("/messages/date/respond", {
+        messageId,
+        status,
+      });
+      const updatedMessage = response.data.data;
+      
+      const { messages } = get();
+      const newMessages = messages.map((m) =>
+        m._id === messageId ? updatedMessage : m
+      );
+      set({ messages: newMessages });
+      showToast.success(`Date proposal ${status}! 📅`);
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to respond to date proposal");
+    }
+  },
+
+  getSmartReplies: async (userId) => {
+    try {
+      set({ isLoadingSmartReplies: true, smartReplies: [] });
+      const response = await axiosInstance.post(`/messages/smart-replies/${userId}`);
+      set({ smartReplies: response.data.data });
+    } catch (error) {
+      console.error("Failed to generate smart replies:", error);
+    } finally {
+      set({ isLoadingSmartReplies: false });
     }
   },
 
@@ -88,6 +122,20 @@ export const useMessageStore = create((set, get) => ({
         set({ isTypingUser: isTyping });
       }
     });
+
+    socket.off("dateStatusUpdate");
+    socket.on("dateStatusUpdate", ({ messageId, status, message }) => {
+      const { activeChatUser, messages } = get();
+      const newMessages = messages.map((m) =>
+        m._id === messageId ? message : m
+      );
+      set({ messages: newMessages });
+
+      // If active chat and date accepted, we can celebrate!
+      if (status === "accepted" && activeChatUser && message.sender._id === activeChatUser._id) {
+        showToast.match(`💖 Date Proposal Confirmed with ${activeChatUser.name}!`);
+      }
+    });
   },
 
   unsubscribeFromMessages: () => {
@@ -95,6 +143,7 @@ export const useMessageStore = create((set, get) => ({
     if (socket) {
       socket.off("newMessage");
       socket.off("userTyping");
+      socket.off("dateStatusUpdate");
     }
   },
 

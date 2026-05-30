@@ -5,7 +5,7 @@ const AppError = require("../utils/appError");
 const sendResponse = require("../utils/responseHandler");
 
 exports.sendMessage = asyncHandler(async (req, res) => {
-  const { content, receiverId, messageType, mediaUrl } = req.body;
+  const { content, receiverId, messageType, mediaUrl, dateInfo } = req.body;
 
   if (!receiverId) {
     throw new AppError("Receiver ID is required", 400);
@@ -16,7 +16,8 @@ exports.sendMessage = asyncHandler(async (req, res) => {
     receiverId,
     content,
     messageType,
-    mediaUrl
+    mediaUrl,
+    dateInfo
   );
 
   sendResponse(res, 200, message, null, "Message sent successfully");
@@ -62,4 +63,31 @@ exports.generateIcebreakers = asyncHandler(async (req, res) => {
 
   const icebreakers = await aiService.generateIcebreakers(req.user._id, userId);
   sendResponse(res, 200, icebreakers, null, "Icebreakers generated successfully");
+});
+
+exports.respondToDateProposal = asyncHandler(async (req, res) => {
+  const { messageId, status } = req.body;
+
+  if (!messageId || !status) {
+    throw new AppError("Message ID and status are required", 400);
+  }
+
+  const updatedMessage = await messageService.respondToDateProposal(
+    messageId,
+    req.user._id,
+    status
+  );
+
+  sendResponse(res, 200, updatedMessage, null, "Date response saved successfully");
+});
+
+exports.generateSmartReplies = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    throw new AppError("Target User ID is required", 400);
+  }
+
+  const replies = await aiService.generateSmartReplies(req.user._id, userId);
+  sendResponse(res, 200, replies, null, "Smart replies generated successfully");
 });

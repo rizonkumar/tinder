@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema(
     },
     messageType: {
       type: String,
-      enum: ["text", "image", "audio", "video"],
+      enum: ["text", "image", "audio", "video", "date_proposal"],
       default: "text",
     },
     mediaUrl: {
@@ -28,6 +28,17 @@ const messageSchema = new mongoose.Schema(
     read: {
       type: Boolean,
       default: false,
+    },
+    dateInfo: {
+      date: String,
+      time: String,
+      location: String,
+      activity: String,
+      status: {
+        type: String,
+        enum: ["pending", "accepted", "declined"],
+        default: "pending",
+      },
     },
   },
   { timestamps: true }
