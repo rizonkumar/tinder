@@ -1,4 +1,5 @@
-const AppError = require("../utils/appError");
+import AppError from "../utils/appError.js";
+import config from "../config/env.js";
 
 const errorHandler = (err, req, res, next) => {
   let error = { ...err, message: err.message, stack: err.stack };
@@ -37,7 +38,7 @@ const errorHandler = (err, req, res, next) => {
 
   error.statusCode = error.statusCode || 500;
 
-  if (process.env.NODE_ENV === "development") {
+  if (config.env === "development") {
     return res.status(error.statusCode).json({
       success: false,
       message: error.message,
@@ -60,4 +61,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = errorHandler;
+export default errorHandler;

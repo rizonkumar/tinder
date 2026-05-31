@@ -1,5 +1,5 @@
-const Joi = require("joi");
-const { GENDERS, GENDER_PREFERENCES } = require("../constants/genders");
+import Joi from "joi";
+import { GENDERS, GENDER_PREFERENCES } from "../constants/genders.js";
 
 const signupSchema = Joi.object({
   name: Joi.string().trim().required().messages({
@@ -44,7 +44,4 @@ const signinSchema = Joi.object({
   }),
 });
 
-module.exports = {
-  signupSchema,
-  signinSchema,
-};
+export { signupSchema, signinSchema };

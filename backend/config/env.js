@@ -1,5 +1,5 @@
-const Joi = require("joi");
-const dotenv = require("dotenv");
+import Joi from "joi";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -35,4 +35,4 @@ const config = {
   geminiApiKey: envVars.GEMINI_API_KEY,
 };
 
-module.exports = Object.freeze(config);
+export default Object.freeze(config);

@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const { MESSAGE_TYPES } = require("../constants/message-types");
-const { DATE_STATUSES } = require("../constants/date-statuses");
+import mongoose from "mongoose";
+import { MESSAGE_TYPES } from "../constants/message-types.js";
+import { DATE_STATUSES } from "../constants/date-statuses.js";
 
 const messageSchema = new mongoose.Schema(
   {
@@ -51,4 +51,4 @@ messageSchema.index({ createdAt: -1 });
 
 const Message = mongoose.model("Message", messageSchema);
 
-module.exports = Message;
+export default Message;

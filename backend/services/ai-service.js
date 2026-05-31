@@ -1,8 +1,8 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const userRepository = require("../repositories/user-repository");
-const messageRepository = require("../repositories/message-repository");
-const AppError = require("../utils/appError");
-const config = require("../config/env");
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import userRepository from "../repositories/user-repository.js";
+import messageRepository from "../repositories/message-repository.js";
+import AppError from "../utils/appError.js";
+import config from "../config/env.js";
 
 class AIService {
   constructor() {
@@ -13,21 +13,15 @@ class AIService {
   }
 
   async generateIcebreakers(senderId, receiverId) {
-    const sender = await userRepository.findById(
-      senderId,
-      "name age bio interests",
-    );
-    const receiver = await userRepository.findById(
-      receiverId,
-      "name age bio interests",
-    );
+    const sender = await userRepository.findById(senderId, "name age bio interests");
+    const receiver = await userRepository.findById(receiverId, "name age bio interests");
 
     if (!sender || !receiver) {
       throw new AppError("Users not found for generating icebreakers", 404);
     }
 
     const sharedInterests = sender.interests.filter((interest) =>
-      receiver.interests?.includes(interest),
+      receiver.interests?.includes(interest)
     );
 
     if (this.genAI) {
@@ -80,27 +74,27 @@ Requirements:
     if (sharedInterests.length > 0) {
       list.push(
         `Hey ${receiver.name}! I noticed we both love ${sharedInterests[0]}. What got you into that?`,
-        `Hi ${receiver.name}! Always exciting to meet a fellow ${sharedInterests[0]} fan. What's your favorite thing about it?`,
+        `Hi ${receiver.name}! Always exciting to meet a fellow ${sharedInterests[0]} fan. What's your favorite thing about it?`
       );
     } else if (receiver.interests && receiver.interests.length > 0) {
       list.push(
         `Hey ${receiver.name}! I see you're interested in ${receiver.interests[0]}. I'd love to hear more about that!`,
-        `Hi ${receiver.name}! Your interest in ${receiver.interests[0]} caught my eye. What's a must-try experience in that?`,
+        `Hi ${receiver.name}! Your interest in ${receiver.interests[0]} caught my eye. What's a must-try experience in that?`
       );
     } else {
       list.push(
         `Hey ${receiver.name}! I really liked your profile. How is your week going?`,
-        `Hi ${receiver.name}! If you could travel anywhere tomorrow, where would you go?`,
+        `Hi ${receiver.name}! If you could travel anywhere tomorrow, where would you go?`
       );
     }
 
     if (receiver.bio) {
       list.push(
-        `Hey ${receiver.name}! Your bio stood out to me. Let's trade some fun stories!`,
+        `Hey ${receiver.name}! Your bio stood out to me. Let's trade some fun stories!`
       );
     } else {
       list.push(
-        `Hey ${receiver.name}! Let's skip the small talk: what's your ultimate comfort food?`,
+        `Hey ${receiver.name}! Let's skip the small talk: what's your ultimate comfort food?`
       );
     }
 
@@ -108,31 +102,23 @@ Requirements:
   }
 
   async generateSmartReplies(senderId, receiverId) {
-    const sender = await userRepository.findById(
-      senderId,
-      "name age bio interests",
-    );
-    const receiver = await userRepository.findById(
-      receiverId,
-      "name age bio interests",
-    );
+    const sender = await userRepository.findById(senderId, "name age bio interests");
+    const receiver = await userRepository.findById(receiverId, "name age bio interests");
 
     if (!sender || !receiver) {
       throw new AppError("Users not found for generating smart replies", 404);
     }
 
-    const recentMessages = await messageRepository.findRecent(
-      senderId,
-      receiverId,
-      5,
-    );
+    // Retrieve recent conversation history via messageRepository
+    const recentMessages = await messageRepository.findRecent(senderId, receiverId, 5);
 
+    // Reverse to get chronological order
     recentMessages.reverse();
 
     const formattedHistory = recentMessages
       .map(
         (m) =>
-          `${m.sender.toString() === senderId.toString() ? sender.name : receiver.name}: ${m.content}`,
+          `${m.sender.toString() === senderId.toString() ? sender.name : receiver.name}: ${m.content}`
       )
       .join("\n");
 
@@ -175,10 +161,7 @@ Requirements:
           return parsed.slice(0, 3);
         }
       } catch (error) {
-        console.error(
-          "Gemini API smart replies error, using fallback:",
-          error.message,
-        );
+        console.error("Gemini API smart replies error, using fallback:", error.message);
       }
     }
 
@@ -203,4 +186,4 @@ Requirements:
   }
 }
 
-module.exports = new AIService();
+export default new AIService();

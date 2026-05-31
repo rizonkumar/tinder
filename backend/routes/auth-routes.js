@@ -1,13 +1,13 @@
-const express = require("express");
-const { protectRoute } = require("../middleware/auth-middleware");
-const validate = require("../middleware/validation-middleware");
-const { signupSchema, signinSchema } = require("../validators/auth-validator");
-const {
+import express from "express";
+import { protectRoute } from "../middleware/auth-middleware.js";
+import validate from "../middleware/validation-middleware.js";
+import { signupSchema, signinSchema } from "../validators/auth-validator.js";
+import {
   signUp,
   signIn,
   signOut,
   userInformation,
-} = require("../controllers/auth-controller");
+} from "../controllers/auth-controller.js";
 
 const router = express.Router();
 
@@ -17,4 +17,4 @@ router.post("/logout", signOut);
 
 router.get("/me", protectRoute, userInformation);
 
-module.exports = router;
+export default router;

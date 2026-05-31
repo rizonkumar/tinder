@@ -1,4 +1,4 @@
-const UserDto = require("./user-dto");
+import UserDto from "./user-dto.js";
 
 class SwipeResultDto {
   constructor(result) {
@@ -13,6 +13,7 @@ class ProfileDto {
   constructor(user, isSuperLikedByTarget = false) {
     const userObj = typeof user.toObject === "function" ? user.toObject() : user;
     this.id = userObj._id.toString();
+    this._id = this.id;
     this.name = userObj.name;
     this.age = userObj.age;
     this.gender = userObj.gender;
@@ -23,7 +24,4 @@ class ProfileDto {
   }
 }
 
-module.exports = {
-  SwipeResultDto,
-  ProfileDto,
-};
+export { SwipeResultDto, ProfileDto };

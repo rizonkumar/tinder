@@ -1,11 +1,11 @@
-const messageRepository = require("../repositories/message-repository");
-const AppError = require("../utils/appError");
-const { getReceiverSocketId, io } = require("../socket/socket");
-const cloudinary = require("../config/cloudinary");
-const { SOCKET_EVENTS } = require("../constants/socket-events");
-const { MESSAGE_TYPES } = require("../constants/message-types");
-const { DATE_STATUSES } = require("../constants/date-statuses");
-const MessageDto = require("../dtos/message-dto");
+import messageRepository from "../repositories/message-repository.js";
+import AppError from "../utils/appError.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
+import cloudinary from "../config/cloudinary.js";
+import { SOCKET_EVENTS } from "../constants/socket-events.js";
+import { MESSAGE_TYPES } from "../constants/message-types.js";
+import { DATE_STATUSES } from "../constants/date-statuses.js";
+import MessageDto from "../dtos/message-dto.js";
 
 class MessageService {
   async sendMessage(senderId, receiverId, content, messageType = MESSAGE_TYPES.TEXT, mediaUrl = "", dateInfo = null) {
@@ -139,4 +139,4 @@ class MessageService {
   }
 }
 
-module.exports = new MessageService();
+export default new MessageService();

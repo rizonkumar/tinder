@@ -1,5 +1,5 @@
-const Joi = require("joi");
-const { GENDERS, GENDER_PREFERENCES } = require("../constants/genders");
+import Joi from "joi";
+import { GENDERS, GENDER_PREFERENCES } from "../constants/genders.js";
 
 const updateProfileSchema = Joi.object({
   name: Joi.string().trim().optional(),
@@ -13,6 +13,4 @@ const updateProfileSchema = Joi.object({
   interests: Joi.array().items(Joi.string().trim()).optional(),
 });
 
-module.exports = {
-  updateProfileSchema,
-};
+export { updateProfileSchema };

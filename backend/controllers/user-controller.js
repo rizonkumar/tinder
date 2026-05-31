@@ -1,23 +1,23 @@
-const asyncHandler = require("../utils/asyncHandler");
-const userService = require("../services/user-service");
-const sendResponse = require("../utils/responseHandler");
+import asyncHandler from "../utils/asyncHandler.js";
+import userService from "../services/user-service.js";
+import sendResponse from "../utils/responseHandler.js";
 
-exports.updateProfile = asyncHandler(async (req, res) => {
+export const updateProfile = asyncHandler(async (req, res) => {
   const updatedUser = await userService.updateProfile(req.user._id, req.body);
   sendResponse(res, 200, updatedUser, "Profile updated successfully");
 });
 
-exports.toggleIncognito = asyncHandler(async (req, res) => {
+export const toggleIncognito = asyncHandler(async (req, res) => {
   const updatedUser = await userService.toggleIncognito(req.user._id);
   sendResponse(res, 200, updatedUser, "Incognito mode toggled successfully");
 });
 
-exports.toggleGold = asyncHandler(async (req, res) => {
+export const toggleGold = asyncHandler(async (req, res) => {
   const updatedUser = await userService.toggleGold(req.user._id);
   sendResponse(res, 200, updatedUser, "Gold membership toggled successfully");
 });
 
-exports.getStats = asyncHandler(async (req, res) => {
+export const getStats = asyncHandler(async (req, res) => {
   const stats = await userService.getStats(req.user._id);
   sendResponse(res, 200, stats, "User statistics retrieved successfully");
 });

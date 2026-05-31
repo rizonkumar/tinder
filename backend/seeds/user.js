@@ -1,8 +1,12 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const User = require("../models/user-model.js");
-const dotenv = require("dotenv");
-const path = require("path");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import User from "../models/user-model.js";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
@@ -37,6 +41,7 @@ const maleNames = [
   "Ranveer",
   "Ranbir",
   "Vikram",
+  "Akshay",
 ];
 
 const femaleNames = [
@@ -87,6 +92,7 @@ const interestsPool = [
   "Hiking",
   "Dancing",
   "Cricket",
+  "Cooking",
 ];
 
 const genderPreferences = ["male", "female", "both"];
@@ -158,7 +164,7 @@ const seedUsers = async () => {
     const allUsers = [...maleUsers, ...femaleUsers];
 
     await User.insertMany(allUsers);
-    console.log("Database seeded successfully with 60 dummy profiles");
+    console.log("Database seeded successfully with dummy profiles");
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {

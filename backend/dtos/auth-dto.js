@@ -1,4 +1,4 @@
-const UserDto = require("./user-dto");
+import UserDto from "./user-dto.js";
 
 class AuthDto {
   constructor(user, token) {
@@ -7,4 +7,4 @@ class AuthDto {
   }
 }
 
-module.exports = AuthDto;
+export default AuthDto;

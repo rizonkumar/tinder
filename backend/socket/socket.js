@@ -1,7 +1,7 @@
-const { Server } = require("socket.io");
-const http = require("http");
-const express = require("express");
-const { SOCKET_EVENTS } = require("../constants/socket-events");
+import { Server } from "socket.io";
+import http from "http";
+import express from "express";
+import { SOCKET_EVENTS } from "../constants/socket-events.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -88,4 +88,4 @@ io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
   });
 });
 
-module.exports = { app, server, io, getReceiverSocketId };
+export { app, server, io, getReceiverSocketId };

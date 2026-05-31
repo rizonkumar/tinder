@@ -1,4 +1,4 @@
-const AppError = require("../utils/appError");
+import AppError from "../utils/appError.js";
 
 const validate = (schema, source = "body") => {
   return (req, res, next) => {
@@ -19,4 +19,4 @@ const validate = (schema, source = "body") => {
   };
 };
 
-module.exports = validate;
+export default validate;

@@ -4,6 +4,7 @@ class MessageDto {
     const msgObj = typeof message.toObject === "function" ? message.toObject() : message;
 
     this.id = msgObj._id.toString();
+    this._id = this.id;
     this.sender = this._mapUserRef(msgObj.sender);
     this.receiver = this._mapUserRef(msgObj.receiver);
     this.content = msgObj.content;
@@ -32,6 +33,7 @@ class MessageDto {
     if (typeof ref === "object" && ref._id) {
       return {
         id: ref._id.toString(),
+        _id: ref._id.toString(),
         name: ref.name,
         image: ref.image || "",
       };
@@ -40,4 +42,4 @@ class MessageDto {
   }
 }
 
-module.exports = MessageDto;
+export default MessageDto;

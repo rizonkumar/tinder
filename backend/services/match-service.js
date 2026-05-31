@@ -1,11 +1,11 @@
-const userRepository = require("../repositories/user-repository");
-const AppError = require("../utils/appError");
-const { getReceiverSocketId, io } = require("../socket/socket");
-const { SOCKET_EVENTS } = require("../constants/socket-events");
-const { SWIPE_ACTIONS } = require("../constants/swipe-actions");
-const { GENDERS, GENDER_PREFERENCES } = require("../constants/genders");
-const UserDto = require("../dtos/user-dto");
-const { SwipeResultDto, ProfileDto } = require("../dtos/match-dto");
+import userRepository from "../repositories/user-repository.js";
+import AppError from "../utils/appError.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
+import { SOCKET_EVENTS } from "../constants/socket-events.js";
+import { SWIPE_ACTIONS } from "../constants/swipe-actions.js";
+import { GENDERS, GENDER_PREFERENCES } from "../constants/genders.js";
+import UserDto from "../dtos/user-dto.js";
+import { SwipeResultDto, ProfileDto } from "../dtos/match-dto.js";
 
 class MatchService {
   _emitMatchCelebration(userA, userB) {
@@ -356,4 +356,4 @@ class MatchService {
   }
 }
 
-module.exports = new MatchService();
+export default new MatchService();

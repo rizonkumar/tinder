@@ -1,9 +1,9 @@
-const asyncHandler = require("../utils/asyncHandler");
-const messageService = require("../services/message-service");
-const aiService = require("../services/ai-service");
-const sendResponse = require("../utils/responseHandler");
+import asyncHandler from "../utils/asyncHandler.js";
+import messageService from "../services/message-service.js";
+import aiService from "../services/ai-service.js";
+import sendResponse from "../utils/responseHandler.js";
 
-exports.sendMessage = asyncHandler(async (req, res) => {
+export const sendMessage = asyncHandler(async (req, res) => {
   const { content, receiverId, messageType, mediaUrl, dateInfo } = req.body;
 
   const message = await messageService.sendMessage(
@@ -18,7 +18,7 @@ exports.sendMessage = asyncHandler(async (req, res) => {
   sendResponse(res, 200, message, "Message sent successfully");
 });
 
-exports.getConversation = asyncHandler(async (req, res) => {
+export const getConversation = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const conversation = await messageService.getConversation(req.user._id, userId);
@@ -32,7 +32,7 @@ exports.getConversation = asyncHandler(async (req, res) => {
   );
 });
 
-exports.getUnreadCount = asyncHandler(async (req, res) => {
+export const getUnreadCount = asyncHandler(async (req, res) => {
   const unreadCount = await messageService.getUnreadCount(req.user._id);
 
   sendResponse(
@@ -43,14 +43,14 @@ exports.getUnreadCount = asyncHandler(async (req, res) => {
   );
 });
 
-exports.generateIcebreakers = asyncHandler(async (req, res) => {
+export const generateIcebreakers = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const icebreakers = await aiService.generateIcebreakers(req.user._id, userId);
   sendResponse(res, 200, icebreakers, "Icebreakers generated successfully");
 });
 
-exports.respondToDateProposal = asyncHandler(async (req, res) => {
+export const respondToDateProposal = asyncHandler(async (req, res) => {
   const { messageId, status } = req.body;
 
   const updatedMessage = await messageService.respondToDateProposal(
@@ -62,14 +62,14 @@ exports.respondToDateProposal = asyncHandler(async (req, res) => {
   sendResponse(res, 200, updatedMessage, "Date response saved successfully");
 });
 
-exports.generateSmartReplies = asyncHandler(async (req, res) => {
+export const generateSmartReplies = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   const replies = await aiService.generateSmartReplies(req.user._id, userId);
   sendResponse(res, 200, replies, "Smart replies generated successfully");
 });
 
-exports.searchMessages = asyncHandler(async (req, res) => {
+export const searchMessages = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const { query } = req.query;
 

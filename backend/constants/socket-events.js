@@ -1,16 +1,19 @@
-const SOCKET_EVENTS = {
+export const SOCKET_EVENTS = {
   CONNECTION: "connection",
   DISCONNECT: "disconnect",
   GET_ONLINE_USERS: "getOnlineUsers",
-
+  
+  // Chat events
   TYPING: "typing",
   USER_TYPING: "userTyping",
   NEW_MESSAGE: "newMessage",
-
+  
+  // Match & interactions
   MATCH_CELEBRATION: "matchCelebration",
   SUPER_LIKE_RECEIVED: "superLikeReceived",
   DATE_STATUS_UPDATE: "dateStatusUpdate",
-
+  
+  // Call / WebRTC events
   CALL_USER: "callUser",
   INCOMING_CALL: "incomingCall",
   ACCEPT_CALL: "acceptCall",
@@ -20,8 +23,4 @@ const SOCKET_EVENTS = {
   DISCONNECT_CALL: "disconnectCall",
   CALL_ENDED: "callEnded",
   CALL_REACTION: "callReaction",
-};
-
-module.exports = {
-  SOCKET_EVENTS,
 };

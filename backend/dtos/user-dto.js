@@ -5,6 +5,7 @@ class UserDto {
       typeof user.toObject === "function" ? user.toObject() : user;
 
     this.id = userObj._id.toString();
+    this._id = this.id;
     this.name = userObj.name;
     this.email = userObj.email;
     this.age = userObj.age;
@@ -39,6 +40,7 @@ class UserDto {
         if (typeof ref === "object" && ref._id) {
           return {
             id: ref._id.toString(),
+            _id: ref._id.toString(),
             name: ref.name,
             image: ref.image || "",
             bio: ref.bio || "",
@@ -51,4 +53,4 @@ class UserDto {
   }
 }
 
-module.exports = UserDto;
+export default UserDto;

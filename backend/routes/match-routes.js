@@ -1,10 +1,9 @@
-const express = require("express");
-const rateLimit = require("express-rate-limit");
-
-const { protectRoute } = require("../middleware/auth-middleware");
-const validate = require("../middleware/validation-middleware");
-const { swipeParamsSchema, exploreQuerySchema } = require("../validators/match-validator");
-const {
+import express from "express";
+import rateLimit from "express-rate-limit";
+import { protectRoute } from "../middleware/auth-middleware.js";
+import validate from "../middleware/validation-middleware.js";
+import { swipeParamsSchema, exploreQuerySchema } from "../validators/match-validator.js";
+import {
   swipeRight,
   swipeLeft,
   superLike,
@@ -14,7 +13,7 @@ const {
   rewind,
   getLikedUsers,
   getWhoLikedMe,
-} = require("../controllers/match-controller");
+} from "../controllers/match-controller.js";
 
 const router = express.Router();
 
@@ -53,4 +52,4 @@ router.get("/user-profiles", protectRoute, getUserProfiles);
 router.get("/explore", protectRoute, validate(exploreQuerySchema, "query"), getExploreProfiles);
 router.post("/rewind", protectRoute, rewind);
 
-module.exports = router;
+export default router;

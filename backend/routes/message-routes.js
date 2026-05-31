@@ -1,8 +1,8 @@
-const express = require("express");
-const { protectRoute } = require("../middleware/auth-middleware");
-const validate = require("../middleware/validation-middleware");
-const { sendMessageSchema, respondProposalSchema } = require("../validators/message-validator");
-const {
+import express from "express";
+import { protectRoute } from "../middleware/auth-middleware.js";
+import validate from "../middleware/validation-middleware.js";
+import { sendMessageSchema, respondProposalSchema, searchMessagesSchema } from "../validators/message-validator.js";
+import {
   sendMessage,
   getConversation,
   getUnreadCount,
@@ -10,7 +10,7 @@ const {
   respondToDateProposal,
   generateSmartReplies,
   searchMessages,
-} = require("../controllers/message-controller");
+} from "../controllers/message-controller.js";
 
 const router = express.Router();
 
@@ -22,6 +22,6 @@ router.get("/unread-count", getUnreadCount);
 router.post("/icebreakers/:userId", generateIcebreakers);
 router.post("/date/respond", validate(respondProposalSchema), respondToDateProposal);
 router.post("/smart-replies/:userId", generateSmartReplies);
-router.get("/search/:userId", searchMessages);
+router.get("/search/:userId", validate(searchMessagesSchema, "query"), searchMessages);
 
-module.exports = router;
+export default router;

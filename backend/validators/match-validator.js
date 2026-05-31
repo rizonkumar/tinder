@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from "joi";
 
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 
@@ -18,7 +18,4 @@ const exploreQuerySchema = Joi.object({
   }),
 });
 
-module.exports = {
-  swipeParamsSchema,
-  exploreQuerySchema,
-};
+export { swipeParamsSchema, exploreQuerySchema };

@@ -1,4 +1,4 @@
-const User = require("../models/user-model");
+import User from "../models/user-model.js";
 
 class UserRepository {
   async findById(id, selectFields = "", populateOptions = []) {
@@ -55,4 +55,4 @@ class UserRepository {
   }
 }
 
-module.exports = new UserRepository();
+export default new UserRepository();

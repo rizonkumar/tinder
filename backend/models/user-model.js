@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const { GENDERS, GENDER_PREFERENCES } = require("../constants/genders");
-const { SWIPE_ACTIONS } = require("../constants/swipe-actions");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import { GENDERS, GENDER_PREFERENCES } from "../constants/genders.js";
+import { SWIPE_ACTIONS } from "../constants/swipe-actions.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -108,4 +108,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+export default User;

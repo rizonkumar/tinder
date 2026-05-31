@@ -1,8 +1,7 @@
-const Joi = require("joi");
-const { MESSAGE_TYPES } = require("../constants/message-types");
-const { DATE_STATUSES } = require("../constants/date-statuses");
+import Joi from "joi";
+import { MESSAGE_TYPES } from "../constants/message-types.js";
+import { DATE_STATUSES } from "../constants/date-statuses.js";
 
-// Mongo ID regex helper
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 
 const sendMessageSchema = Joi.object({
@@ -25,10 +24,14 @@ const sendMessageSchema = Joi.object({
       .valid(...Object.values(DATE_STATUSES))
       .default(DATE_STATUSES.PENDING)
       .optional(),
-  }).optional(),
+  })
+    .allow(null)
+    .optional(),
 }).custom((value, helpers) => {
-  // Custom business rules: text messages must have non-empty content if there's no mediaUrl
-  if (value.messageType === MESSAGE_TYPES.TEXT && (!value.content || !value.content.trim())) {
+  if (
+    value.messageType === MESSAGE_TYPES.TEXT &&
+    (!value.content || !value.content.trim())
+  ) {
     return helpers.error("any.custom", {
       message: "Message content cannot be empty for text messages",
     });
@@ -56,7 +59,11 @@ const respondProposalSchema = Joi.object({
     }),
 });
 
-module.exports = {
-  sendMessageSchema,
-  respondProposalSchema,
-};
+const searchMessagesSchema = Joi.object({
+  query: Joi.string().trim().min(1).required().messages({
+    "any.required": "Search query is required",
+    "string.empty": "Search query cannot be empty",
+  }),
+});
+
+export { sendMessageSchema, respondProposalSchema, searchMessagesSchema };

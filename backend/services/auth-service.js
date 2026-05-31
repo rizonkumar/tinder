@@ -1,8 +1,8 @@
-const userRepository = require("../repositories/user-repository");
-const AppError = require("../utils/appError");
-const signInToken = require("../utils/signInToken");
-const AuthDto = require("../dtos/auth-dto");
-const UserDto = require("../dtos/user-dto");
+import userRepository from "../repositories/user-repository.js";
+import AppError from "../utils/appError.js";
+import signInToken from "../utils/signInToken.js";
+import AuthDto from "../dtos/auth-dto.js";
+import UserDto from "../dtos/user-dto.js";
 
 class AuthService {
   async signup(userData) {
@@ -68,4 +68,4 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService();
+export default new AuthService();

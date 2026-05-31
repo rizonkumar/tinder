@@ -1,7 +1,7 @@
-const cloudinary = require("../config/cloudinary");
-const userRepository = require("../repositories/user-repository");
-const AppError = require("../utils/appError");
-const UserDto = require("../dtos/user-dto");
+import cloudinary from "../config/cloudinary.js";
+import userRepository from "../repositories/user-repository.js";
+import AppError from "../utils/appError.js";
+import UserDto from "../dtos/user-dto.js";
 
 class UserService {
   async updateProfile(userId, userData) {
@@ -74,4 +74,4 @@ class UserService {
   }
 }
 
-module.exports = new UserService();
+export default new UserService();

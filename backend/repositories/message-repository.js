@@ -1,4 +1,4 @@
-const Message = require("../models/message-model");
+import Message from "../models/message-model.js";
 
 class MessageRepository {
   async findById(id, populateOptions = []) {
@@ -91,4 +91,4 @@ class MessageRepository {
   }
 }
 
-module.exports = new MessageRepository();
+export default new MessageRepository();

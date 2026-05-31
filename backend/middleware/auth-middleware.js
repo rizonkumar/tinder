@@ -1,10 +1,10 @@
-const jwt = require("jsonwebtoken");
-const userRepository = require("../repositories/user-repository");
-const AppError = require("../utils/appError");
-const asyncHandler = require("../utils/asyncHandler");
-const config = require("../config/env");
+import jwt from "jsonwebtoken";
+import userRepository from "../repositories/user-repository.js";
+import AppError from "../utils/appError.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import config from "../config/env.js";
 
-exports.protectRoute = asyncHandler(async (req, res, next) => {
+export const protectRoute = asyncHandler(async (req, res, next) => {
   let token;
 
   if (req.cookies.jwt) {

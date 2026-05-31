@@ -1,15 +1,15 @@
-const config = require("./config/env");
-const express = require("express");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const { app, server } = require("./socket/socket.js");
-const authRoutes = require("./routes/auth-routes.js");
-const userRoutes = require("./routes/user-routes.js");
-const matchRoutes = require("./routes/match-routes.js");
-const messageRoutes = require("./routes/message-routes.js");
-const connectDB = require("./config/db.js");
-const AppError = require("./utils/appError.js");
-const errorHandler = require("./middleware/errorHandler.js");
+import config from "./config/env.js";
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { app, server } from "./socket/socket.js";
+import authRoutes from "./routes/auth-routes.js";
+import userRoutes from "./routes/user-routes.js";
+import matchRoutes from "./routes/match-routes.js";
+import messageRoutes from "./routes/message-routes.js";
+import connectDB from "./config/db.js";
+import AppError from "./utils/appError.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 app.use(
   cors({
