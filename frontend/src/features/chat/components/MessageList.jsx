@@ -227,16 +227,30 @@ function ReactionPicker({
   isSentByMe,
   activeReactionPickerMessageId,
   onAddReaction,
-  onToggleReactionPicker,
 }) {
+  const pickerRef = useRef(null);
+  const [renderDownwards, setRenderDownwards] = useState(false);
+
+  useEffect(() => {
+    if (pickerRef.current) {
+      const rect = pickerRef.current.getBoundingClientRect();
+      if (rect.top < 160) {
+        setRenderDownwards(true);
+      }
+    }
+  }, []);
+
   return (
     <AnimatePresence>
       {activeReactionPickerMessageId === messageId && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+          ref={pickerRef}
+          initial={{ opacity: 0, scale: 0.9, y: renderDownwards ? -10 : 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 10 }}
-          className={`absolute -top-11 ${
+          exit={{ opacity: 0, scale: 0.9, y: renderDownwards ? -10 : 10 }}
+          className={`absolute ${
+            renderDownwards ? "top-full mt-2.5" : "-top-11"
+          } ${
             isSentByMe ? "right-0" : "left-0"
           } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
         >
@@ -311,7 +325,10 @@ function MessageActionsMenu({
     if (menuRef.current) {
       const rect = menuRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      if (rect.bottom > viewportHeight - 120 || rect.top > viewportHeight * 0.6) {
+      if (
+        rect.bottom > viewportHeight - 120 ||
+        rect.top > viewportHeight * 0.6
+      ) {
         setRenderUpwards(true);
       }
     }
@@ -511,7 +528,7 @@ function VoiceNoteBubble({
         isSentByMe ? "justify-end" : "justify-start"
       } my-2.5 relative group items-center`}
     >
-      {!isSentByMe && (
+      {!isSentByMe && !message.isDeleted && (
         <div className="order-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 select-none shrink-0 flex items-center space-x-1">
           <ReactionTriggerButton
             messageId={message._id}
@@ -659,7 +676,7 @@ function VoiceNoteBubble({
         />
       </div>
 
-      {isSentByMe && (
+      {isSentByMe && !message.isDeleted && (
         <div className="order-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2 select-none shrink-0 flex items-center space-x-1">
           <ReactionTriggerButton
             messageId={message._id}
@@ -691,7 +708,7 @@ function ImageBubble({
       id={`msg-${message._id}`}
       className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-2.5 relative group items-center`}
     >
-      {!isSentByMe && (
+      {!isSentByMe && !message.isDeleted && (
         <div className="order-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 select-none shrink-0">
           <ReactionTriggerButton
             messageId={message._id}
@@ -703,7 +720,7 @@ function ImageBubble({
       )}
 
       <div
-        className={`max-w-[65%] rounded-2xl overflow-hidden shadow-sm border relative transition-all duration-300 ${
+        className={`max-w-[65%] rounded-2xl shadow-sm border relative transition-all duration-300 ${
           isSentByMe
             ? "bg-pink-500 p-1 rounded-tr-none order-1"
             : "bg-white dark:bg-zinc-900 p-1 rounded-tl-none order-1 border-slate-200/30 dark:border-zinc-800/50"
@@ -797,7 +814,7 @@ function ImageBubble({
         />
       </div>
 
-      {isSentByMe && (
+      {isSentByMe && !message.isDeleted && (
         <div className="order-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2 select-none shrink-0">
           <ReactionTriggerButton
             messageId={message._id}
@@ -829,7 +846,7 @@ function MessageBubble({
       id={`msg-${message._id}`}
       className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-2 relative group items-center`}
     >
-      {!isSentByMe && (
+      {!isSentByMe && !message.isDeleted && (
         <div className="order-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 select-none shrink-0 flex items-center space-x-1">
           <ReactionTriggerButton
             messageId={message._id}
@@ -924,7 +941,7 @@ function MessageBubble({
         />
       </div>
 
-      {isSentByMe && (
+      {isSentByMe && !message.isDeleted && (
         <div className="order-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2 select-none shrink-0 flex items-center space-x-1">
           <ReactionTriggerButton
             messageId={message._id}
