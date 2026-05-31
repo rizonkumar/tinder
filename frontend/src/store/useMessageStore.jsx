@@ -34,7 +34,7 @@ export const useMessageStore = create((set, get) => ({
     }
   },
 
-  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null) => {
+  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null, gameInfo = null) => {
     const { activeChatUser, messages } = get();
     if (!activeChatUser) return;
     try {
@@ -44,6 +44,7 @@ export const useMessageStore = create((set, get) => ({
         messageType,
         mediaUrl,
         dateInfo,
+        gameInfo,
       });
       const newMessage = response.data.data;
       set({ messages: [...messages, newMessage] });
@@ -68,6 +69,30 @@ export const useMessageStore = create((set, get) => ({
       showToast.success(`Date proposal ${status}!`);
     } catch (error) {
       showToast.error(error.response?.data?.message || "Failed to respond to date proposal");
+    }
+  },
+
+  respondToGameProposal: async (messageId, guessIndex) => {
+    try {
+      const response = await axiosInstance.post("/messages/game/respond", {
+        messageId,
+        guessIndex,
+      });
+      const updatedMessage = response.data.data;
+
+      const { messages } = get();
+      const newMessages = messages.map((m) =>
+        m._id === messageId ? updatedMessage : m
+      );
+      set({ messages: newMessages });
+
+      if (updatedMessage.gameInfo.status === "correct") {
+        showToast.success("Correct! That was indeed the lie! 🎉");
+      } else {
+        showToast.error("Wrong! You fell for it! 😜");
+      }
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to submit guess");
     }
   },
 
@@ -136,9 +161,48 @@ export const useMessageStore = create((set, get) => ({
       );
       set({ messages: newMessages });
 
-      // If active chat and date accepted, we can celebrate!
-      if (status === "accepted" && activeChatUser && message.sender._id === activeChatUser._id) {
+      const authUser = useAuthStore.getState().authUser;
+      if (!authUser) return;
+
+      const senderId = message.sender && message.sender._id
+        ? message.sender._id.toString()
+        : message.sender.toString();
+
+      const isCreator = senderId === authUser._id.toString();
+      const isRecipientCurrentChat = activeChatUser && message.receiver._id.toString() === activeChatUser._id.toString();
+
+      if (status === "accepted" && isCreator && isRecipientCurrentChat) {
         showToast.match(`Date Proposal Confirmed with ${activeChatUser.name}!`);
+      }
+    });
+
+    socket.off("gameStatusUpdate");
+    socket.on("gameStatusUpdate", ({ messageId, status, message }) => {
+      const { activeChatUser, messages } = get();
+      const newMessages = messages.map((m) =>
+        m._id === messageId ? message : m
+      );
+      set({ messages: newMessages });
+
+      const authUser = useAuthStore.getState().authUser;
+      if (!authUser) return;
+
+      const senderId = message.sender && message.sender._id
+        ? message.sender._id.toString()
+        : message.sender.toString();
+      const receiverId = message.receiver && message.receiver._id
+        ? message.receiver._id.toString()
+        : message.receiver.toString();
+
+      const isChallenger = senderId === authUser._id.toString();
+      const isGuesserCurrentChat = activeChatUser && receiverId === activeChatUser._id.toString();
+
+      if (isChallenger && isGuesserCurrentChat) {
+        if (status === "correct") {
+          showToast.match(`${activeChatUser.name} guessed correctly! 🎉`);
+        } else {
+          showToast.match(`${activeChatUser.name} guessed incorrectly! 😜`);
+        }
       }
     });
 
@@ -199,6 +263,7 @@ export const useMessageStore = create((set, get) => ({
       socket.off("newMessage");
       socket.off("userTyping");
       socket.off("dateStatusUpdate");
+      socket.off("gameStatusUpdate");
       socket.off("messageEdited");
       socket.off("messageDeleted");
       socket.off("reactionUpdated");

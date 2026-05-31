@@ -65,6 +65,16 @@ const messageSchema = new mongoose.Schema(
         default: DATE_STATUSES.PENDING,
       },
     },
+    gameInfo: {
+      statements: [String],
+      lieIndex: Number,
+      guessIndex: Number,
+      status: {
+        type: String,
+        enum: ["pending", "correct", "incorrect"],
+        default: "pending",
+      },
+    },
   },
   { timestamps: true }
 );

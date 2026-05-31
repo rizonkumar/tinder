@@ -24,6 +24,7 @@ import NoChatSelected from "./components/NoChatSelected";
 
 import ProfileModal from "./components/modals/ProfileModal";
 import DateProposalModal from "./components/modals/DateProposalModal";
+import TwoTruthsLieModal from "./components/modals/TwoTruthsLieModal";
 import ImageLightbox from "./components/modals/ImageLightbox";
 
 export default function ChatPage() {
@@ -37,6 +38,7 @@ export default function ChatPage() {
     messages,
     sendMessage,
     respondToDateProposal,
+    respondToGameProposal,
     icebreakers,
     isLoadingIcebreakers,
     getIcebreakers,
@@ -52,6 +54,7 @@ export default function ChatPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState("info");
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [isGameModalOpen, setIsGameModalOpen] = useState(false);
   const [activeLightboxImage, setActiveLightboxImage] = useState(null);
 
   const [showAIAssistant, setShowAIAssistant] = useState(false);
@@ -112,6 +115,7 @@ export default function ChatPage() {
   useEffect(() => {
     setIsProfileModalOpen(false);
     setIsDateModalOpen(false);
+    setIsGameModalOpen(false);
     setModalTab("info");
     setShowAIAssistant(false);
     resetSearch();
@@ -189,6 +193,7 @@ export default function ChatPage() {
               onAddReaction={addReaction}
               onOpenLightbox={setActiveLightboxImage}
               onRespondToDate={respondToDateProposal}
+              onRespondToGame={respondToGameProposal}
               messagesEndRef={messagesEndRef}
             />
 
@@ -203,6 +208,13 @@ export default function ChatPage() {
               onToggleAIAssistant={handleToggleAIAssistant}
               onOpenDateModal={() => {
                 setIsDateModalOpen(true);
+                setIsGameModalOpen(false);
+                setShowGifPicker(false);
+                setShowAIAssistant(false);
+              }}
+              onOpenGameModal={() => {
+                setIsGameModalOpen(true);
+                setIsDateModalOpen(false);
                 setShowGifPicker(false);
                 setShowAIAssistant(false);
               }}
@@ -270,6 +282,13 @@ export default function ChatPage() {
         activeChatUser={activeChatUser}
         onClose={() => setIsDateModalOpen(false)}
         onSendProposal={sendMessage}
+      />
+
+      <TwoTruthsLieModal
+        isOpen={isGameModalOpen}
+        activeChatUser={activeChatUser}
+        onClose={() => setIsGameModalOpen(false)}
+        onSendChallenge={sendMessage}
       />
 
       <ImageLightbox
