@@ -19,6 +19,7 @@ class MessageRepository {
         { sender: userIdA, receiver: userIdB },
         { sender: userIdB, receiver: userIdA },
       ],
+      deletedFor: { $ne: userIdA },
     }).sort({ createdAt: 1 });
 
     if (populateOptions.length > 0) {
@@ -53,6 +54,7 @@ class MessageRepository {
         { sender: userIdA, receiver: userIdB },
         { sender: userIdB, receiver: userIdA },
       ],
+      deletedFor: { $ne: userIdA },
       messageType: "text",
       content: { $regex: queryStr, $options: "i" },
     }).sort({ createdAt: 1 });
@@ -61,6 +63,20 @@ class MessageRepository {
       query = query.populate(populateOptions);
     }
     return await query;
+  }
+
+  async clearConversation(userId, otherUserId) {
+    return await Message.updateMany(
+      {
+        $or: [
+          { sender: userId, receiver: otherUserId },
+          { sender: otherUserId, receiver: userId },
+        ],
+      },
+      {
+        $addToSet: { deletedFor: userId },
+      }
+    );
   }
 
   async findRecent(userIdA, userIdB, limit = 5, populateOptions = []) {

@@ -30,6 +30,8 @@ class MessageService {
     if (!messageContent) {
       if (messageType === MESSAGE_TYPES.IMAGE) {
         messageContent = "Sent an image 📸";
+      } else if (messageType === MESSAGE_TYPES.VOICE_NOTE) {
+        messageContent = "Sent a voice note 🎤";
       } else if (messageType === MESSAGE_TYPES.DATE_PROPOSAL) {
         messageContent = `Proposed a date: ${dateInfo?.activity || "activity"}`;
       } else {
@@ -68,6 +70,13 @@ class MessageService {
     ]);
 
     await messageRepository.markAsRead(otherUserId, currentUserId);
+
+    const otherSocketId = getReceiverSocketId(otherUserId);
+    if (otherSocketId) {
+      io.to(otherSocketId).emit(SOCKET_EVENTS.MESSAGES_READ, {
+        readerId: currentUserId,
+      });
+    }
 
     return messages.map((message) => new MessageDto(message));
   }
@@ -136,6 +145,142 @@ class MessageService {
     );
 
     return messages.map((message) => new MessageDto(message));
+  }
+
+  async editMessage(messageId, userId, content) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+    if (message.sender.toString() !== userId.toString()) {
+      throw new AppError("You are not authorized to edit this message", 403);
+    }
+    if (message.isDeleted) {
+      throw new AppError("Cannot edit a deleted message", 400);
+    }
+    message.content = content.trim();
+    message.isEdited = true;
+    await messageRepository.save(message);
+
+    const populated = await messageRepository.populate(message, [
+      { path: "sender", select: "name image" },
+      { path: "receiver", select: "name image" },
+    ]);
+    const dto = new MessageDto(populated);
+
+    const receiverSocket = getReceiverSocketId(message.receiver._id);
+    if (receiverSocket) {
+      io.to(receiverSocket).emit(SOCKET_EVENTS.MESSAGE_EDITED, dto);
+    }
+    return dto;
+  }
+
+  async deleteMessage(messageId, userId, deleteForEveryone = false) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+    if (deleteForEveryone) {
+      if (message.sender.toString() !== userId.toString()) {
+        throw new AppError("You are not authorized to delete this message for everyone", 403);
+      }
+      message.isDeleted = true;
+      message.content = "This message was deleted";
+      message.mediaUrl = "";
+      await messageRepository.save(message);
+
+      const populated = await messageRepository.populate(message, [
+        { path: "sender", select: "name image" },
+        { path: "receiver", select: "name image" },
+      ]);
+      const dto = new MessageDto(populated);
+
+      const receiverSocket = getReceiverSocketId(message.receiver._id);
+      if (receiverSocket) {
+        io.to(receiverSocket).emit(SOCKET_EVENTS.MESSAGE_DELETED, dto);
+      }
+      return dto;
+    } else {
+      if (
+        message.sender.toString() !== userId.toString() &&
+        message.receiver.toString() !== userId.toString()
+      ) {
+        throw new AppError("You are not authorized to delete this message", 403);
+      }
+      if (!message.deletedFor.includes(userId)) {
+        message.deletedFor.push(userId);
+        await messageRepository.save(message);
+      }
+      const populated = await messageRepository.populate(message, [
+        { path: "sender", select: "name image" },
+        { path: "receiver", select: "name image" },
+      ]);
+      return new MessageDto(populated);
+    }
+  }
+
+  async clearConversation(userId, otherUserId) {
+    await messageRepository.clearConversation(userId, otherUserId);
+    const userSocket = getReceiverSocketId(userId);
+    if (userSocket) {
+      io.to(userSocket).emit(SOCKET_EVENTS.CONVERSATION_CLEARED, {
+        otherUserId,
+      });
+    }
+    return true;
+  }
+
+  async toggleReaction(messageId, userId, emoji) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+    if (message.isDeleted) {
+      throw new AppError("Cannot react to a deleted message", 400);
+    }
+    const existingIndex = message.reactions.findIndex(
+      (r) => r.user.toString() === userId.toString()
+    );
+    if (!emoji) {
+      if (existingIndex !== -1) {
+        message.reactions.splice(existingIndex, 1);
+      }
+    } else {
+      if (existingIndex !== -1) {
+        message.reactions[existingIndex].emoji = emoji;
+      } else {
+        message.reactions.push({ user: userId, emoji });
+      }
+    }
+    await messageRepository.save(message);
+
+    const populated = await messageRepository.populate(message, [
+      { path: "sender", select: "name image" },
+      { path: "receiver", select: "name image" },
+    ]);
+    const dto = new MessageDto(populated);
+
+    const senderSocket = getReceiverSocketId(message.sender._id);
+    const receiverSocket = getReceiverSocketId(message.receiver._id);
+
+    if (senderSocket) {
+      io.to(senderSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, dto);
+    }
+    if (receiverSocket && message.sender._id.toString() !== message.receiver._id.toString()) {
+      io.to(receiverSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, dto);
+    }
+    return dto;
+  }
+
+  async markConversationAsRead(currentUserId, otherUserId) {
+    await messageRepository.markAsRead(otherUserId, currentUserId);
+    const otherSocketId = getReceiverSocketId(otherUserId);
+    if (otherSocketId) {
+      io.to(otherSocketId).emit(SOCKET_EVENTS.MESSAGES_READ, {
+        readerId: currentUserId,
+      });
+    }
+    return true;
   }
 }
 

@@ -7,7 +7,6 @@ import Sidebar from "../../components/Sidebar";
 import { Header } from "../../components/Header";
 import { useCallStore } from "../../store/useCallStore";
 
-// Custom Hooks
 import { useChatInit } from "./hooks/useChatInit";
 import { useMessageSearch } from "./hooks/useMessageSearch";
 import { useReactions } from "./hooks/useReactions";
@@ -15,7 +14,6 @@ import { useTypingIndicator } from "./hooks/useTypingIndicator";
 import { useGifPicker } from "./hooks/useGifPicker";
 import { useEncryptionVerification } from "./hooks/useEncryptionVerification";
 
-// Components
 import ChatHeader from "./components/ChatHeader";
 import MessageSearchBar from "./components/MessageSearchBar";
 import MessageList from "./components/MessageList";
@@ -24,7 +22,6 @@ import AIAssistantPanel from "./components/AIAssistantPanel";
 import GifPickerPanel from "./components/GifPickerPanel";
 import NoChatSelected from "./components/NoChatSelected";
 
-// Modals
 import ProfileModal from "./components/modals/ProfileModal";
 import DateProposalModal from "./components/modals/DateProposalModal";
 import ImageLightbox from "./components/modals/ImageLightbox";
@@ -47,19 +44,19 @@ export default function ChatPage() {
     isLoadingSmartReplies,
     getSmartReplies,
     isTypingUser,
+    editingMessage,
+    setEditingMessage,
+    editMessage,
   } = useMessageStore();
 
-  // Modals state
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [modalTab, setModalTab] = useState("info"); // "info" | "media" | "encryption"
+  const [modalTab, setModalTab] = useState("info");
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [activeLightboxImage, setActiveLightboxImage] = useState(null);
 
-  // AI Assistant and other dynamic UI state
   const [showAIAssistant, setShowAIAssistant] = useState(false);
-  const [aiTab, setAiTab] = useState("replies"); // "replies" | "icebreakers"
+  const [aiTab, setAiTab] = useState("replies");
 
-  // Custom Hooks
   const { messagesEndRef } = useChatInit(id);
   const {
     showSearchBar,
@@ -80,6 +77,26 @@ export default function ChatPage() {
     toggleReactionPicker,
   } = useReactions(id);
   const { text, setText, handleTextChange, handleSend } = useTypingIndicator();
+
+  const handleCustomSend = async (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    if (editingMessage) {
+      await editMessage(editingMessage._id, text.trim());
+      setEditingMessage(null);
+      setText("");
+    } else {
+      await handleSend(e);
+    }
+  };
+
+  useEffect(() => {
+    if (editingMessage) {
+      setText(editingMessage.content);
+    } else {
+      setText("");
+    }
+  }, [editingMessage, setText]);
   const {
     showGifPicker,
     setShowGifPicker,
@@ -89,13 +106,9 @@ export default function ChatPage() {
     isLoadingGifs,
     handleImageUpload,
   } = useGifPicker();
-  const {
-    isEncryptionVerified,
-    getVerificationFingerprint,
-    verifyEncryption,
-  } = useEncryptionVerification(id);
+  const { isEncryptionVerified, getVerificationFingerprint, verifyEncryption } =
+    useEncryptionVerification(id);
 
-  // Reset page-level sub-states when active chat ID changes
   useEffect(() => {
     setIsProfileModalOpen(false);
     setIsDateModalOpen(false);
@@ -182,7 +195,7 @@ export default function ChatPage() {
             <ChatInputBar
               text={text}
               onTextChange={handleTextChange}
-              onSend={handleSend}
+              onSend={handleCustomSend}
               onImageUpload={handleImageUpload}
               showGifPicker={showGifPicker}
               onToggleGifPicker={handleToggleGifPicker}

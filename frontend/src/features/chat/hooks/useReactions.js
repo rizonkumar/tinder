@@ -1,38 +1,34 @@
 import { useState, useEffect, useCallback } from "react";
+import { useMessageStore } from "../../../store/useMessageStore";
 
 export function useReactions(id) {
+  const messages = useMessageStore((state) => state.messages);
+  const toggleReaction = useMessageStore((state) => state.toggleReaction);
   const [reactions, setReactions] = useState({});
   const [activeReactionPickerMessageId, setActiveReactionPickerMessageId] =
     useState(null);
 
   useEffect(() => {
     if (id) {
-      const saved = localStorage.getItem(`reactions-${id}`);
-      setReactions(saved ? JSON.parse(saved) : {});
       setActiveReactionPickerMessageId(null);
     }
   }, [id]);
 
   useEffect(() => {
-    if (id && Object.keys(reactions).length > 0) {
-      localStorage.setItem(`reactions-${id}`, JSON.stringify(reactions));
-    }
-  }, [reactions, id]);
+    const map = {};
+    messages.forEach((m) => {
+      if (m.reactions && m.reactions.length > 0) {
+        map[m._id] = m.reactions[m.reactions.length - 1].emoji;
+      }
+    });
+    setReactions(map);
+  }, [messages]);
 
   const addReaction = useCallback(
     (messageId, emoji) => {
-      setReactions((prev) => {
-        const updated = { ...prev };
-        if (emoji === null) {
-          delete updated[messageId];
-        } else {
-          updated[messageId] = emoji;
-        }
-        localStorage.setItem(`reactions-${id}`, JSON.stringify(updated));
-        return updated;
-      });
+      toggleReaction(messageId, emoji);
     },
-    [id],
+    [toggleReaction],
   );
 
   const toggleReactionPicker = useCallback((messageId) => {

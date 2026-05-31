@@ -4,4 +4,5 @@ export const MESSAGE_TYPES = {
   AUDIO: "audio",
   VIDEO: "video",
   DATE_PROPOSAL: "date_proposal",
+  VOICE_NOTE: "voice_note",
 };
