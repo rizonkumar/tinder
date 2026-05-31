@@ -1,12 +1,4 @@
-import {
-  Phone,
-  Video,
-  Check,
-  Shield,
-  Lock,
-  Image,
-  ShieldCheck,
-} from "lucide-react";
+import { Phone, Video, Check, Shield, Lock, Image } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 

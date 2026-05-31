@@ -3,8 +3,9 @@ import { useMatchStore } from "../../../store/useMatchStore";
 import { useMessageStore } from "../../../store/useMessageStore";
 
 export function useChatInit(id) {
-  const { getMyMatches, matches, setActiveChatUser } = useMatchStore();
+  const { getMyMatches, matches } = useMatchStore();
   const {
+    setActiveChatUser,
     getMessages,
     messages,
     getIcebreakers,
