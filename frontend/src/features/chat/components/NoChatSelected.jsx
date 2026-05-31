@@ -68,11 +68,20 @@ export default function NoChatSelected({
                         {match.name}
                       </h3>
                       {(() => {
-                        const verifiedSaved = localStorage.getItem("verified-chats");
-                        const verifiedMap = verifiedSaved ? JSON.parse(verifiedSaved) : {};
+                        const verifiedSaved =
+                          localStorage.getItem("verified-chats");
+                        const verifiedMap = verifiedSaved
+                          ? JSON.parse(verifiedSaved)
+                          : {};
                         return verifiedMap[match._id] ? (
-                          <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
-                            <ShieldCheck size={14} className="fill-emerald-500/10 stroke-[2.2]" />
+                          <span
+                            className="text-emerald-500 shrink-0 select-none animate-pulse"
+                            title="E2E Encryption Verified"
+                          >
+                            <ShieldCheck
+                              size={14}
+                              className="fill-emerald-500/10 stroke-[2.2]"
+                            />
                           </span>
                         ) : null;
                       })()}

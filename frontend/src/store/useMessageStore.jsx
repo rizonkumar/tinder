@@ -13,8 +13,12 @@ export const useMessageStore = create((set, get) => ({
   smartReplies: [],
   isLoadingSmartReplies: false,
   isTypingUser: false,
+  editingMessage: null,
 
-  setActiveChatUser: (user) => set({ activeChatUser: user, isTypingUser: false }),
+  setActiveChatUser: (user) =>
+    set({ activeChatUser: user, isTypingUser: false, editingMessage: null }),
+
+  setEditingMessage: (message) => set({ editingMessage: message }),
 
   getMessages: async (userId) => {
     try {
