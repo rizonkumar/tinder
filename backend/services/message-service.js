@@ -8,7 +8,7 @@ import { DATE_STATUSES } from "../constants/date-statuses.js";
 import MessageDto from "../dtos/message-dto.js";
 
 class MessageService {
-  async sendMessage(senderId, receiverId, content, messageType = MESSAGE_TYPES.TEXT, mediaUrl = "", dateInfo = null) {
+  async sendMessage(senderId, receiverId, content, messageType = MESSAGE_TYPES.TEXT, mediaUrl = "", dateInfo = null, gameInfo = null) {
     if (messageType === MESSAGE_TYPES.TEXT && (!content || !content.trim())) {
       throw new AppError("Message content cannot be empty for text messages", 400);
     }
@@ -34,6 +34,8 @@ class MessageService {
         messageContent = "Sent a voice note 🎤";
       } else if (messageType === MESSAGE_TYPES.DATE_PROPOSAL) {
         messageContent = `Proposed a date: ${dateInfo?.activity || "activity"}`;
+      } else if (messageType === MESSAGE_TYPES.GAME_TTAL) {
+        messageContent = "Challenged you to Two Truths & a Lie! 🎮";
       } else {
         messageContent = "Sent an attachment";
       }
@@ -46,6 +48,7 @@ class MessageService {
       messageType,
       mediaUrl: finalMediaUrl,
       dateInfo,
+      gameInfo,
     });
 
     const populatedMessage = await messageRepository.populate(newMessage, [
@@ -53,14 +56,15 @@ class MessageService {
       { path: "receiver", select: "name image" },
     ]);
 
-    const mappedMessage = new MessageDto(populatedMessage);
+    const senderDto = new MessageDto(populatedMessage, senderId);
+    const receiverDto = new MessageDto(populatedMessage, receiverId);
 
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit(SOCKET_EVENTS.NEW_MESSAGE, mappedMessage);
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.NEW_MESSAGE, receiverDto);
     }
 
-    return mappedMessage;
+    return senderDto;
   }
 
   async getConversation(currentUserId, otherUserId) {
@@ -78,7 +82,7 @@ class MessageService {
       });
     }
 
-    return messages.map((message) => new MessageDto(message));
+    return messages.map((message) => new MessageDto(message, currentUserId));
   }
 
   async getUnreadCount(userId) {
@@ -112,25 +116,23 @@ class MessageService {
       { path: "receiver", select: "name image" },
     ]);
 
-    const mappedMessage = new MessageDto(populatedMessage);
-
     const senderSocketId = getReceiverSocketId(message.sender._id);
     const receiverSocketId = getReceiverSocketId(message.receiver._id);
 
-    const payload = {
+    const payload = (recipientId) => ({
       messageId: message._id,
       status,
-      message: mappedMessage,
-    };
+      message: new MessageDto(populatedMessage, recipientId),
+    });
 
     if (senderSocketId) {
-      io.to(senderSocketId).emit(SOCKET_EVENTS.DATE_STATUS_UPDATE, payload);
+      io.to(senderSocketId).emit(SOCKET_EVENTS.DATE_STATUS_UPDATE, payload(message.sender._id));
     }
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit(SOCKET_EVENTS.DATE_STATUS_UPDATE, payload);
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.DATE_STATUS_UPDATE, payload(message.receiver._id));
     }
 
-    return mappedMessage;
+    return new MessageDto(populatedMessage, userId);
   }
 
   async searchMessages(currentUserId, otherUserId, query) {
@@ -144,7 +146,7 @@ class MessageService {
       ]
     );
 
-    return messages.map((message) => new MessageDto(message));
+    return messages.map((message) => new MessageDto(message, currentUserId));
   }
 
   async editMessage(messageId, userId, content) {
@@ -166,13 +168,14 @@ class MessageService {
       { path: "sender", select: "name image" },
       { path: "receiver", select: "name image" },
     ]);
-    const dto = new MessageDto(populated);
+    const senderDto = new MessageDto(populated, message.sender._id);
+    const receiverDto = new MessageDto(populated, message.receiver._id);
 
     const receiverSocket = getReceiverSocketId(message.receiver._id);
     if (receiverSocket) {
-      io.to(receiverSocket).emit(SOCKET_EVENTS.MESSAGE_EDITED, dto);
+      io.to(receiverSocket).emit(SOCKET_EVENTS.MESSAGE_EDITED, receiverDto);
     }
-    return dto;
+    return senderDto;
   }
 
   async deleteMessage(messageId, userId, deleteForEveryone = false) {
@@ -193,13 +196,14 @@ class MessageService {
         { path: "sender", select: "name image" },
         { path: "receiver", select: "name image" },
       ]);
-      const dto = new MessageDto(populated);
+      const senderDto = new MessageDto(populated, message.sender._id);
+      const receiverDto = new MessageDto(populated, message.receiver._id);
 
       const receiverSocket = getReceiverSocketId(message.receiver._id);
       if (receiverSocket) {
-        io.to(receiverSocket).emit(SOCKET_EVENTS.MESSAGE_DELETED, dto);
+        io.to(receiverSocket).emit(SOCKET_EVENTS.MESSAGE_DELETED, receiverDto);
       }
-      return dto;
+      return senderDto;
     } else {
       if (
         message.sender.toString() !== userId.toString() &&
@@ -215,7 +219,7 @@ class MessageService {
         { path: "sender", select: "name image" },
         { path: "receiver", select: "name image" },
       ]);
-      return new MessageDto(populated);
+      return new MessageDto(populated, userId);
     }
   }
 
@@ -258,18 +262,19 @@ class MessageService {
       { path: "sender", select: "name image" },
       { path: "receiver", select: "name image" },
     ]);
-    const dto = new MessageDto(populated);
+    const senderDto = new MessageDto(populated, message.sender._id);
+    const receiverDto = new MessageDto(populated, message.receiver._id);
 
     const senderSocket = getReceiverSocketId(message.sender._id);
     const receiverSocket = getReceiverSocketId(message.receiver._id);
 
     if (senderSocket) {
-      io.to(senderSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, dto);
+      io.to(senderSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, senderDto);
     }
     if (receiverSocket && message.sender._id.toString() !== message.receiver._id.toString()) {
-      io.to(receiverSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, dto);
+      io.to(receiverSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, receiverDto);
     }
-    return dto;
+    return new MessageDto(populated, userId);
   }
 
   async markConversationAsRead(currentUserId, otherUserId) {
@@ -281,6 +286,49 @@ class MessageService {
       });
     }
     return true;
+  }
+
+  async respondToGameProposal(messageId, userId, guessIndex) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+    if (message.messageType !== "game_ttal") {
+      throw new AppError("Message is not a game challenge", 400);
+    }
+    if (message.receiver.toString() !== userId.toString()) {
+      throw new AppError("You are not authorized to respond to this challenge", 403);
+    }
+    if (message.gameInfo.status !== "pending") {
+      throw new AppError("This game has already been played", 400);
+    }
+
+    message.gameInfo.guessIndex = guessIndex;
+    message.gameInfo.status = (guessIndex === message.gameInfo.lieIndex) ? "correct" : "incorrect";
+    await messageRepository.save(message);
+
+    const populatedMessage = await messageRepository.populate(message, [
+      { path: "sender", select: "name image" },
+      { path: "receiver", select: "name image" },
+    ]);
+
+    const senderSocketId = getReceiverSocketId(message.sender._id);
+    const receiverSocketId = getReceiverSocketId(message.receiver._id);
+
+    const payload = (recipientId) => ({
+      messageId: message._id,
+      status: message.gameInfo.status,
+      message: new MessageDto(populatedMessage, recipientId),
+    });
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit(SOCKET_EVENTS.GAME_STATUS_UPDATE, payload(message.sender._id));
+    }
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.GAME_STATUS_UPDATE, payload(message.receiver._id));
+    }
+
+    return new MessageDto(populatedMessage, userId);
   }
 }
 

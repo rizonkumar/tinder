@@ -15,6 +15,7 @@ export const SOCKET_EVENTS = {
   MATCH_CELEBRATION: "matchCelebration",
   SUPER_LIKE_RECEIVED: "superLikeReceived",
   DATE_STATUS_UPDATE: "dateStatusUpdate",
+  GAME_STATUS_UPDATE: "gameStatusUpdate",
 
   CALL_USER: "callUser",
   INCOMING_CALL: "incomingCall",

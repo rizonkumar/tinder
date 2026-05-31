@@ -8,6 +8,7 @@ import {
   editMessageSchema,
   deleteMessageSchema,
   reactionSchema,
+  respondGameSchema,
 } from "../validators/message-validator.js";
 import {
   sendMessage,
@@ -22,6 +23,7 @@ import {
   clearConversation,
   toggleReaction,
   markConversationAsRead,
+  respondToGameProposal,
 } from "../controllers/message-controller.js";
 
 const router = express.Router();
@@ -33,6 +35,7 @@ router.get("/conversation/:userId", getConversation);
 router.get("/unread-count", getUnreadCount);
 router.post("/icebreakers/:userId", generateIcebreakers);
 router.post("/date/respond", validate(respondProposalSchema), respondToDateProposal);
+router.post("/game/respond", validate(respondGameSchema), respondToGameProposal);
 router.post("/smart-replies/:userId", generateSmartReplies);
 router.get("/search/:userId", validate(searchMessagesSchema, "query"), searchMessages);
 router.patch("/:messageId", validate(editMessageSchema), editMessage);

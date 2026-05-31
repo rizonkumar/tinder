@@ -1,5 +1,5 @@
 class MessageDto {
-  constructor(message) {
+  constructor(message, currentUserId = null) {
     if (!message) return;
     const msgObj = typeof message.toObject === "function" ? message.toObject() : message;
 
@@ -33,6 +33,23 @@ class MessageDto {
       };
     } else {
       this.dateInfo = null;
+    }
+
+    if (msgObj.gameInfo) {
+      const senderId = msgObj.sender && msgObj.sender._id
+        ? msgObj.sender._id.toString()
+        : (msgObj.sender ? msgObj.sender.toString() : "");
+      const isSender = senderId === currentUserId?.toString();
+      const isResolved = msgObj.gameInfo.status !== "pending";
+
+      this.gameInfo = {
+        statements: msgObj.gameInfo.statements,
+        guessIndex: msgObj.gameInfo.guessIndex !== undefined && msgObj.gameInfo.guessIndex !== null ? msgObj.gameInfo.guessIndex : null,
+        status: msgObj.gameInfo.status,
+        lieIndex: (isSender || isResolved) ? msgObj.gameInfo.lieIndex : null,
+      };
+    } else {
+      this.gameInfo = null;
     }
 
     this.createdAt = msgObj.createdAt;

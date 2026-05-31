@@ -29,6 +29,7 @@ import {
 import LoadingState from "../../../components/common/LoadingState";
 import FallbackState from "../../../components/common/FallbackState";
 import confetti from "canvas-confetti";
+import TwoTruthsLieCard from "./TwoTruthsLieCard";
 
 function CallLogBubble({ message }) {
   const isMissed = message.content.toLowerCase().includes("missed");
@@ -997,6 +998,7 @@ export default function MessageList({
   onAddReaction,
   onOpenLightbox,
   onRespondToDate,
+  onRespondToGame,
   messagesEndRef,
 }) {
   const [activeMenuMessageId, setActiveMenuMessageId] = useState(null);
@@ -1062,6 +1064,19 @@ export default function MessageList({
                 activeChatUser={activeChatUser}
                 isHighlighted={message._id === activeHighlightedMessageId}
                 onRespond={onRespondToDate}
+              />
+            );
+          }
+
+          if (message.messageType === "game_ttal") {
+            return (
+              <TwoTruthsLieCard
+                key={message._id}
+                message={message}
+                isSentByMe={isSentByMe}
+                isHighlighted={message._id === activeHighlightedMessageId}
+                activeChatUserName={activeChatUser.name}
+                onRespond={onRespondToGame}
               />
             );
           }

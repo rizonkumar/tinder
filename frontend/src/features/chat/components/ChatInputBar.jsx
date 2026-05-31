@@ -1,5 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Smile, Calendar, Sparkles, Mic, X, Check } from "lucide-react";
+import {
+  Send,
+  Paperclip,
+  Smile,
+  Calendar,
+  Sparkles,
+  Mic,
+  X,
+  Check,
+  Gamepad2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMessageStore } from "../../../store/useMessageStore";
 
@@ -13,6 +23,7 @@ export default function ChatInputBar({
   showAIAssistant,
   onToggleAIAssistant,
   onOpenDateModal,
+  onOpenGameModal,
   children,
 }) {
   const fileInputRef = useRef(null);
@@ -70,11 +81,15 @@ export default function ChatInputBar({
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state !== "inactive") {
       recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
         const reader = new FileReader();
         reader.onloadend = async () => {
           const base64Data = reader.result;
-          await useMessageStore.getState().sendMessage("", "voice_note", base64Data);
+          await useMessageStore
+            .getState()
+            .sendMessage("", "voice_note", base64Data);
         };
         reader.readAsDataURL(audioBlob);
         if (audioStreamRef.current) {
@@ -116,9 +131,7 @@ export default function ChatInputBar({
       onSubmit={onSend}
       className="border-t border-slate-200/60 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shrink-0 relative flex flex-col z-10 select-none"
     >
-      <AnimatePresence>
-        {children}
-      </AnimatePresence>
+      <AnimatePresence>{children}</AnimatePresence>
 
       <div className="flex items-center space-x-2.5 p-4 shrink-0">
         {editingMessage ? (
@@ -228,10 +241,21 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={onOpenDateModal}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-555 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
               title="Plan a Date"
             >
               <Calendar size={17} />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={onOpenGameModal}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-555 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+              title="Play Two Truths & a Lie"
+            >
+              <Gamepad2 size={17} />
             </motion.button>
 
             <motion.button

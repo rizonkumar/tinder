@@ -4,7 +4,7 @@ import aiService from "../services/ai-service.js";
 import sendResponse from "../utils/responseHandler.js";
 
 export const sendMessage = asyncHandler(async (req, res) => {
-  const { content, receiverId, messageType, mediaUrl, dateInfo } = req.body;
+  const { content, receiverId, messageType, mediaUrl, dateInfo, gameInfo } = req.body;
 
   const message = await messageService.sendMessage(
     req.user._id,
@@ -12,7 +12,8 @@ export const sendMessage = asyncHandler(async (req, res) => {
     content,
     messageType,
     mediaUrl,
-    dateInfo
+    dateInfo,
+    gameInfo
   );
 
   sendResponse(res, 200, message, "Message sent successfully");
@@ -141,4 +142,16 @@ export const markConversationAsRead = asyncHandler(async (req, res) => {
     { unreadCount },
     "Conversation marked as read successfully"
   );
+});
+
+export const respondToGameProposal = asyncHandler(async (req, res) => {
+  const { messageId, guessIndex } = req.body;
+
+  const updatedMessage = await messageService.respondToGameProposal(
+    messageId,
+    req.user._id,
+    guessIndex
+  );
+
+  sendResponse(res, 200, updatedMessage, "Game response saved successfully");
 });
