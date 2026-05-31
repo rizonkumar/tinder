@@ -1,7 +1,4 @@
-const dotenv = require("dotenv");
-
-dotenv.config();
-
+const config = require("./config/env");
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -35,7 +32,7 @@ app.all("*", (req, res, next) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3001;
+const PORT = config.port;
 
 (async () => {
   await connectDB();

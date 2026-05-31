@@ -1,20 +1,24 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const User = require("../models/user-model");
+const userRepository = require("../repositories/user-repository");
+const messageRepository = require("../repositories/message-repository");
 const AppError = require("../utils/appError");
+const config = require("../config/env");
 
 class AIService {
   constructor() {
-    this.apiKey = process.env.GEMINI_API_KEY;
+    this.apiKey = config.geminiApiKey;
     if (this.apiKey) {
       this.genAI = new GoogleGenerativeAI(this.apiKey);
     }
   }
 
   async generateIcebreakers(senderId, receiverId) {
-    const sender = await User.findById(senderId).select(
+    const sender = await userRepository.findById(
+      senderId,
       "name age bio interests",
     );
-    const receiver = await User.findById(receiverId).select(
+    const receiver = await userRepository.findById(
+      receiverId,
       "name age bio interests",
     );
 
@@ -104,10 +108,12 @@ Requirements:
   }
 
   async generateSmartReplies(senderId, receiverId) {
-    const sender = await User.findById(senderId).select(
+    const sender = await userRepository.findById(
+      senderId,
       "name age bio interests",
     );
-    const receiver = await User.findById(receiverId).select(
+    const receiver = await userRepository.findById(
+      receiverId,
       "name age bio interests",
     );
 
@@ -115,24 +121,18 @@ Requirements:
       throw new AppError("Users not found for generating smart replies", 404);
     }
 
-    // Retrieve recent conversation history
-    const Message = require("../models/message-model");
-    const recentMessages = await Message.find({
-      $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId },
-      ],
-    })
-      .sort({ createdAt: -1 })
-      .limit(5);
+    const recentMessages = await messageRepository.findRecent(
+      senderId,
+      receiverId,
+      5,
+    );
 
-    // Reverse to get chronological order
     recentMessages.reverse();
 
     const formattedHistory = recentMessages
       .map(
         (m) =>
-          `${m.sender.toString() === senderId.toString() ? sender.name : receiver.name}: ${m.content}`
+          `${m.sender.toString() === senderId.toString() ? sender.name : receiver.name}: ${m.content}`,
       )
       .join("\n");
 
@@ -175,7 +175,10 @@ Requirements:
           return parsed.slice(0, 3);
         }
       } catch (error) {
-        console.error("Gemini API smart replies error, using fallback:", error.message);
+        console.error(
+          "Gemini API smart replies error, using fallback:",
+          error.message,
+        );
       }
     }
 

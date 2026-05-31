@@ -1,6 +1,7 @@
 const cloudinary = require("../config/cloudinary");
-const User = require("../models/user-model");
+const userRepository = require("../repositories/user-repository");
 const AppError = require("../utils/appError");
+const UserDto = require("../dtos/user-dto");
 
 class UserService {
   async updateProfile(userId, userData) {
@@ -12,7 +13,7 @@ class UserService {
       updatedData.image = updatedResponse.secure_url;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
+    const updatedUser = await userRepository.findByIdAndUpdate(userId, updatedData, {
       new: true,
       runValidators: true,
     });
@@ -21,31 +22,31 @@ class UserService {
       throw new AppError("User not found", 404);
     }
 
-    return updatedUser;
+    return new UserDto(updatedUser);
   }
 
   async toggleIncognito(userId) {
-    const user = await User.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       throw new AppError("User not found", 404);
     }
     user.incognitoMode = !user.incognitoMode;
-    await user.save();
-    return user;
+    await userRepository.save(user);
+    return new UserDto(user);
   }
 
   async toggleGold(userId) {
-    const user = await User.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       throw new AppError("User not found", 404);
     }
     user.isGold = !user.isGold;
-    await user.save();
-    return user;
+    await userRepository.save(user);
+    return new UserDto(user);
   }
 
   async getStats(userId) {
-    const user = await User.findById(userId);
+    const user = await userRepository.findById(userId);
     if (!user) {
       throw new AppError("User not found", 404);
     }
@@ -56,7 +57,7 @@ class UserService {
     const matchesCount = user.matches?.length || 0;
     const totalSwipes = likesSent + dislikesSent;
 
-    const likesReceived = await User.countDocuments({ likes: userId });
+    const likesReceived = await userRepository.countDocuments({ likes: userId });
 
     const matchRate =
       totalSwipes > 0 ? Math.round((matchesCount / totalSwipes) * 100) : 0;

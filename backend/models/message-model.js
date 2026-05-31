@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const { MESSAGE_TYPES } = require("../constants/message-types");
+const { DATE_STATUSES } = require("../constants/date-statuses");
 
 const messageSchema = new mongoose.Schema(
   {
@@ -18,8 +20,8 @@ const messageSchema = new mongoose.Schema(
     },
     messageType: {
       type: String,
-      enum: ["text", "image", "audio", "video", "date_proposal"],
-      default: "text",
+      enum: Object.values(MESSAGE_TYPES),
+      default: MESSAGE_TYPES.TEXT,
     },
     mediaUrl: {
       type: String,
@@ -36,8 +38,8 @@ const messageSchema = new mongoose.Schema(
       activity: String,
       status: {
         type: String,
-        enum: ["pending", "accepted", "declined"],
-        default: "pending",
+        enum: Object.values(DATE_STATUSES),
+        default: DATE_STATUSES.PENDING,
       },
     },
   },

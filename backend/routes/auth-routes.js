@@ -1,10 +1,7 @@
 const express = require("express");
-const {
-  validateSignup,
-  validateSignIn,
-  protectRoute,
-} = require("../middleware/auth-middleware");
-
+const { protectRoute } = require("../middleware/auth-middleware");
+const validate = require("../middleware/validation-middleware");
+const { signupSchema, signinSchema } = require("../validators/auth-validator");
 const {
   signUp,
   signIn,
@@ -14,8 +11,8 @@ const {
 
 const router = express.Router();
 
-router.post("/register", validateSignup, signUp);
-router.post("/login", validateSignIn, signIn);
+router.post("/register", validate(signupSchema), signUp);
+router.post("/login", validate(signinSchema), signIn);
 router.post("/logout", signOut);
 
 router.get("/me", protectRoute, userInformation);
