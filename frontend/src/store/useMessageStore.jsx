@@ -110,6 +110,7 @@ export const useMessageStore = create((set, get) => ({
       const { activeChatUser, messages } = get();
       if (activeChatUser && newMessage.sender._id === activeChatUser._id) {
         set({ messages: [...messages, newMessage] });
+        get().markConversationAsRead(activeChatUser._id);
       } else {
         showToast.match(`New message from ${newMessage.sender.name}!`);
       }
@@ -136,6 +137,56 @@ export const useMessageStore = create((set, get) => ({
         showToast.match(`Date Proposal Confirmed with ${activeChatUser.name}!`);
       }
     });
+
+    socket.off("messageEdited");
+    socket.on("messageEdited", (updatedMessage) => {
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === updatedMessage._id ? updatedMessage : m
+        ),
+      });
+    });
+
+    socket.off("messageDeleted");
+    socket.on("messageDeleted", (updatedMessage) => {
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === updatedMessage._id ? updatedMessage : m
+        ),
+      });
+    });
+
+    socket.off("reactionUpdated");
+    socket.on("reactionUpdated", (updatedMessage) => {
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === updatedMessage._id ? updatedMessage : m
+        ),
+      });
+    });
+
+    socket.off("conversationCleared");
+    socket.on("conversationCleared", ({ otherUserId }) => {
+      const { activeChatUser } = get();
+      if (activeChatUser && activeChatUser._id === otherUserId) {
+        set({ messages: [] });
+      }
+    });
+
+    socket.off("messagesRead");
+    socket.on("messagesRead", ({ readerId }) => {
+      const { activeChatUser, messages } = get();
+      if (activeChatUser && activeChatUser._id === readerId) {
+        set({
+          messages: messages.map((m) =>
+            m.read ? m : { ...m, read: true }
+          ),
+        });
+      }
+    });
   },
 
   unsubscribeFromMessages: () => {
@@ -144,6 +195,11 @@ export const useMessageStore = create((set, get) => ({
       socket.off("newMessage");
       socket.off("userTyping");
       socket.off("dateStatusUpdate");
+      socket.off("messageEdited");
+      socket.off("messageDeleted");
+      socket.off("reactionUpdated");
+      socket.off("conversationCleared");
+      socket.off("messagesRead");
     }
   },
 
@@ -165,6 +221,87 @@ export const useMessageStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to search messages in store:", error);
       return [];
+    }
+  },
+
+  editMessage: async (messageId, content) => {
+    try {
+      const response = await axiosInstance.patch(`/messages/${messageId}`, {
+        content,
+      });
+      const updatedMessage = response.data.data;
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === messageId ? updatedMessage : m
+        ),
+      });
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to edit message");
+    }
+  },
+
+  deleteMessage: async (messageId, deleteForEveryone = false) => {
+    try {
+      const response = await axiosInstance.delete(`/messages/${messageId}`, {
+        data: { deleteForEveryone },
+      });
+      const updatedMessage = response.data.data;
+      const { messages } = get();
+      if (deleteForEveryone) {
+        set({
+          messages: messages.map((m) =>
+            m._id === messageId ? updatedMessage : m
+          ),
+        });
+      } else {
+        set({
+          messages: messages.filter((m) => m._id !== messageId),
+        });
+      }
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to delete message");
+    }
+  },
+
+  clearConversation: async (userId) => {
+    try {
+      await axiosInstance.delete(`/messages/conversation/${userId}`);
+      set({ messages: [] });
+      showToast.success("Conversation cleared");
+    } catch (error) {
+      showToast.error(
+        error.response?.data?.message || "Failed to clear conversation"
+      );
+    }
+  },
+
+  toggleReaction: async (messageId, emoji) => {
+    try {
+      const response = await axiosInstance.post(
+        `/messages/react/${messageId}`,
+        { emoji }
+      );
+      const updatedMessage = response.data.data;
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === messageId ? updatedMessage : m
+        ),
+      });
+    } catch (error) {
+      showToast.error(
+        error.response?.data?.message || "Failed to update reaction"
+      );
+    }
+  },
+
+  markConversationAsRead: async (userId) => {
+    try {
+      const response = await axiosInstance.post(`/messages/read/${userId}`);
+      set({ unreadCount: response.data.data.unreadCount });
+    } catch (error) {
+      console.error("Failed to mark conversation as read:", error);
     }
   },
 }));

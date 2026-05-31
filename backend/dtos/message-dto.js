@@ -7,10 +7,21 @@ class MessageDto {
     this._id = this.id;
     this.sender = this._mapUserRef(msgObj.sender);
     this.receiver = this._mapUserRef(msgObj.receiver);
-    this.content = msgObj.content;
+    this.isDeleted = !!msgObj.isDeleted;
+    this.isEdited = !!msgObj.isEdited;
+    this.content = this.isDeleted ? "This message was deleted" : msgObj.content;
     this.messageType = msgObj.messageType;
-    this.mediaUrl = msgObj.mediaUrl || "";
+    this.mediaUrl = this.isDeleted ? "" : (msgObj.mediaUrl || "");
     this.read = !!msgObj.read;
+    this.reactions = msgObj.reactions
+      ? msgObj.reactions.map((r) => ({
+          userId: r.user.toString(),
+          emoji: r.emoji,
+        }))
+      : [];
+    this.deletedFor = msgObj.deletedFor
+      ? msgObj.deletedFor.map((d) => d.toString())
+      : [];
 
     if (msgObj.dateInfo) {
       this.dateInfo = {

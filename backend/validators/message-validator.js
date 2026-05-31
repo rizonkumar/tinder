@@ -66,4 +66,26 @@ const searchMessagesSchema = Joi.object({
   }),
 });
 
-export { sendMessageSchema, respondProposalSchema, searchMessagesSchema };
+const editMessageSchema = Joi.object({
+  content: Joi.string().trim().required().messages({
+    "any.required": "Message content is required",
+    "string.empty": "Message content cannot be empty",
+  }),
+});
+
+const deleteMessageSchema = Joi.object({
+  deleteForEveryone: Joi.boolean().default(false).optional(),
+});
+
+const reactionSchema = Joi.object({
+  emoji: Joi.string().trim().allow(null, "").optional(),
+});
+
+export {
+  sendMessageSchema,
+  respondProposalSchema,
+  searchMessagesSchema,
+  editMessageSchema,
+  deleteMessageSchema,
+  reactionSchema,
+};

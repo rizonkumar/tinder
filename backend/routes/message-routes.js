@@ -1,7 +1,14 @@
 import express from "express";
 import { protectRoute } from "../middleware/auth-middleware.js";
 import validate from "../middleware/validation-middleware.js";
-import { sendMessageSchema, respondProposalSchema, searchMessagesSchema } from "../validators/message-validator.js";
+import {
+  sendMessageSchema,
+  respondProposalSchema,
+  searchMessagesSchema,
+  editMessageSchema,
+  deleteMessageSchema,
+  reactionSchema,
+} from "../validators/message-validator.js";
 import {
   sendMessage,
   getConversation,
@@ -10,6 +17,11 @@ import {
   respondToDateProposal,
   generateSmartReplies,
   searchMessages,
+  editMessage,
+  deleteMessage,
+  clearConversation,
+  toggleReaction,
+  markConversationAsRead,
 } from "../controllers/message-controller.js";
 
 const router = express.Router();
@@ -23,5 +35,10 @@ router.post("/icebreakers/:userId", generateIcebreakers);
 router.post("/date/respond", validate(respondProposalSchema), respondToDateProposal);
 router.post("/smart-replies/:userId", generateSmartReplies);
 router.get("/search/:userId", validate(searchMessagesSchema, "query"), searchMessages);
+router.patch("/:messageId", validate(editMessageSchema), editMessage);
+router.delete("/:messageId", validate(deleteMessageSchema), deleteMessage);
+router.delete("/conversation/:userId", clearConversation);
+router.post("/react/:messageId", validate(reactionSchema), toggleReaction);
+router.post("/read/:userId", markConversationAsRead);
 
 export default router;

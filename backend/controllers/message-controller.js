@@ -81,3 +81,64 @@ export const searchMessages = asyncHandler(async (req, res) => {
 
   sendResponse(res, 200, results, "Messages searched successfully");
 });
+
+export const editMessage = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { content } = req.body;
+
+  const message = await messageService.editMessage(
+    messageId,
+    req.user._id,
+    content
+  );
+
+  sendResponse(res, 200, message, "Message edited successfully");
+});
+
+export const deleteMessage = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { deleteForEveryone } = req.body;
+
+  const message = await messageService.deleteMessage(
+    messageId,
+    req.user._id,
+    deleteForEveryone
+  );
+
+  sendResponse(res, 200, message, "Message deleted successfully");
+});
+
+export const clearConversation = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  await messageService.clearConversation(req.user._id, userId);
+
+  sendResponse(res, 200, null, "Conversation cleared successfully");
+});
+
+export const toggleReaction = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { emoji } = req.body;
+
+  const message = await messageService.toggleReaction(
+    messageId,
+    req.user._id,
+    emoji
+  );
+
+  sendResponse(res, 200, message, "Reaction updated successfully");
+});
+
+export const markConversationAsRead = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  await messageService.markConversationAsRead(req.user._id, userId);
+  const unreadCount = await messageService.getUnreadCount(req.user._id);
+
+  sendResponse(
+    res,
+    200,
+    { unreadCount },
+    "Conversation marked as read successfully"
+  );
+});

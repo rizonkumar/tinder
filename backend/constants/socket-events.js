@@ -7,6 +7,11 @@ export const SOCKET_EVENTS = {
   TYPING: "typing",
   USER_TYPING: "userTyping",
   NEW_MESSAGE: "newMessage",
+  MESSAGE_EDITED: "messageEdited",
+  MESSAGE_DELETED: "messageDeleted",
+  REACTION_UPDATED: "reactionUpdated",
+  CONVERSATION_CLEARED: "conversationCleared",
+  MESSAGES_READ: "messagesRead",
   
   // Match & interactions
   MATCH_CELEBRATION: "matchCelebration",

@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import {
   Heart,
   Video,
@@ -7,8 +8,18 @@ import {
   MapPin,
   X,
   Smile,
+  MoreVertical,
+  Edit3,
+  Trash,
+  Trash2,
+  Play,
+  Pause,
+  Volume2,
+  Check,
+  CheckCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMessageStore } from "../../../store/useMessageStore";
 import { ACTIVITY_OPTIONS, DEFAULT_ACTIVITY, EMOJI_REACTIONS } from "../../../constants";
 import LoadingState from "../../../components/common/LoadingState";
 import FallbackState from "../../../components/common/FallbackState";
@@ -363,6 +374,27 @@ function ImageBubble({
           />
         </div>
       )}
+
+      {!message.isDeleted && (
+        <div className="order-3 relative select-none">
+          <button
+            type="button"
+            onClick={() => onToggleMenu(activeMenuMessageId === message._id ? null : message._id)}
+            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none opacity-0 group-hover:opacity-100"
+          >
+            <MoreVertical size={14} />
+          </button>
+          {activeMenuMessageId === message._id && (
+            <MessageActionsMenu
+              message={message}
+              isSentByMe={isSentByMe}
+              onEdit={null}
+              onDelete={onDeleteMessage}
+              onClose={() => onToggleMenu(null)}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -375,7 +407,18 @@ function MessageBubble({
   activeReactionPickerMessageId,
   onToggleReactionPicker,
   onAddReaction,
+  editingMessageId,
+  editingText,
+  setEditingText,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  activeMenuMessageId,
+  onToggleMenu,
+  onDeleteMessage,
 }) {
+  const isEditing = message._id === editingMessageId;
+
   return (
     <div
       id={`msg-${message._id}`}
@@ -399,23 +442,66 @@ function MessageBubble({
             : "bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border border-slate-200/45 dark:border-zinc-800/80 rounded-tl-none font-medium order-1"
         } ${
           isHighlighted
-            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02] bg-pink-100 dark:bg-pink-950/20"
+            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02] bg-pink-100 dark:bg-pink-955/20"
             : ""
         }`}
       >
-        <p>{message.content}</p>
-        <span
-          className={`block text-[9px] mt-1.5 text-right font-medium font-sans ${
-            isSentByMe
-              ? "text-pink-100"
-              : "text-slate-400 dark:text-slate-550"
-          }`}
-        >
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </span>
+        {isEditing ? (
+          <div className="flex flex-col space-y-2 py-1 min-w-[200px]">
+            <input
+              type="text"
+              value={editingText}
+              onChange={(e) => setEditingText(e.target.value)}
+              className="w-full bg-black/10 dark:bg-black/25 text-white dark:text-white rounded-lg px-2.5 py-1.5 text-xs outline-none border border-white/20 focus:border-white/40"
+              autoFocus
+            />
+            <div className="flex items-center justify-end space-x-1.5">
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                className="text-[10px] font-bold px-2 py-1 rounded-md bg-white/15 hover:bg-white/25 text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => onSaveEdit(message._id)}
+                className="text-[10px] font-bold px-2 py-1 rounded-md bg-white text-pink-500 hover:bg-pink-50"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className={message.isDeleted ? "italic opacity-70" : ""}>
+              {message.content}
+            </p>
+            {message.isEdited && !message.isDeleted && (
+              <span className={`block text-[8px] text-right font-medium font-sans ${isSentByMe ? "text-pink-100/60" : "text-slate-400"}`}>
+                (edited)
+              </span>
+            )}
+          </>
+        )}
+
+        <div className="flex items-center justify-end space-x-1 mt-1.5 pr-1 select-none">
+          <span
+            className={`block text-[9px] mt-0.5 text-right font-medium font-sans ${
+              isSentByMe
+                ? "text-pink-100"
+                : "text-slate-400 dark:text-slate-550"
+            }`}
+          >
+            {new Date(message.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+          {isSentByMe && (
+            <ReadReceipt read={message.read} />
+          )}
+        </div>
 
         <ReactionPill
           messageId={message._id}
@@ -429,7 +515,7 @@ function MessageBubble({
           isSentByMe={isSentByMe}
           activeReactionPickerMessageId={activeReactionPickerMessageId}
           onAddReaction={onAddReaction}
-          onToggleReactionPicker={onToggleReactionPicker}
+          onClose={onToggleReactionPicker}
         />
       </div>
 
@@ -441,6 +527,27 @@ function MessageBubble({
             onToggleReactionPicker={onToggleReactionPicker}
             title="React to message"
           />
+        </div>
+      )}
+
+      {!message.isDeleted && (
+        <div className="order-3 relative select-none">
+          <button
+            type="button"
+            onClick={() => onToggleMenu(activeMenuMessageId === message._id ? null : message._id)}
+            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none opacity-0 group-hover:opacity-100"
+          >
+            <MoreVertical size={14} />
+          </button>
+          {activeMenuMessageId === message._id && (
+            <MessageActionsMenu
+              message={message}
+              isSentByMe={isSentByMe}
+              onEdit={onStartEdit}
+              onDelete={onDeleteMessage}
+              onClose={() => onToggleMenu(null)}
+            />
+          )}
         </div>
       )}
     </div>
@@ -503,6 +610,34 @@ export default function MessageList({
   onRespondToDate,
   messagesEndRef,
 }) {
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [activeMenuMessageId, setActiveMenuMessageId] = useState(null);
+
+  const editMessage = useMessageStore((state) => state.editMessage);
+  const deleteMessage = useMessageStore((state) => state.deleteMessage);
+
+  const handleStartEdit = (messageId, content) => {
+    setEditingMessageId(messageId);
+    setEditingText(content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditingText("");
+  };
+
+  const handleSaveEdit = async (messageId) => {
+    if (!editingText.trim()) return;
+    await editMessage(messageId, editingText.trim());
+    setEditingMessageId(null);
+    setEditingText("");
+  };
+
+  const handleDeleteMessage = async (messageId, deleteForEveryone) => {
+    await deleteMessage(messageId, deleteForEveryone);
+  };
+
   return (
     <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-zinc-950/40 select-none">
       {isLoadingMessages ? (
@@ -553,6 +688,28 @@ export default function MessageList({
                 onToggleReactionPicker={onToggleReactionPicker}
                 onAddReaction={onAddReaction}
                 onOpenLightbox={onOpenLightbox}
+                activeMenuMessageId={activeMenuMessageId}
+                onToggleMenu={setActiveMenuMessageId}
+                onDeleteMessage={handleDeleteMessage}
+              />
+            );
+          }
+
+          if (message.messageType === "voice_note") {
+            return (
+              <VoiceNoteBubble
+                key={message._id}
+                message={message}
+                isSentByMe={isSentByMe}
+                isHighlighted={message._id === activeHighlightedMessageId}
+                reaction={reactions[message._id]}
+                activeReactionPickerMessageId={activeReactionPickerMessageId}
+                onToggleReactionPicker={onToggleReactionPicker}
+                onAddReaction={onAddReaction}
+                activeMenuMessageId={activeMenuMessageId}
+                onToggleMenu={setActiveMenuMessageId}
+                onStartEdit={handleStartEdit}
+                onDeleteMessage={handleDeleteMessage}
               />
             );
           }
@@ -567,6 +724,15 @@ export default function MessageList({
               activeReactionPickerMessageId={activeReactionPickerMessageId}
               onToggleReactionPicker={onToggleReactionPicker}
               onAddReaction={onAddReaction}
+              editingMessageId={editingMessageId}
+              editingText={editingText}
+              setEditingText={setEditingText}
+              onStartEdit={handleStartEdit}
+              onCancelEdit={handleCancelEdit}
+              onSaveEdit={handleSaveEdit}
+              activeMenuMessageId={activeMenuMessageId}
+              onToggleMenu={setActiveMenuMessageId}
+              onDeleteMessage={handleDeleteMessage}
             />
           );
         })
