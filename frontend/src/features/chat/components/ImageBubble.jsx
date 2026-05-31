@@ -1,0 +1,95 @@
+import { Smile } from "lucide-react";
+import ReactionPill from "./ReactionPill";
+import ReactionPicker from "./ReactionPicker";
+
+export default function ImageBubble({
+  message,
+  isSentByMe,
+  isHighlighted,
+  reaction,
+  isReactionPickerActive,
+  onToggleReactionPicker,
+  onAddReaction,
+  onRemoveReaction,
+  onOpenLightbox,
+}) {
+  return (
+    <div
+      id={`msg-${message._id}`}
+      className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-2.5 relative group items-center`}
+    >
+      {!isSentByMe && (
+        <div className="order-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-2 select-none shrink-0">
+          <button
+            type="button"
+            onClick={onToggleReactionPicker}
+            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+            title="React to photo"
+          >
+            <Smile size={14} />
+          </button>
+        </div>
+      )}
+
+      <div
+        className={`max-w-[65%] rounded-2xl overflow-hidden shadow-sm border relative transition-all duration-300 ${
+          isSentByMe
+            ? "bg-pink-500 p-1 rounded-tr-none order-1"
+            : "bg-white dark:bg-zinc-900 p-1 rounded-tl-none order-1 border-slate-200/30 dark:border-zinc-800/50"
+        } ${
+          isHighlighted
+            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02]"
+            : ""
+        }`}
+      >
+        <img
+          src={message.mediaUrl}
+          alt="Shared media"
+          className="max-h-64 w-full object-cover rounded-xl select-none cursor-pointer hover:opacity-95 transition-opacity"
+          loading="lazy"
+          onClick={() => onOpenLightbox(message.mediaUrl)}
+        />
+        <span
+          className={`block text-[9px] mt-1 pr-1 text-right font-medium font-sans ${
+            isSentByMe
+              ? "text-pink-100"
+              : "text-slate-400 dark:text-slate-500"
+          }`}
+        >
+          {new Date(message.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+
+        <ReactionPill
+          emoji={reaction}
+          isSentByMe={isSentByMe}
+          onRemove={onRemoveReaction}
+          bottomOffset="-bottom-1.5"
+        />
+
+        <ReactionPicker
+          messageId={message._id}
+          isSentByMe={isSentByMe}
+          isActive={isReactionPickerActive}
+          onReact={onAddReaction}
+          onClose={onToggleReactionPicker}
+        />
+      </div>
+
+      {isSentByMe && (
+        <div className="order-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-2 select-none shrink-0">
+          <button
+            type="button"
+            onClick={onToggleReactionPicker}
+            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+            title="React to photo"
+          >
+            <Smile size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
