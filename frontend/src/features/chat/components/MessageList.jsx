@@ -16,6 +16,8 @@ import {
   Pause,
   Volume2,
   CheckCheck,
+  Reply,
+  Copy,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMessageStore } from "../../../store/useMessageStore";
@@ -996,6 +998,22 @@ export default function MessageList({
     await deleteMessage(messageId, deleteForEveryone);
   };
 
+  const handleToggleMenu = (messageId) => {
+    setActiveMenuMessageId(messageId);
+    if (messageId && onToggleReactionPicker) {
+      onToggleReactionPicker(null);
+    }
+  };
+
+  const handleToggleReactionPicker = (messageId) => {
+    if (onToggleReactionPicker) {
+      onToggleReactionPicker(messageId);
+    }
+    if (messageId) {
+      setActiveMenuMessageId(null);
+    }
+  };
+
   return (
     <div className="flex-grow overflow-y-auto p-4 space-y-4 chat-wallpaper select-none">
       {isLoadingMessages ? (
@@ -1040,11 +1058,11 @@ export default function MessageList({
                 isHighlighted={message._id === activeHighlightedMessageId}
                 reaction={reactions[message._id]}
                 activeReactionPickerMessageId={activeReactionPickerMessageId}
-                onToggleReactionPicker={onToggleReactionPicker}
+                onToggleReactionPicker={handleToggleReactionPicker}
                 onAddReaction={onAddReaction}
                 onOpenLightbox={onOpenLightbox}
                 activeMenuMessageId={activeMenuMessageId}
-                onToggleMenu={setActiveMenuMessageId}
+                onToggleMenu={handleToggleMenu}
                 onDeleteMessage={handleDeleteMessage}
               />
             );
@@ -1059,10 +1077,10 @@ export default function MessageList({
                 isHighlighted={message._id === activeHighlightedMessageId}
                 reaction={reactions[message._id]}
                 activeReactionPickerMessageId={activeReactionPickerMessageId}
-                onToggleReactionPicker={onToggleReactionPicker}
+                onToggleReactionPicker={handleToggleReactionPicker}
                 onAddReaction={onAddReaction}
                 activeMenuMessageId={activeMenuMessageId}
-                onToggleMenu={setActiveMenuMessageId}
+                onToggleMenu={handleToggleMenu}
                 onDeleteMessage={handleDeleteMessage}
               />
             );
@@ -1076,11 +1094,11 @@ export default function MessageList({
               isHighlighted={message._id === activeHighlightedMessageId}
               reaction={reactions[message._id]}
               activeReactionPickerMessageId={activeReactionPickerMessageId}
-              onToggleReactionPicker={onToggleReactionPicker}
+              onToggleReactionPicker={handleToggleReactionPicker}
               onAddReaction={onAddReaction}
               onStartEdit={handleStartEdit}
               activeMenuMessageId={activeMenuMessageId}
-              onToggleMenu={setActiveMenuMessageId}
+              onToggleMenu={handleToggleMenu}
               onDeleteMessage={handleDeleteMessage}
             />
           );
