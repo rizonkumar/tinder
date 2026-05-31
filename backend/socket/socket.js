@@ -1,6 +1,7 @@
-const { Server } = require("socket.io");
-const http = require("http");
-const express = require("express");
+import { Server } from "socket.io";
+import http from "http";
+import express from "express";
+import { SOCKET_EVENTS } from "../constants/socket-events.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -18,18 +19,18 @@ const getReceiverSocketId = (receiverId) => {
   return userSocketMap[receiverId];
 };
 
-io.on("connection", (socket) => {
+io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
   const userId = socket.handshake.query.userId;
   if (userId && userId !== "undefined") {
     userSocketMap[userId] = socket.id;
   }
 
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  io.emit(SOCKET_EVENTS.GET_ONLINE_USERS, Object.keys(userSocketMap));
 
-  socket.on("callUser", ({ targetId, offer, callType, callerInfo }) => {
+  socket.on(SOCKET_EVENTS.CALL_USER, ({ targetId, offer, callType, callerInfo }) => {
     const receiverSocketId = getReceiverSocketId(targetId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("incomingCall", {
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.INCOMING_CALL, {
         callerId: userId,
         offer,
         callType,
@@ -38,53 +39,53 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("acceptCall", ({ targetId, answer }) => {
+  socket.on(SOCKET_EVENTS.ACCEPT_CALL, ({ targetId, answer }) => {
     const callerSocketId = getReceiverSocketId(targetId);
     if (callerSocketId) {
-      io.to(callerSocketId).emit("callAccepted", { answer });
+      io.to(callerSocketId).emit(SOCKET_EVENTS.CALL_ACCEPTED, { answer });
     }
   });
 
-  socket.on("sendIceCandidate", ({ targetId, candidate }) => {
+  socket.on(SOCKET_EVENTS.SEND_ICE_CANDIDATE, ({ targetId, candidate }) => {
     const peerSocketId = getReceiverSocketId(targetId);
     if (peerSocketId) {
-      io.to(peerSocketId).emit("receiveIceCandidate", { candidate });
+      io.to(peerSocketId).emit(SOCKET_EVENTS.RECEIVE_ICE_CANDIDATE, { candidate });
     }
   });
 
-  socket.on("disconnectCall", ({ targetId }) => {
+  socket.on(SOCKET_EVENTS.DISCONNECT_CALL, ({ targetId }) => {
     const peerSocketId = getReceiverSocketId(targetId);
     if (peerSocketId) {
-      io.to(peerSocketId).emit("callEnded");
+      io.to(peerSocketId).emit(SOCKET_EVENTS.CALL_ENDED);
     }
   });
 
-  socket.on("typing", ({ targetId, isTyping }) => {
+  socket.on(SOCKET_EVENTS.TYPING, ({ targetId, isTyping }) => {
     const receiverSocketId = getReceiverSocketId(targetId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("userTyping", {
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.USER_TYPING, {
         senderId: userId,
         isTyping,
       });
     }
   });
 
-  socket.on("callReaction", ({ targetId, reaction }) => {
+  socket.on(SOCKET_EVENTS.CALL_REACTION, ({ targetId, reaction }) => {
     const receiverSocketId = getReceiverSocketId(targetId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("callReaction", {
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.CALL_REACTION, {
         senderId: userId,
         reaction,
       });
     }
   });
 
-  socket.on("disconnect", () => {
+  socket.on(SOCKET_EVENTS.DISCONNECT, () => {
     if (userId) {
       delete userSocketMap[userId];
     }
-    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    io.emit(SOCKET_EVENTS.GET_ONLINE_USERS, Object.keys(userSocketMap));
   });
 });
 
-module.exports = { app, server, io, getReceiverSocketId };
+export { app, server, io, getReceiverSocketId };

@@ -1,11 +1,15 @@
-const Message = require("../models/message-model");
-const AppError = require("../utils/appError");
-const { getReceiverSocketId, io } = require("../socket/socket");
-const cloudinary = require("../config/cloudinary");
+import messageRepository from "../repositories/message-repository.js";
+import AppError from "../utils/appError.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
+import cloudinary from "../config/cloudinary.js";
+import { SOCKET_EVENTS } from "../constants/socket-events.js";
+import { MESSAGE_TYPES } from "../constants/message-types.js";
+import { DATE_STATUSES } from "../constants/date-statuses.js";
+import MessageDto from "../dtos/message-dto.js";
 
 class MessageService {
-  async sendMessage(senderId, receiverId, content, messageType = "text", mediaUrl = "", dateInfo = null) {
-    if (messageType === "text" && (!content || !content.trim())) {
+  async sendMessage(senderId, receiverId, content, messageType = MESSAGE_TYPES.TEXT, mediaUrl = "", dateInfo = null) {
+    if (messageType === MESSAGE_TYPES.TEXT && (!content || !content.trim())) {
       throw new AppError("Message content cannot be empty for text messages", 400);
     }
 
@@ -24,12 +28,16 @@ class MessageService {
 
     let messageContent = content ? content.trim() : "";
     if (!messageContent) {
-      if (messageType === "image") messageContent = "Sent an image 📸";
-      else if (messageType === "date_proposal") messageContent = `Proposed a date: ${dateInfo?.activity || "activity"}`;
-      else messageContent = "Sent an attachment";
+      if (messageType === MESSAGE_TYPES.IMAGE) {
+        messageContent = "Sent an image 📸";
+      } else if (messageType === MESSAGE_TYPES.DATE_PROPOSAL) {
+        messageContent = `Proposed a date: ${dateInfo?.activity || "activity"}`;
+      } else {
+        messageContent = "Sent an attachment";
+      }
     }
 
-    const newMessage = await Message.create({
+    const newMessage = await messageRepository.create({
       sender: senderId,
       receiver: receiverId,
       content: messageContent,
@@ -38,64 +46,47 @@ class MessageService {
       dateInfo,
     });
 
-    const populatedMessage = await newMessage.populate([
+    const populatedMessage = await messageRepository.populate(newMessage, [
       { path: "sender", select: "name image" },
       { path: "receiver", select: "name image" },
     ]);
 
+    const mappedMessage = new MessageDto(populatedMessage);
+
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", populatedMessage);
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.NEW_MESSAGE, mappedMessage);
     }
 
-    return populatedMessage;
+    return mappedMessage;
   }
 
   async getConversation(currentUserId, otherUserId) {
-    const messages = await Message.find({
-      $or: [
-        { sender: currentUserId, receiver: otherUserId },
-        { sender: otherUserId, receiver: currentUserId },
-      ],
-    })
-      .populate([
-        { path: "sender", select: "name image" },
-        { path: "receiver", select: "name image" },
-      ])
-      .sort({ createdAt: 1 });
+    const messages = await messageRepository.findConversation(currentUserId, otherUserId, [
+      { path: "sender", select: "name image" },
+      { path: "receiver", select: "name image" },
+    ]);
 
-    await Message.updateMany(
-      {
-        sender: otherUserId,
-        receiver: currentUserId,
-        read: false,
-      },
-      {
-        read: true,
-      },
-    );
-    return messages;
+    await messageRepository.markAsRead(otherUserId, currentUserId);
+
+    return messages.map((message) => new MessageDto(message));
   }
 
   async getUnreadCount(userId) {
-    const count = await Message.countDocuments({
-      receiver: userId,
-      read: false,
-    });
-    return count;
+    return await messageRepository.countUnread(userId);
   }
 
   async respondToDateProposal(messageId, userId, status) {
-    if (!["accepted", "declined"].includes(status)) {
+    if (![DATE_STATUSES.ACCEPTED, DATE_STATUSES.DECLINED].includes(status)) {
       throw new AppError("Invalid status. Must be accepted or declined", 400);
     }
 
-    const message = await Message.findById(messageId);
+    const message = await messageRepository.findById(messageId);
     if (!message) {
       throw new AppError("Message not found", 404);
     }
 
-    if (message.messageType !== "date_proposal") {
+    if (message.messageType !== MESSAGE_TYPES.DATE_PROPOSAL) {
       throw new AppError("Message is not a date proposal", 400);
     }
 
@@ -105,12 +96,14 @@ class MessageService {
     }
 
     message.dateInfo.status = status;
-    await message.save();
+    await messageRepository.save(message);
 
-    const populatedMessage = await message.populate([
+    const populatedMessage = await messageRepository.populate(message, [
       { path: "sender", select: "name image" },
       { path: "receiver", select: "name image" },
     ]);
+
+    const mappedMessage = new MessageDto(populatedMessage);
 
     const senderSocketId = getReceiverSocketId(message.sender._id);
     const receiverSocketId = getReceiverSocketId(message.receiver._id);
@@ -118,36 +111,32 @@ class MessageService {
     const payload = {
       messageId: message._id,
       status,
-      message: populatedMessage,
+      message: mappedMessage,
     };
 
     if (senderSocketId) {
-      io.to(senderSocketId).emit("dateStatusUpdate", payload);
+      io.to(senderSocketId).emit(SOCKET_EVENTS.DATE_STATUS_UPDATE, payload);
     }
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("dateStatusUpdate", payload);
+      io.to(receiverSocketId).emit(SOCKET_EVENTS.DATE_STATUS_UPDATE, payload);
     }
 
-    return populatedMessage;
+    return mappedMessage;
   }
 
   async searchMessages(currentUserId, otherUserId, query) {
-    const messages = await Message.find({
-      $or: [
-        { sender: currentUserId, receiver: otherUserId },
-        { sender: otherUserId, receiver: currentUserId },
-      ],
-      messageType: "text",
-      content: { $regex: query, $options: "i" },
-    })
-      .populate([
+    const messages = await messageRepository.searchConversation(
+      currentUserId,
+      otherUserId,
+      query,
+      [
         { path: "sender", select: "name image" },
         { path: "receiver", select: "name image" },
-      ])
-      .sort({ createdAt: 1 });
+      ]
+    );
 
-    return messages;
+    return messages.map((message) => new MessageDto(message));
   }
 }
 
-module.exports = new MessageService();
+export default new MessageService();

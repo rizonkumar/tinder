@@ -1,4 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import { MESSAGE_TYPES } from "../constants/message-types.js";
+import { DATE_STATUSES } from "../constants/date-statuses.js";
 
 const messageSchema = new mongoose.Schema(
   {
@@ -18,8 +20,8 @@ const messageSchema = new mongoose.Schema(
     },
     messageType: {
       type: String,
-      enum: ["text", "image", "audio", "video", "date_proposal"],
-      default: "text",
+      enum: Object.values(MESSAGE_TYPES),
+      default: MESSAGE_TYPES.TEXT,
     },
     mediaUrl: {
       type: String,
@@ -36,8 +38,8 @@ const messageSchema = new mongoose.Schema(
       activity: String,
       status: {
         type: String,
-        enum: ["pending", "accepted", "declined"],
-        default: "pending",
+        enum: Object.values(DATE_STATUSES),
+        default: DATE_STATUSES.PENDING,
       },
     },
   },
@@ -49,4 +51,4 @@ messageSchema.index({ createdAt: -1 });
 
 const Message = mongoose.model("Message", messageSchema);
 
-module.exports = Message;
+export default Message;

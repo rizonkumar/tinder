@@ -1,5 +1,7 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import { GENDERS, GENDER_PREFERENCES } from "../constants/genders.js";
+import { SWIPE_ACTIONS } from "../constants/swipe-actions.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -23,12 +25,12 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       required: true,
-      enum: ["male", "female"],
+      enum: Object.values(GENDERS),
     },
     genderPreference: {
       type: String,
       required: true,
-      enum: ["male", "female", "both"],
+      enum: Object.values(GENDER_PREFERENCES),
     },
     bio: {
       type: String,
@@ -50,7 +52,7 @@ const userSchema = new mongoose.Schema(
         },
         action: {
           type: String,
-          enum: ["like", "nope", "superlike"],
+          enum: Object.values(SWIPE_ACTIONS),
         },
         timestamp: {
           type: Date,
@@ -106,4 +108,4 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+export default User;
