@@ -21,6 +21,8 @@ import ChatInputBar from "./components/ChatInputBar";
 import AIAssistantPanel from "./components/AIAssistantPanel";
 import GifPickerPanel from "./components/GifPickerPanel";
 import NoChatSelected from "./components/NoChatSelected";
+import DatePlannerPanel from "./components/DatePlannerPanel";
+import { AnimatePresence } from "framer-motion";
 
 import ProfileModal from "./components/modals/ProfileModal";
 import DateProposalModal from "./components/modals/DateProposalModal";
@@ -56,6 +58,7 @@ export default function ChatPage() {
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isGameModalOpen, setIsGameModalOpen] = useState(false);
   const [activeLightboxImage, setActiveLightboxImage] = useState(null);
+  const [isDatePlannerOpen, setIsDatePlannerOpen] = useState(false);
 
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiTab, setAiTab] = useState("replies");
@@ -120,6 +123,7 @@ export default function ChatPage() {
     setShowAIAssistant(false);
     resetSearch();
     setShowGifPicker(false);
+    setIsDatePlannerOpen(false);
   }, [id, resetSearch, setShowGifPicker]);
 
   const isOnline = activeChatUser
@@ -158,16 +162,18 @@ export default function ChatPage() {
         <Header />
 
         {activeChatUser ? (
-          <div className="flex flex-grow flex-col overflow-hidden bg-white dark:bg-zinc-900 border-t border-slate-200/60 dark:border-zinc-800 lg:border-l lg:border-t-0 transition-colors duration-300">
-            <ChatHeader
-              activeChatUser={activeChatUser}
-              isOnline={isOnline}
-              isEncryptionVerified={isEncryptionVerified}
-              showSearchBar={showSearchBar}
-              onToggleSearch={toggleSearchBar}
-              onOpenProfile={() => setIsProfileModalOpen(true)}
-              onInitiateCall={(type) => initiateCall(activeChatUser._id, type)}
-            />
+          <div className="flex flex-grow flex-row overflow-hidden bg-white dark:bg-zinc-900 border-t border-slate-200/60 dark:border-zinc-800 lg:border-l lg:border-t-0 transition-colors duration-300">
+            <div className="flex flex-grow flex-col overflow-hidden">
+              <ChatHeader
+                activeChatUser={activeChatUser}
+                isOnline={isOnline}
+                isEncryptionVerified={isEncryptionVerified}
+                showSearchBar={showSearchBar}
+                onToggleSearch={toggleSearchBar}
+                onOpenProfile={() => setIsProfileModalOpen(true)}
+                onInitiateCall={(type) => initiateCall(activeChatUser._id, type)}
+                onOpenDatePlanner={() => setIsDatePlannerOpen((prev) => !prev)}
+              />
 
             <MessageSearchBar
               showSearchBar={showSearchBar}
@@ -252,6 +258,16 @@ export default function ChatPage() {
               )}
             </ChatInputBar>
           </div>
+          <AnimatePresence>
+            {isDatePlannerOpen && (
+              <DatePlannerPanel
+                isOpen={isDatePlannerOpen}
+                onClose={() => setIsDatePlannerOpen(false)}
+                matchUser={activeChatUser}
+              />
+            )}
+          </AnimatePresence>
+        </div>
         ) : (
           <NoChatSelected
             matches={matches}

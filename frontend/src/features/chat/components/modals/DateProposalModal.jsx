@@ -165,7 +165,7 @@ export default function DateProposalModal({
                     onChange={(e) => setLocationInput(e.target.value)}
                     required
                     placeholder="e.g. Starbucks Main St, Central Park..."
-                    className="w-full text-xs rounded-xl border border-slate-200/60 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/40 pl-9.5 pr-4 py-2.5 outline-none focus:border-pink-500 text-slate-800 dark:text-zinc-100"
+                    className="w-full text-xs rounded-xl border border-slate-200/60 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/40 pl-10 pr-4 py-2.5 outline-none focus:border-pink-500 text-slate-800 dark:text-zinc-100"
                   />
                 </div>
               </div>

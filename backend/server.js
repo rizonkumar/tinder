@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth-routes.js";
 import userRoutes from "./routes/user-routes.js";
 import matchRoutes from "./routes/match-routes.js";
 import messageRoutes from "./routes/message-routes.js";
+import datePlanRoutes from "./routes/date-plan-routes.js";
 import connectDB from "./config/db.js";
 import AppError from "./utils/appError.js";
 import errorHandler from "./middleware/errorHandler.js";
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/matches", matchRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/dates", datePlanRoutes);
 
 app.all("*", (req, res, next) => {
   next(new AppError("Route not found", 404));

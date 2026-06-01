@@ -10,6 +10,7 @@ import ChatPage from "./features/chat/ChatPage";
 import ExplorePage from "./features/explore/ExplorePage";
 import MatchesPage from "./features/matches/MatchesPage";
 import GoldHubPage from "./features/gold/GoldHubPage";
+import DateDashboard from "./features/explore/DateDashboard";
 import NotFoundPage from "./features/error/NotFoundPage";
 import MatchCelebrationOverlay from "./features/matches/MatchCelebrationOverlay";
 import CallInterface from "./features/chat/CallInterface";
@@ -156,6 +157,19 @@ export default function App() {
                   transition={{ duration: 0.3 }}
                 >
                   {authUser ? <GoldHubPage /> : <Navigate to="/auth" />}
+                </motion.div>
+              }
+            />
+            <Route
+              path="/dates"
+              element={
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {authUser ? <DateDashboard /> : <Navigate to="/auth" />}
                 </motion.div>
               }
             />
