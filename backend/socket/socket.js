@@ -80,6 +80,10 @@ io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
     }
   });
 
+  socket.on(SOCKET_EVENTS.DATE_PLAN_JOIN, ({ datePlanId }) => {
+    socket.join(`dateplan_${datePlanId}`);
+  });
+
   socket.on(SOCKET_EVENTS.DISCONNECT, () => {
     if (userId) {
       delete userSocketMap[userId];

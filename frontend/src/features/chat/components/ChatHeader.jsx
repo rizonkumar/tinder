@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search, Phone, Video, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  Phone,
+  Video,
+  ShieldCheck,
+  CalendarDays,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ChatHeader({
@@ -10,6 +17,7 @@ export default function ChatHeader({
   onToggleSearch,
   onOpenProfile,
   onInitiateCall,
+  onOpenDatePlanner,
 }) {
   return (
     <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 p-4 shrink-0 bg-white dark:bg-zinc-900 z-10">
@@ -33,9 +41,7 @@ export default function ChatHeader({
             />
             <span
               className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 ${
-                isOnline
-                  ? "bg-green-500"
-                  : "bg-slate-300 dark:bg-zinc-700"
+                isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
               }`}
             />
           </div>
@@ -45,8 +51,14 @@ export default function ChatHeader({
                 {activeChatUser.name}
               </h2>
               {isEncryptionVerified && (
-                <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
-                  <ShieldCheck size={14} className="fill-emerald-500/10 stroke-[2.2]" />
+                <span
+                  className="text-emerald-500 shrink-0 select-none animate-pulse"
+                  title="E2E Encryption Verified"
+                >
+                  <ShieldCheck
+                    size={14}
+                    className="fill-emerald-500/10 stroke-[2.2]"
+                  />
                 </span>
               )}
             </div>
@@ -66,6 +78,16 @@ export default function ChatHeader({
       </div>
 
       <div className="flex items-center space-x-2 shrink-0">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onOpenDatePlanner}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all focus:outline-none"
+          title="Collaborative Date Planner"
+        >
+          <CalendarDays size={15} />
+        </motion.button>
+
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

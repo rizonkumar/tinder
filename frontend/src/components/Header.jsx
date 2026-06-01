@@ -16,6 +16,7 @@ import {
   Crown,
   Sun,
   Moon,
+  CalendarDays,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useThemeStore } from "../store/useThemeStore";
@@ -44,6 +45,7 @@ export const Header = () => {
         { icon: <User size={18} />, label: "Profile", to: "/profile" },
         { icon: <Crown size={18} className="text-yellow-500 fill-current" />, label: "Gold Hub", to: "/gold" },
         { icon: <Compass size={18} />, label: "Explore Vibes", to: "/explore" },
+        { icon: <CalendarDays size={18} />, label: "My Dates", to: "/dates" },
         { icon: <Heart size={18} />, label: "Matches", to: "/matches" },
         {
           icon: <MessageCircle size={18} />,
