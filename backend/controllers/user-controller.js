@@ -21,3 +21,8 @@ export const getStats = asyncHandler(async (req, res) => {
   const stats = await userService.getStats(req.user._id);
   sendResponse(res, 200, stats, "User statistics retrieved successfully");
 });
+
+export const enhanceProfile = asyncHandler(async (req, res) => {
+  const result = await userService.enhanceProfile(req.user._id, req.body.tone);
+  sendResponse(res, 200, result, "Enhanced profile suggestions generated successfully");
+});

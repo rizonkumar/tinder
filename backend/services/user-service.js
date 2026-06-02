@@ -2,6 +2,8 @@ import cloudinary from "../config/cloudinary.js";
 import userRepository from "../repositories/user-repository.js";
 import AppError from "../utils/appError.js";
 import UserDto from "../dtos/user-dto.js";
+import aiService from "./ai-service.js";
+import ProfileEnhancementDto from "../dtos/profile-enhancement-dto.js";
 
 class UserService {
   async updateProfile(userId, userData) {
@@ -71,6 +73,15 @@ class UserService {
       likesReceived,
       matchRate,
     };
+  }
+
+  async enhanceProfile(userId, tone) {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    const suggestions = await aiService.generateEnhancedBios(user, tone);
+    return new ProfileEnhancementDto(suggestions);
   }
 }
 
