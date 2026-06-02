@@ -13,6 +13,8 @@ import {
   Edit3,
   Loader,
   ArrowLeft,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { INTEREST_OPTIONS } from "../constants";
@@ -30,7 +32,10 @@ export default function ProfilePage() {
   });
 
   const fileInputRef = useRef(null);
-  const { loading, updateProfile } = useUserStore();
+  const { loading, updateProfile, enhanceProfile } = useUserStore();
+  const [aiTone, setAiTone] = useState("witty");
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
 
   useEffect(() => {
     if (authUser) {
@@ -64,6 +69,25 @@ export default function ProfilePage() {
         setFormData((prev) => ({ ...prev, image: reader.result }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGenerateAiBio = async () => {
+    if (formData.interests.length === 0) {
+      toast.error(
+        "Please select at least one interest to help the AI personalize your bio!",
+      );
+      return;
+    }
+    try {
+      setIsGeneratingAi(true);
+      const suggestions = await enhanceProfile(aiTone);
+      setAiSuggestions(suggestions);
+      toast.success("AI bio suggestions generated!");
+    } catch (err) {
+      toast.error("Failed to generate AI bio suggestions. Please try again.");
+    } finally {
+      setIsGeneratingAi(false);
     }
   };
 
@@ -274,6 +298,106 @@ export default function ProfilePage() {
                     className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50/10 dark:bg-zinc-950/20 px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 outline-none transition-all hover:border-pink-200 dark:hover:border-slate-700 focus:border-pink-500 focus:bg-white dark:focus:bg-zinc-950 leading-relaxed font-sans"
                     placeholder="Tell us about yourself..."
                   />
+                </div>
+
+                <div className="space-y-4 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-gradient-to-br from-pink-50/50 to-rose-50/30 dark:from-pink-950/10 dark:to-rose-950/5 p-5 transition-colors duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Sparkles
+                        size={16}
+                        className="text-pink-500 fill-current animate-pulse"
+                      />
+                      <span className="text-sm font-bold text-slate-800 dark:text-zinc-150 font-outfit tracking-wide">
+                        AI BIO WINGMAN
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-pink-500 text-white px-2 py-0.5 rounded-full">
+                      Gemini
+                    </span>
+                  </div>
+
+                  <p className="text-xs font-semibold leading-relaxed text-slate-400 dark:text-slate-500">
+                    Stuck on what to write? Choose a tone below and let our AI
+                    assistant draft some polished options matching your
+                    interests!
+                  </p>
+
+                  <div className="flex flex-wrap gap-2.5">
+                    {["witty", "deep", "bold"].map((tone) => (
+                      <button
+                        key={tone}
+                        type="button"
+                        onClick={() => setAiTone(tone)}
+                        className={`px-4 py-2 rounded-2xl text-xs font-bold capitalize transition-all border outline-none shadow-sm ${
+                          aiTone === tone
+                            ? "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
+                            : "bg-white dark:bg-zinc-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-zinc-850 hover:bg-pink-50/20 dark:hover:bg-zinc-900/50"
+                        }`}
+                      >
+                        {tone}
+                      </button>
+                    ))}
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    type="button"
+                    onClick={handleGenerateAiBio}
+                    disabled={isGeneratingAi}
+                    className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 font-bold text-white text-xs tracking-wider outline-none shadow-sm disabled:opacity-70"
+                  >
+                    {isGeneratingAi ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" />
+                        <span>Generating Bio Options...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={14} />
+                        <span>Generate 3 Tone Options</span>
+                      </>
+                    )}
+                  </motion.button>
+
+                  {aiSuggestions.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-3.5 mt-2"
+                    >
+                      <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Generated Suggestions
+                      </h4>
+                      <div className="space-y-3">
+                        {aiSuggestions.map((suggestion, idx) => (
+                          <div
+                            key={idx}
+                            className="group relative flex flex-col p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-pink-300 dark:hover:border-zinc-750 shadow-sm transition-all"
+                          >
+                            <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-350 pr-4">
+                              {suggestion}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  bio: suggestion,
+                                }));
+                                toast.success(
+                                  `Applied option ${idx + 1}! Don't forget to Save Changes below.`,
+                                );
+                              }}
+                              className="mt-3.5 self-end px-3 py-1.5 rounded-xl border border-pink-100 hover:border-pink-500 bg-pink-50/50 hover:bg-pink-500 text-pink-600 hover:text-white dark:bg-pink-950/15 dark:text-pink-400 dark:border-pink-950/40 text-[10px] font-black uppercase tracking-wider transition-all outline-none"
+                            >
+                              Apply Bio
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
                 <motion.button

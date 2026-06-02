@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { GENDERS, GENDER_PREFERENCES } from "../constants/genders.js";
+import { PROFILE_TONES } from "../constants/profile.js";
 
 const updateProfileSchema = Joi.object({
   name: Joi.string().trim().optional(),
@@ -13,4 +14,8 @@ const updateProfileSchema = Joi.object({
   interests: Joi.array().items(Joi.string().trim()).optional(),
 });
 
-export { updateProfileSchema };
+const enhanceProfileSchema = Joi.object({
+  tone: Joi.string().valid(...Object.values(PROFILE_TONES)).required(),
+});
+
+export { updateProfileSchema, enhanceProfileSchema };

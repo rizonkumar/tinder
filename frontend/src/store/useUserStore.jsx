@@ -89,4 +89,14 @@ export const useUserStore = create((set) => ({
       set({ isLoadingWhoLikedMe: false });
     }
   },
+
+  enhanceProfile: async (tone) => {
+    try {
+      const response = await axiosInstance.post("/users/enhance-bio", { tone });
+      return response.data.data.suggestions;
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to generate AI bios");
+      throw error;
+    }
+  },
 }));

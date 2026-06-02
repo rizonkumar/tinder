@@ -182,6 +182,66 @@ Requirements:
       `That sounds so interesting, ${receiver.name}! Tell me more.`,
       `Haha, love that! You've got great energy.`,
       `Oh wow! What's the story behind that?`,
+  }
+
+  async generateEnhancedBios(user, tone) {
+    if (this.genAI) {
+      try {
+        const model = this.genAI.getGenerativeModel({
+          model: "gemini-1.5-flash",
+          generationConfig: { responseMimeType: "application/json" },
+        });
+        const prompt = `You are an expert dating and profile optimization assistant. Generate exactly 3 highly personalized, engaging, and unique dating profile bios in a ${tone} tone for the following user.
+User profile details:
+- Name: ${user.name}
+- Age: ${user.age}
+- Gender: ${user.gender}
+- Current Bio: ${user.bio || "None"}
+- Interests/Hobbies: ${user.interests.join(", ") || "None"}
+
+Requirements:
+- The tone MUST be strictly ${tone}.
+- Humorous should be funny, witty, lighthearted, self-deprecating but confident.
+- Deep should be conversational, philosophical, genuine, showing passion and curiosity.
+- Bold should be punchy, direct, high-energy, exciting, and adventurous.
+- Keep each bio between 2 to 4 sentences (under 60 words).
+- Output must be a valid JSON array of exactly 3 strings: ["bio variation 1", "bio variation 2", "bio variation 3"].
+- Return ONLY the raw JSON array. No markdown, no comments, no additional formatting.`;
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed) && parsed.length >= 3) {
+          return parsed.slice(0, 3);
+        }
+      } catch (error) {
+        console.error("Gemini API bio enhancement error, using fallback:", error.message);
+      }
+    }
+    return this._getFallbackEnhancedBios(user, tone);
+  }
+
+  _getFallbackEnhancedBios(user, tone) {
+    const name = user.name;
+    const firstInterest = user.interests?.[0] || "exploring new places";
+    const secondInterest = user.interests?.[1] || "great conversations";
+    if (tone === "witty") {
+      return [
+        `Hey, I'm ${name}. I'm basically a professional at ${firstInterest} and an amateur at everything else. Hoping to find someone who matches my level of sarcasm and appreciation for good food.`,
+        `Swipe right if you think you can handle my absolute obsession with ${firstInterest}. Bonus points if you can talk about ${secondInterest} without getting tired! Let's get coffee.`,
+        `${name}, ${user.age}. My interests include ${firstInterest}, making bad puns, and searching for the best local coffee. Let's debate which pizza topping is truly superior.`,
+      ];
+    }
+    if (tone === "deep") {
+      return [
+        `I'm ${name}, and I believe the best connections start with raw curiosity. When I'm not occupied with ${firstInterest}, I'm usually diving into ${secondInterest} or questioning life's mysteries. Let's skip the small talk and discuss what drives you.`,
+        `Seeking genuine vibes and real chemistry. I enjoy the calm moments of ${firstInterest} but also love the energy of sharing ideas on ${secondInterest}. Tell me about a book or idea that changed your perspective.`,
+        `Hi, I'm ${name}. Finding beauty in the details—whether that's ${firstInterest} or a late-night talk about ${secondInterest}. Let's build a connection that is actually meaningful.`,
+      ];
+    }
+    return [
+      `Life is too short for boring matches. I'm ${name}, a major fan of ${firstInterest} and living life at full volume. Tell me your wildest adventure, and let's plan our next one together!`,
+      `Ready to explore the city or try something crazy. Passionate about ${firstInterest} and looking for a partner-in-crime who isn't afraid to take risks. Say hi if you're up for the challenge!`,
+      `High energy, big dreams, and zero regrets. I spend my time mastering ${firstInterest} and discovering new challenges. If you love ${secondInterest} and spontaneous plans, let's make it happen.`,
     ];
   }
 }
