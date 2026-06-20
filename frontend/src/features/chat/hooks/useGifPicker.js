@@ -8,14 +8,46 @@ const GIPHY_API_KEY = "dc6zaTOxFJmzC";
 const GIPHY_LIMIT = 12;
 const DEBOUNCE_MS = 500;
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+const FAVORITES_KEY = "tinder-gif-favorites";
+
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
 
 export function useGifPicker() {
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [gifQuery, setGifQuery] = useState("");
   const [gifs, setGifs] = useState([]);
   const [isLoadingGifs, setIsLoadingGifs] = useState(false);
+  const [gifTab, setGifTab] = useState("trending");
+  const [favorites, setFavorites] = useState(loadFavorites);
 
   const sendMessage = useMessageStore((state) => state.sendMessage);
+
+  const toggleFavorite = useCallback((gif) => {
+    setFavorites((prev) => {
+      const exists = prev.some((item) => item.id === gif.id);
+      const next = exists
+        ? prev.filter((item) => item.id !== gif.id)
+        : [...prev, { id: gif.id, title: gif.title, url: gif.url }];
+      try {
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      } catch {
+        /* localStorage unavailable */
+      }
+      return next;
+    });
+  }, []);
+
+  const isFavorite = useCallback(
+    (id) => favorites.some((item) => item.id === id),
+    [favorites]
+  );
 
   useEffect(() => {
     if (!showGifPicker) return;
@@ -82,6 +114,11 @@ export function useGifPicker() {
     setGifQuery,
     gifs,
     isLoadingGifs,
+    gifTab,
+    setGifTab,
+    favorites,
+    toggleFavorite,
+    isFavorite,
     handleImageUpload,
   };
 }
