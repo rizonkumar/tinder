@@ -169,3 +169,16 @@ export const DAYS_OF_WEEK = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export const EMOJI_REACTIONS = ["❤️", "👍", "😂", "😮", "😢", "🔥"];
 
+export const CALL_STATUSES = {
+  MISSED: "missed",
+  COMPLETED: "completed",
+  REJECTED: "rejected",
+};
+
+export const DISAPPEARING_OPTIONS = [
+  { label: "Off", seconds: 0 },
+  { label: "1h", seconds: 60 * 60 },
+  { label: "24h", seconds: 24 * 60 * 60 },
+  { label: "7d", seconds: 7 * 24 * 60 * 60 },
+];
+

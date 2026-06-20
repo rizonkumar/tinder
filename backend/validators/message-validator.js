@@ -1,6 +1,7 @@
 import Joi from "joi";
 import { MESSAGE_TYPES } from "../constants/message-types.js";
 import { DATE_STATUSES } from "../constants/date-statuses.js";
+import { CALL_STATUSES } from "../constants/call-statuses.js";
 
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 
@@ -15,6 +16,9 @@ const sendMessageSchema = Joi.object({
     .default(MESSAGE_TYPES.TEXT)
     .optional(),
   mediaUrl: Joi.string().trim().allow("").optional(),
+  replyTo: Joi.string().regex(objectIdRegex).allow(null).optional().messages({
+    "string.pattern.base": "Invalid reply reference format",
+  }),
   dateInfo: Joi.object({
     date: Joi.string().trim().required(),
     time: Joi.string().trim().required(),
@@ -41,6 +45,16 @@ const sendMessageSchema = Joi.object({
   })
     .allow(null)
     .optional(),
+  callInfo: Joi.object({
+    status: Joi.string()
+      .valid(...Object.values(CALL_STATUSES))
+      .required(),
+    duration: Joi.number().integer().min(0).default(0),
+  })
+    .allow(null)
+    .optional(),
+  isForwarded: Joi.boolean().default(false).optional(),
+  expireInSeconds: Joi.number().integer().min(0).allow(null).optional(),
 }).custom((value, helpers) => {
   if (
     value.messageType === MESSAGE_TYPES.TEXT &&
@@ -94,6 +108,23 @@ const reactionSchema = Joi.object({
   emoji: Joi.string().trim().allow(null, "").optional(),
 });
 
+const linkPreviewSchema = Joi.object({
+  url: Joi.string()
+    .uri({ scheme: ["http", "https"] })
+    .required()
+    .messages({
+      "any.required": "A URL is required",
+      "string.uri": "A valid http(s) URL is required",
+    }),
+});
+
+const togglePinSchema = Joi.object({
+  isPinned: Joi.boolean().required().messages({
+    "any.required": "Pin state is required",
+    "boolean.base": "Pin state must be a boolean",
+  }),
+});
+
 const respondGameSchema = Joi.object({
   messageId: Joi.string().regex(objectIdRegex).required().messages({
     "any.required": "Message ID is required",
@@ -114,5 +145,7 @@ export {
   editMessageSchema,
   deleteMessageSchema,
   reactionSchema,
+  togglePinSchema,
+  linkPreviewSchema,
   respondGameSchema,
 };

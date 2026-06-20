@@ -53,6 +53,7 @@ class MessageRepository {
       },
       {
         read: true,
+        readAt: new Date(),
       }
     );
   }

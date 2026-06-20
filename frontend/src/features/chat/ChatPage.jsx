@@ -27,6 +27,7 @@ import ProfileModal from "./components/modals/ProfileModal";
 import DateProposalModal from "./components/modals/DateProposalModal";
 import TwoTruthsLieModal from "./components/modals/TwoTruthsLieModal";
 import ImageLightbox from "./components/modals/ImageLightbox";
+import ForwardModal from "./components/modals/ForwardModal";
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -50,6 +51,9 @@ export default function ChatPage() {
     editingMessage,
     setEditingMessage,
     editMessage,
+    setReplyingTo,
+    togglePin,
+    forwardMessage,
   } = useMessageStore();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -58,6 +62,7 @@ export default function ChatPage() {
   const [isGameModalOpen, setIsGameModalOpen] = useState(false);
   const [activeLightboxImage, setActiveLightboxImage] = useState(null);
   const [isDatePlannerOpen, setIsDatePlannerOpen] = useState(false);
+  const [forwardingMessage, setForwardingMessage] = useState(null);
 
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [aiTab, setAiTab] = useState("replies");
@@ -70,6 +75,7 @@ export default function ChatPage() {
     currentMatchIndex,
     activeHighlightedMessageId,
     handleSearch,
+    scrollToAndHighlight,
     nextSearchMatch,
     prevSearchMatch,
     toggleSearchBar,
@@ -109,6 +115,11 @@ export default function ChatPage() {
     setGifQuery,
     gifs,
     isLoadingGifs,
+    gifTab,
+    setGifTab,
+    favorites,
+    toggleFavorite,
+    isFavorite,
     handleImageUpload,
   } = useGifPicker();
   const { isEncryptionVerified, getVerificationFingerprint, verifyEncryption } =
@@ -195,6 +206,10 @@ export default function ChatPage() {
               onOpenLightbox={setActiveLightboxImage}
               onRespondToDate={respondToDateProposal}
               onRespondToGame={respondToGameProposal}
+              onReply={setReplyingTo}
+              onForward={setForwardingMessage}
+              onTogglePin={togglePin}
+              onScrollToMessage={scrollToAndHighlight}
               messagesEndRef={messagesEndRef}
             />
 
@@ -244,6 +259,11 @@ export default function ChatPage() {
                   onGifQueryChange={setGifQuery}
                   gifs={gifs}
                   isLoadingGifs={isLoadingGifs}
+                  gifTab={gifTab}
+                  onSetGifTab={setGifTab}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                  isFavorite={isFavorite}
                   onSelectGif={(gif) => {
                     sendMessage("", "image", gif.url);
                     setShowGifPicker(false);
@@ -304,6 +324,15 @@ export default function ChatPage() {
       <ImageLightbox
         imageUrl={activeLightboxImage}
         onClose={() => setActiveLightboxImage(null)}
+      />
+
+      <ForwardModal
+        isOpen={!!forwardingMessage}
+        message={forwardingMessage}
+        matches={matches}
+        activeChatUserId={activeChatUser?._id}
+        onClose={() => setForwardingMessage(null)}
+        onForward={forwardMessage}
       />
     </AppLayout>
   );

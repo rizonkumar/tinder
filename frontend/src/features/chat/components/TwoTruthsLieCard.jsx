@@ -37,7 +37,7 @@ export default function TwoTruthsLieCard({
   const getBorderColor = () => {
     if (isCorrect) return "border-green-300 bg-green-100";
     if (isIncorrect) return "border-red-300 bg-red-100";
-    return "border-border bg-background";
+    return "border-border bg-gray-100";
   };
 
   return (

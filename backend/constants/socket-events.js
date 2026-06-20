@@ -9,6 +9,7 @@ export const SOCKET_EVENTS = {
   MESSAGE_EDITED: "messageEdited",
   MESSAGE_DELETED: "messageDeleted",
   REACTION_UPDATED: "reactionUpdated",
+  MESSAGE_PINNED: "messagePinned",
   CONVERSATION_CLEARED: "conversationCleared",
   MESSAGES_READ: "messagesRead",
 

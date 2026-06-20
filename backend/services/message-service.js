@@ -2,43 +2,37 @@ import messageRepository from "../repositories/message-repository.js";
 import AppError from "../utils/appError.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 import cloudinary from "../config/cloudinary.js";
+import config from "../config/env.js";
 import { SOCKET_EVENTS } from "../constants/socket-events.js";
 import { MESSAGE_TYPES } from "../constants/message-types.js";
 import { DATE_STATUSES } from "../constants/date-statuses.js";
+import { MESSAGE_POPULATE } from "../constants/message-populate.js";
 import MessageDto from "../dtos/message-dto.js";
 
 class MessageService {
-  async sendMessage(senderId, receiverId, content, messageType = MESSAGE_TYPES.TEXT, mediaUrl = "", dateInfo = null, gameInfo = null) {
+  async sendMessage(senderId, receiverId, data = {}) {
+    const {
+      content,
+      messageType = MESSAGE_TYPES.TEXT,
+      mediaUrl = "",
+      dateInfo = null,
+      gameInfo = null,
+      replyTo = null,
+      callInfo = null,
+      isForwarded = false,
+      expireInSeconds = null,
+    } = data;
+
     if (messageType === MESSAGE_TYPES.TEXT && (!content || !content.trim())) {
       throw new AppError("Message content cannot be empty for text messages", 400);
     }
 
-    let finalMediaUrl = mediaUrl;
-    if (mediaUrl && mediaUrl.startsWith("data:")) {
-      try {
-        const uploadResponse = await cloudinary.uploader.upload(mediaUrl, {
-          resource_type: "auto",
-        });
-        finalMediaUrl = uploadResponse.secure_url;
-      } catch (error) {
-        console.error("Cloudinary upload failed:", error);
-        throw new AppError("Failed to upload attachment", 500);
-      }
-    }
+    const replyToId = await this._resolveReplyTo(replyTo, senderId, receiverId);
+    const finalMediaUrl = await this._resolveMediaUrl(mediaUrl);
 
     let messageContent = content ? content.trim() : "";
     if (!messageContent) {
-      if (messageType === MESSAGE_TYPES.IMAGE) {
-        messageContent = "Sent an image 📸";
-      } else if (messageType === MESSAGE_TYPES.VOICE_NOTE) {
-        messageContent = "Sent a voice note 🎤";
-      } else if (messageType === MESSAGE_TYPES.DATE_PROPOSAL) {
-        messageContent = `Proposed a date: ${dateInfo?.activity || "activity"}`;
-      } else if (messageType === MESSAGE_TYPES.GAME_TTAL) {
-        messageContent = "Challenged you to Two Truths & a Lie! 🎮";
-      } else {
-        messageContent = "Sent an attachment";
-      }
+      messageContent = this._defaultContentFor(messageType, dateInfo);
     }
 
     const newMessage = await messageRepository.create({
@@ -49,12 +43,16 @@ class MessageService {
       mediaUrl: finalMediaUrl,
       dateInfo,
       gameInfo,
+      replyTo: replyToId,
+      callInfo,
+      isForwarded,
+      expiresAt: this._resolveExpiry(expireInSeconds),
     });
 
-    const populatedMessage = await messageRepository.populate(newMessage, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    const populatedMessage = await messageRepository.populate(
+      newMessage,
+      MESSAGE_POPULATE
+    );
 
     const senderDto = new MessageDto(populatedMessage, senderId);
     const receiverDto = new MessageDto(populatedMessage, receiverId);
@@ -67,11 +65,74 @@ class MessageService {
     return senderDto;
   }
 
+  async _resolveReplyTo(replyTo, senderId, receiverId) {
+    if (!replyTo) return null;
+
+    const original = await messageRepository.findById(replyTo);
+    if (!original) {
+      throw new AppError("Cannot reply to a message that no longer exists", 404);
+    }
+
+    const sender = original.sender.toString();
+    const receiver = original.receiver.toString();
+    const isWithinConversation =
+      (sender === senderId.toString() && receiver === receiverId.toString()) ||
+      (sender === receiverId.toString() && receiver === senderId.toString());
+
+    if (!isWithinConversation) {
+      throw new AppError("Cannot reply to a message outside this conversation", 403);
+    }
+
+    return original._id;
+  }
+
+  _resolveExpiry(expireInSeconds) {
+    if (!expireInSeconds || expireInSeconds <= 0) return null;
+    return new Date(Date.now() + expireInSeconds * 1000);
+  }
+
+  async _resolveMediaUrl(mediaUrl) {
+    if (!mediaUrl || !mediaUrl.startsWith("data:")) {
+      return mediaUrl;
+    }
+
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(mediaUrl, {
+        resource_type: "auto",
+      });
+      return uploadResponse.secure_url;
+    } catch (error) {
+      console.error("Cloudinary upload failed:", error);
+      const detail =
+        config.env === "development" && error?.message ? ` (${error.message})` : "";
+      throw new AppError(
+        `We couldn't upload that attachment. Please try a smaller file.${detail}`,
+        500
+      );
+    }
+  }
+
+  _defaultContentFor(messageType, dateInfo) {
+    switch (messageType) {
+      case MESSAGE_TYPES.IMAGE:
+        return "Sent an image 📸";
+      case MESSAGE_TYPES.VOICE_NOTE:
+        return "Sent a voice note 🎤";
+      case MESSAGE_TYPES.DATE_PROPOSAL:
+        return `Proposed a date: ${dateInfo?.activity || "activity"}`;
+      case MESSAGE_TYPES.GAME_TTAL:
+        return "Challenged you to Two Truths & a Lie! 🎮";
+      default:
+        return "Sent an attachment";
+    }
+  }
+
   async getConversation(currentUserId, otherUserId) {
-    const messages = await messageRepository.findConversation(currentUserId, otherUserId, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    const messages = await messageRepository.findConversation(
+      currentUserId,
+      otherUserId,
+      MESSAGE_POPULATE
+    );
 
     await messageRepository.markAsRead(otherUserId, currentUserId);
 
@@ -79,6 +140,7 @@ class MessageService {
     if (otherSocketId) {
       io.to(otherSocketId).emit(SOCKET_EVENTS.MESSAGES_READ, {
         readerId: currentUserId,
+        readAt: new Date(),
       });
     }
 
@@ -103,7 +165,6 @@ class MessageService {
       throw new AppError("Message is not a date proposal", 400);
     }
 
-    // Verify authorized user is responding (the receiver)
     if (message.receiver.toString() !== userId.toString()) {
       throw new AppError("You are not authorized to respond to this proposal", 403);
     }
@@ -111,10 +172,10 @@ class MessageService {
     message.dateInfo.status = status;
     await messageRepository.save(message);
 
-    const populatedMessage = await messageRepository.populate(message, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    const populatedMessage = await messageRepository.populate(
+      message,
+      MESSAGE_POPULATE
+    );
 
     const senderSocketId = getReceiverSocketId(message.sender._id);
     const receiverSocketId = getReceiverSocketId(message.receiver._id);
@@ -136,10 +197,10 @@ class MessageService {
   }
 
   async getConfirmedDates(userId) {
-    const messages = await messageRepository.findConfirmedDates(userId, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    const messages = await messageRepository.findConfirmedDates(
+      userId,
+      MESSAGE_POPULATE
+    );
 
     return messages.map((message) => {
       const proposedByMe = message.sender._id.toString() === userId.toString();
@@ -167,10 +228,7 @@ class MessageService {
       currentUserId,
       otherUserId,
       query,
-      [
-        { path: "sender", select: "name image" },
-        { path: "receiver", select: "name image" },
-      ]
+      MESSAGE_POPULATE
     );
 
     return messages.map((message) => new MessageDto(message, currentUserId));
@@ -191,10 +249,7 @@ class MessageService {
     message.isEdited = true;
     await messageRepository.save(message);
 
-    const populated = await messageRepository.populate(message, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    const populated = await messageRepository.populate(message, MESSAGE_POPULATE);
     const senderDto = new MessageDto(populated, message.sender._id);
     const receiverDto = new MessageDto(populated, message.receiver._id);
 
@@ -217,12 +272,11 @@ class MessageService {
       message.isDeleted = true;
       message.content = "This message was deleted";
       message.mediaUrl = "";
+      message.isPinned = false;
+      message.pinnedBy = null;
       await messageRepository.save(message);
 
-      const populated = await messageRepository.populate(message, [
-        { path: "sender", select: "name image" },
-        { path: "receiver", select: "name image" },
-      ]);
+      const populated = await messageRepository.populate(message, MESSAGE_POPULATE);
       const senderDto = new MessageDto(populated, message.sender._id);
       const receiverDto = new MessageDto(populated, message.receiver._id);
 
@@ -242,10 +296,7 @@ class MessageService {
         message.deletedFor.push(userId);
         await messageRepository.save(message);
       }
-      const populated = await messageRepository.populate(message, [
-        { path: "sender", select: "name image" },
-        { path: "receiver", select: "name image" },
-      ]);
+      const populated = await messageRepository.populate(message, MESSAGE_POPULATE);
       return new MessageDto(populated, userId);
     }
   }
@@ -276,32 +327,64 @@ class MessageService {
       if (existingIndex !== -1) {
         message.reactions.splice(existingIndex, 1);
       }
+    } else if (existingIndex !== -1) {
+      message.reactions[existingIndex].emoji = emoji;
     } else {
-      if (existingIndex !== -1) {
-        message.reactions[existingIndex].emoji = emoji;
-      } else {
-        message.reactions.push({ user: userId, emoji });
-      }
+      message.reactions.push({ user: userId, emoji });
     }
     await messageRepository.save(message);
 
-    const populated = await messageRepository.populate(message, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    return await this._broadcastUpdate(
+      message,
+      userId,
+      SOCKET_EVENTS.REACTION_UPDATED
+    );
+  }
+
+  async togglePin(messageId, userId, isPinned) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new AppError("Message not found", 404);
+    }
+    if (message.isDeleted) {
+      throw new AppError("Cannot pin a deleted message", 400);
+    }
+    const isParticipant =
+      message.sender.toString() === userId.toString() ||
+      message.receiver.toString() === userId.toString();
+    if (!isParticipant) {
+      throw new AppError("You are not authorized to pin this message", 403);
+    }
+
+    message.isPinned = isPinned;
+    message.pinnedBy = isPinned ? userId : null;
+    await messageRepository.save(message);
+
+    return await this._broadcastUpdate(
+      message,
+      userId,
+      SOCKET_EVENTS.MESSAGE_PINNED
+    );
+  }
+
+  async _broadcastUpdate(message, currentUserId, event) {
+    const populated = await messageRepository.populate(message, MESSAGE_POPULATE);
     const senderDto = new MessageDto(populated, message.sender._id);
     const receiverDto = new MessageDto(populated, message.receiver._id);
 
     const senderSocket = getReceiverSocketId(message.sender._id);
     const receiverSocket = getReceiverSocketId(message.receiver._id);
+    const isSameUser =
+      message.sender._id.toString() === message.receiver._id.toString();
 
     if (senderSocket) {
-      io.to(senderSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, senderDto);
+      io.to(senderSocket).emit(event, senderDto);
     }
-    if (receiverSocket && message.sender._id.toString() !== message.receiver._id.toString()) {
-      io.to(receiverSocket).emit(SOCKET_EVENTS.REACTION_UPDATED, receiverDto);
+    if (receiverSocket && !isSameUser) {
+      io.to(receiverSocket).emit(event, receiverDto);
     }
-    return new MessageDto(populated, userId);
+
+    return new MessageDto(populated, currentUserId);
   }
 
   async markConversationAsRead(currentUserId, otherUserId) {
@@ -310,6 +393,7 @@ class MessageService {
     if (otherSocketId) {
       io.to(otherSocketId).emit(SOCKET_EVENTS.MESSAGES_READ, {
         readerId: currentUserId,
+        readAt: new Date(),
       });
     }
     return true;
@@ -320,7 +404,7 @@ class MessageService {
     if (!message) {
       throw new AppError("Message not found", 404);
     }
-    if (message.messageType !== "game_ttal") {
+    if (message.messageType !== MESSAGE_TYPES.GAME_TTAL) {
       throw new AppError("Message is not a game challenge", 400);
     }
     if (message.receiver.toString() !== userId.toString()) {
@@ -331,13 +415,14 @@ class MessageService {
     }
 
     message.gameInfo.guessIndex = guessIndex;
-    message.gameInfo.status = (guessIndex === message.gameInfo.lieIndex) ? "correct" : "incorrect";
+    message.gameInfo.status =
+      guessIndex === message.gameInfo.lieIndex ? "correct" : "incorrect";
     await messageRepository.save(message);
 
-    const populatedMessage = await messageRepository.populate(message, [
-      { path: "sender", select: "name image" },
-      { path: "receiver", select: "name image" },
-    ]);
+    const populatedMessage = await messageRepository.populate(
+      message,
+      MESSAGE_POPULATE
+    );
 
     const senderSocketId = getReceiverSocketId(message.sender._id);
     const receiverSocketId = getReceiverSocketId(message.receiver._id);

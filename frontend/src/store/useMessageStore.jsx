@@ -14,11 +14,25 @@ export const useMessageStore = create((set, get) => ({
   isLoadingSmartReplies: false,
   isTypingUser: false,
   editingMessage: null,
+  replyingTo: null,
+  disappearingDuration: 0,
 
   setActiveChatUser: (user) =>
-    set({ activeChatUser: user, isTypingUser: false, editingMessage: null }),
+    set({
+      activeChatUser: user,
+      isTypingUser: false,
+      editingMessage: null,
+      replyingTo: null,
+      disappearingDuration: 0,
+    }),
 
-  setEditingMessage: (message) => set({ editingMessage: message }),
+  setEditingMessage: (message) =>
+    set({ editingMessage: message, replyingTo: null }),
+
+  setReplyingTo: (message) =>
+    set({ replyingTo: message, editingMessage: null }),
+
+  setDisappearingDuration: (seconds) => set({ disappearingDuration: seconds }),
 
   getMessages: async (userId) => {
     try {
@@ -34,8 +48,8 @@ export const useMessageStore = create((set, get) => ({
     }
   },
 
-  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null, gameInfo = null) => {
-    const { activeChatUser, messages } = get();
+  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null, gameInfo = null, options = {}) => {
+    const { activeChatUser, messages, replyingTo, disappearingDuration } = get();
     if (!activeChatUser) return;
     try {
       const response = await axiosInstance.post("/messages/send", {
@@ -45,11 +59,35 @@ export const useMessageStore = create((set, get) => ({
         mediaUrl,
         dateInfo,
         gameInfo,
+        replyTo: replyingTo?._id || null,
+        callInfo: options.callInfo || null,
+        isForwarded: options.isForwarded || false,
+        expireInSeconds: options.expireInSeconds ?? disappearingDuration ?? 0,
       });
       const newMessage = response.data.data;
-      set({ messages: [...messages, newMessage] });
+      set({ messages: [...messages, newMessage], replyingTo: null });
     } catch (error) {
       showToast.error(error.response?.data?.message || "Failed to send message");
+    }
+  },
+
+  forwardMessage: async (message, targetUserId) => {
+    try {
+      const response = await axiosInstance.post("/messages/send", {
+        receiverId: targetUserId,
+        content: message.content,
+        messageType: message.messageType,
+        mediaUrl: message.mediaUrl || "",
+        isForwarded: true,
+      });
+      const newMessage = response.data.data;
+      const { activeChatUser, messages } = get();
+      if (activeChatUser && targetUserId === activeChatUser._id) {
+        set({ messages: [...messages, newMessage] });
+      }
+      showToast.success("Message forwarded");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to forward message");
     }
   },
 
@@ -236,6 +274,16 @@ export const useMessageStore = create((set, get) => ({
       });
     });
 
+    socket.off("messagePinned");
+    socket.on("messagePinned", (updatedMessage) => {
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === updatedMessage._id ? updatedMessage : m
+        ),
+      });
+    });
+
     socket.off("conversationCleared");
     socket.on("conversationCleared", ({ otherUserId }) => {
       const { activeChatUser } = get();
@@ -245,12 +293,13 @@ export const useMessageStore = create((set, get) => ({
     });
 
     socket.off("messagesRead");
-    socket.on("messagesRead", ({ readerId }) => {
+    socket.on("messagesRead", ({ readerId, readAt }) => {
       const { activeChatUser, messages } = get();
       if (activeChatUser && activeChatUser._id === readerId) {
+        const readTimestamp = readAt || new Date().toISOString();
         set({
           messages: messages.map((m) =>
-            m.read ? m : { ...m, read: true }
+            m.read ? m : { ...m, read: true, readAt: readTimestamp }
           ),
         });
       }
@@ -267,6 +316,7 @@ export const useMessageStore = create((set, get) => ({
       socket.off("messageEdited");
       socket.off("messageDeleted");
       socket.off("reactionUpdated");
+      socket.off("messagePinned");
       socket.off("conversationCleared");
       socket.off("messagesRead");
     }
@@ -361,6 +411,26 @@ export const useMessageStore = create((set, get) => ({
     } catch (error) {
       showToast.error(
         error.response?.data?.message || "Failed to update reaction"
+      );
+    }
+  },
+
+  togglePin: async (messageId, isPinned) => {
+    try {
+      const response = await axiosInstance.patch(`/messages/${messageId}/pin`, {
+        isPinned,
+      });
+      const updatedMessage = response.data.data;
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === messageId ? updatedMessage : m
+        ),
+      });
+      showToast.success(isPinned ? "Message pinned" : "Message unpinned");
+    } catch (error) {
+      showToast.error(
+        error.response?.data?.message || "Failed to update pinned message"
       );
     }
   },

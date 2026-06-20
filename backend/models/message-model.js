@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { MESSAGE_TYPES } from "../constants/message-types.js";
 import { DATE_STATUSES } from "../constants/date-statuses.js";
+import { CALL_STATUSES } from "../constants/call-statuses.js";
 
 const messageSchema = new mongoose.Schema(
   {
@@ -27,9 +28,35 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
+    pinnedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    isForwarded: {
+      type: Boolean,
+      default: false,
+    },
     read: {
       type: Boolean,
       default: false,
+    },
+    readAt: {
+      type: Date,
+      default: null,
+    },
+    expiresAt: {
+      type: Date,
+      default: null,
     },
     isEdited: {
       type: Boolean,
@@ -75,12 +102,20 @@ const messageSchema = new mongoose.Schema(
         default: "pending",
       },
     },
+    callInfo: {
+      status: {
+        type: String,
+        enum: Object.values(CALL_STATUSES),
+      },
+      duration: Number,
+    },
   },
   { timestamps: true }
 );
 
 messageSchema.index({ sender: 1, receiver: 1 });
 messageSchema.index({ createdAt: -1 });
+messageSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const Message = mongoose.model("Message", messageSchema);
 

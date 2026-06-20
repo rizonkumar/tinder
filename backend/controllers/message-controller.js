@@ -1,20 +1,34 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import messageService from "../services/message-service.js";
 import aiService from "../services/ai-service.js";
+import linkPreviewService from "../services/link-preview-service.js";
 import sendResponse from "../utils/responseHandler.js";
 
 export const sendMessage = asyncHandler(async (req, res) => {
-  const { content, receiverId, messageType, mediaUrl, dateInfo, gameInfo } = req.body;
-
-  const message = await messageService.sendMessage(
-    req.user._id,
+  const {
+    content,
     receiverId,
+    messageType,
+    mediaUrl,
+    dateInfo,
+    gameInfo,
+    replyTo,
+    callInfo,
+    isForwarded,
+    expireInSeconds,
+  } = req.body;
+
+  const message = await messageService.sendMessage(req.user._id, receiverId, {
     content,
     messageType,
     mediaUrl,
     dateInfo,
-    gameInfo
-  );
+    gameInfo,
+    replyTo,
+    callInfo,
+    isForwarded,
+    expireInSeconds,
+  });
 
   sendResponse(res, 200, message, "Message sent successfully");
 });
@@ -133,6 +147,27 @@ export const toggleReaction = asyncHandler(async (req, res) => {
   );
 
   sendResponse(res, 200, message, "Reaction updated successfully");
+});
+
+export const getLinkPreview = asyncHandler(async (req, res) => {
+  const { url } = req.query;
+
+  const preview = await linkPreviewService.getLinkPreview(url);
+
+  sendResponse(res, 200, preview, "Link preview retrieved successfully");
+});
+
+export const togglePin = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { isPinned } = req.body;
+
+  const message = await messageService.togglePin(
+    messageId,
+    req.user._id,
+    isPinned
+  );
+
+  sendResponse(res, 200, message, "Message pin updated successfully");
 });
 
 export const markConversationAsRead = asyncHandler(async (req, res) => {
