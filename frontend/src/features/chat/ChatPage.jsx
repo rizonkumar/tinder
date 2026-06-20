@@ -50,6 +50,8 @@ export default function ChatPage() {
     editingMessage,
     setEditingMessage,
     editMessage,
+    setReplyingTo,
+    togglePin,
   } = useMessageStore();
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -70,6 +72,7 @@ export default function ChatPage() {
     currentMatchIndex,
     activeHighlightedMessageId,
     handleSearch,
+    scrollToAndHighlight,
     nextSearchMatch,
     prevSearchMatch,
     toggleSearchBar,
@@ -195,6 +198,9 @@ export default function ChatPage() {
               onOpenLightbox={setActiveLightboxImage}
               onRespondToDate={respondToDateProposal}
               onRespondToGame={respondToGameProposal}
+              onReply={setReplyingTo}
+              onTogglePin={togglePin}
+              onScrollToMessage={scrollToAndHighlight}
               messagesEndRef={messagesEndRef}
             />
 

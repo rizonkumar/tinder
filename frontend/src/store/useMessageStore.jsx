@@ -14,11 +14,21 @@ export const useMessageStore = create((set, get) => ({
   isLoadingSmartReplies: false,
   isTypingUser: false,
   editingMessage: null,
+  replyingTo: null,
 
   setActiveChatUser: (user) =>
-    set({ activeChatUser: user, isTypingUser: false, editingMessage: null }),
+    set({
+      activeChatUser: user,
+      isTypingUser: false,
+      editingMessage: null,
+      replyingTo: null,
+    }),
 
-  setEditingMessage: (message) => set({ editingMessage: message }),
+  setEditingMessage: (message) =>
+    set({ editingMessage: message, replyingTo: null }),
+
+  setReplyingTo: (message) =>
+    set({ replyingTo: message, editingMessage: null }),
 
   getMessages: async (userId) => {
     try {
@@ -35,7 +45,7 @@ export const useMessageStore = create((set, get) => ({
   },
 
   sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null, gameInfo = null) => {
-    const { activeChatUser, messages } = get();
+    const { activeChatUser, messages, replyingTo } = get();
     if (!activeChatUser) return;
     try {
       const response = await axiosInstance.post("/messages/send", {
@@ -45,9 +55,10 @@ export const useMessageStore = create((set, get) => ({
         mediaUrl,
         dateInfo,
         gameInfo,
+        replyTo: replyingTo?._id || null,
       });
       const newMessage = response.data.data;
-      set({ messages: [...messages, newMessage] });
+      set({ messages: [...messages, newMessage], replyingTo: null });
     } catch (error) {
       showToast.error(error.response?.data?.message || "Failed to send message");
     }
@@ -236,6 +247,16 @@ export const useMessageStore = create((set, get) => ({
       });
     });
 
+    socket.off("messagePinned");
+    socket.on("messagePinned", (updatedMessage) => {
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === updatedMessage._id ? updatedMessage : m
+        ),
+      });
+    });
+
     socket.off("conversationCleared");
     socket.on("conversationCleared", ({ otherUserId }) => {
       const { activeChatUser } = get();
@@ -267,6 +288,7 @@ export const useMessageStore = create((set, get) => ({
       socket.off("messageEdited");
       socket.off("messageDeleted");
       socket.off("reactionUpdated");
+      socket.off("messagePinned");
       socket.off("conversationCleared");
       socket.off("messagesRead");
     }
@@ -361,6 +383,26 @@ export const useMessageStore = create((set, get) => ({
     } catch (error) {
       showToast.error(
         error.response?.data?.message || "Failed to update reaction"
+      );
+    }
+  },
+
+  togglePin: async (messageId, isPinned) => {
+    try {
+      const response = await axiosInstance.patch(`/messages/${messageId}/pin`, {
+        isPinned,
+      });
+      const updatedMessage = response.data.data;
+      const { messages } = get();
+      set({
+        messages: messages.map((m) =>
+          m._id === messageId ? updatedMessage : m
+        ),
+      });
+      showToast.success(isPinned ? "Message pinned" : "Message unpinned");
+    } catch (error) {
+      showToast.error(
+        error.response?.data?.message || "Failed to update pinned message"
       );
     }
   },

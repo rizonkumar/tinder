@@ -1,8 +1,5 @@
 import { Calendar, Clock, MapPin, X, Heart } from "lucide-react";
-import {
-  ACTIVITY_OPTIONS,
-  DEFAULT_ACTIVITY,
-} from "../../../constants";
+import { ACTIVITY_OPTIONS, DEFAULT_ACTIVITY } from "../../../constants";
 
 export default function DateProposalCard({
   message,
@@ -19,6 +16,24 @@ export default function DateProposalCard({
   const isAccepted = info.status === "accepted";
   const isDeclined = info.status === "declined";
 
+  const cardSurface = isAccepted
+    ? "bg-gray-100 border-green-300"
+    : isDeclined
+      ? "bg-gray-100 border-border opacity-60"
+      : "bg-gray-100 border-border";
+
+  const accentBar = isAccepted
+    ? "bg-green-700"
+    : isDeclined
+      ? "bg-gray-400"
+      : "bg-accent";
+
+  const iconSurface = isAccepted
+    ? "bg-green-700 text-white"
+    : isDeclined
+      ? "bg-gray-300 text-foreground"
+      : "bg-primary text-primary-foreground";
+
   return (
     <div
       id={`msg-${message._id}`}
@@ -27,27 +42,11 @@ export default function DateProposalCard({
       }`}
     >
       <div
-        className={`w-full max-w-[310px] rounded-2xl p-5 shadow-card border relative overflow-hidden transition-all duration-200 ${
-          isAccepted
-            ? "bg-background border-green-300"
-            : isDeclined
-              ? "bg-background-secondary border-border opacity-50"
-              : "bg-background border-border"
-        } ${
-          isHighlighted
-            ? "ring-2 ring-ring"
-            : ""
+        className={`w-full max-w-[310px] rounded-md p-5 shadow-card border relative overflow-hidden transition-all duration-200 ${cardSurface} ${
+          isHighlighted ? "ring-2 ring-ring" : ""
         }`}
       >
-        <div
-          className={`absolute top-0 left-0 right-0 h-[3px] ${
-            isAccepted
-              ? "bg-green-700"
-              : isDeclined
-                ? "bg-gray-400"
-                : "bg-accent"
-          }`}
-        />
+        <div className={`absolute top-0 left-0 right-0 h-[3px] ${accentBar}`} />
 
         <div className="flex items-center justify-between mb-4 mt-0.5 select-none">
           <span className="text-[9px] font-black uppercase tracking-widest text-foreground-muted font-outfit">
@@ -60,8 +59,8 @@ export default function DateProposalCard({
             </span>
           )}
           {isDeclined && (
-            <span className="flex items-center space-x-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-foreground-muted">
-              <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+            <span className="flex items-center space-x-1.5 rounded-full bg-surface-active px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-foreground-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-500" />
               <span>Declined</span>
             </span>
           )}
@@ -75,13 +74,7 @@ export default function DateProposalCard({
 
         <div className="flex items-center space-x-3.5 mb-4">
           <div
-            className={`relative flex h-11 w-11 items-center justify-center rounded-xl shrink-0 ${
-              isAccepted
-                ? "bg-green-700 text-white"
-                : isDeclined
-                  ? "bg-gray-300 text-foreground"
-                  : act.surface
-            }`}
+            className={`relative flex h-11 w-11 items-center justify-center rounded-md shrink-0 ${iconSurface}`}
           >
             <IconComponent size={20} className="stroke-[2.2]" />
           </div>
@@ -97,24 +90,15 @@ export default function DateProposalCard({
 
         <div className="space-y-2 text-xs text-foreground-secondary font-medium font-sans mb-4 border-t border-b border-border py-3 mt-1 select-none">
           <div className="flex items-center space-x-2.5">
-            <Calendar
-              size={13}
-              className="text-foreground-muted shrink-0"
-            />
+            <Calendar size={13} className="text-foreground-muted shrink-0" />
             <span className="truncate">{info.date}</span>
           </div>
           <div className="flex items-center space-x-2.5">
-            <Clock
-              size={13}
-              className="text-foreground-muted shrink-0"
-            />
+            <Clock size={13} className="text-foreground-muted shrink-0" />
             <span className="truncate">{info.time}</span>
           </div>
           <div className="flex items-center space-x-2.5">
-            <MapPin
-              size={13}
-              className="text-foreground-muted shrink-0"
-            />
+            <MapPin size={13} className="text-foreground-muted shrink-0" />
             <span className="truncate font-semibold">
               {info.location || "To be decided"}
             </span>
@@ -124,22 +108,24 @@ export default function DateProposalCard({
         {isPending && (
           <div className="w-full mt-2">
             {isSentByMe ? (
-              <div className="flex items-center justify-center space-x-2 text-center text-[10px] text-foreground-muted bg-background-secondary rounded-xl py-2.5 font-outfit font-semibold tracking-wide">
+              <div className="flex items-center justify-center space-x-2 text-center text-[10px] text-foreground-muted bg-background rounded-md py-2.5 font-outfit font-semibold tracking-wide border border-border">
                 <Clock size={12} />
                 <span>Awaiting {activeChatUserName}&apos;s reply</span>
               </div>
             ) : (
               <div className="flex items-center space-x-2.5 w-full">
                 <button
+                  type="button"
                   onClick={() => onRespond(message._id, "declined")}
-                  className="flex-1 py-2 rounded-xl text-[10px] font-bold text-red-800 border border-border hover:bg-surface-hover transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
+                  className="flex-1 py-2 rounded-md text-[10px] font-bold text-red-800 border border-border bg-background hover:bg-surface-hover transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
                 >
                   <X size={12} />
                   <span>Decline</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => onRespond(message._id, "accepted")}
-                  className="flex-1 py-2 rounded-xl text-[10px] font-bold text-white bg-green-700 hover:bg-green-800 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
+                  className="flex-1 py-2 rounded-md text-[10px] font-bold text-white bg-green-700 hover:bg-green-800 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
                 >
                   <Heart size={12} className="fill-white" />
                   <span>Accept</span>
