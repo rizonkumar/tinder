@@ -9,6 +9,7 @@ import {
   deleteMessageSchema,
   reactionSchema,
   togglePinSchema,
+  linkPreviewSchema,
   respondGameSchema,
 } from "../validators/message-validator.js";
 import {
@@ -25,6 +26,7 @@ import {
   clearConversation,
   toggleReaction,
   togglePin,
+  getLinkPreview,
   markConversationAsRead,
   respondToGameProposal,
 } from "../controllers/message-controller.js";
@@ -36,6 +38,7 @@ router.use(protectRoute);
 router.post("/send", validate(sendMessageSchema), sendMessage);
 router.get("/conversation/:userId", getConversation);
 router.get("/unread-count", getUnreadCount);
+router.get("/link-preview", validate(linkPreviewSchema, "query"), getLinkPreview);
 router.post("/icebreakers/:userId", generateIcebreakers);
 router.post("/date/respond", validate(respondProposalSchema), respondToDateProposal);
 router.get("/dates/confirmed", getConfirmedDates);

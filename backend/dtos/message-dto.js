@@ -13,8 +13,18 @@ class MessageDto {
     this.messageType = msgObj.messageType;
     this.mediaUrl = this.isDeleted ? "" : (msgObj.mediaUrl || "");
     this.read = !!msgObj.read;
+    this.readAt = msgObj.readAt || null;
     this.isPinned = !!msgObj.isPinned;
     this.pinnedBy = msgObj.pinnedBy ? msgObj.pinnedBy.toString() : null;
+    this.isForwarded = !!msgObj.isForwarded;
+    this.expiresAt = msgObj.expiresAt || null;
+    this.callInfo =
+      msgObj.callInfo && msgObj.callInfo.status
+        ? {
+            status: msgObj.callInfo.status,
+            duration: msgObj.callInfo.duration || 0,
+          }
+        : null;
     this.replyTo = this._mapReplyTo(msgObj.replyTo);
     this.reactions = msgObj.reactions
       ? msgObj.reactions.map((r) => ({

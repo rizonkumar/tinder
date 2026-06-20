@@ -10,16 +10,19 @@ import { MESSAGE_POPULATE } from "../constants/message-populate.js";
 import MessageDto from "../dtos/message-dto.js";
 
 class MessageService {
-  async sendMessage(
-    senderId,
-    receiverId,
-    content,
-    messageType = MESSAGE_TYPES.TEXT,
-    mediaUrl = "",
-    dateInfo = null,
-    gameInfo = null,
-    replyTo = null
-  ) {
+  async sendMessage(senderId, receiverId, data = {}) {
+    const {
+      content,
+      messageType = MESSAGE_TYPES.TEXT,
+      mediaUrl = "",
+      dateInfo = null,
+      gameInfo = null,
+      replyTo = null,
+      callInfo = null,
+      isForwarded = false,
+      expireInSeconds = null,
+    } = data;
+
     if (messageType === MESSAGE_TYPES.TEXT && (!content || !content.trim())) {
       throw new AppError("Message content cannot be empty for text messages", 400);
     }
@@ -41,6 +44,9 @@ class MessageService {
       dateInfo,
       gameInfo,
       replyTo: replyToId,
+      callInfo,
+      isForwarded,
+      expiresAt: this._resolveExpiry(expireInSeconds),
     });
 
     const populatedMessage = await messageRepository.populate(
@@ -78,6 +84,11 @@ class MessageService {
     }
 
     return original._id;
+  }
+
+  _resolveExpiry(expireInSeconds) {
+    if (!expireInSeconds || expireInSeconds <= 0) return null;
+    return new Date(Date.now() + expireInSeconds * 1000);
   }
 
   async _resolveMediaUrl(mediaUrl) {
@@ -129,6 +140,7 @@ class MessageService {
     if (otherSocketId) {
       io.to(otherSocketId).emit(SOCKET_EVENTS.MESSAGES_READ, {
         readerId: currentUserId,
+        readAt: new Date(),
       });
     }
 
@@ -381,6 +393,7 @@ class MessageService {
     if (otherSocketId) {
       io.to(otherSocketId).emit(SOCKET_EVENTS.MESSAGES_READ, {
         readerId: currentUserId,
+        readAt: new Date(),
       });
     }
     return true;
