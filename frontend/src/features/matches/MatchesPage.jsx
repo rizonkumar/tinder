@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Header } from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
+import AppLayout from "../../components/AppLayout";
 import { useMatchStore } from "../../store/useMatchStore";
 import { Heart, MessageCircle, Flame, Sparkles, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -27,14 +26,9 @@ export default function MatchesPage() {
   }, [getMyMatches, getLikedUsers]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background lg:flex-row transition-colors duration-300">
-      <Sidebar />
-      <div className="flex flex-grow flex-col overflow-hidden lg:w-3/4">
-        <Header />
-
-        <main className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl space-y-8 select-none">
-            <div className="flex items-center space-x-3.5">
+    <AppLayout variant="scroll">
+      <div className="space-y-8 select-none">
+        <div className="flex items-center space-x-3.5">
               <div className="rounded-lg bg-green-100 border border-green-200 p-3 text-green-700">
                 <Heart size={26} className="fill-current animate-pulse" />
               </div>
@@ -271,10 +265,8 @@ export default function MatchesPage() {
                   )}
                 </motion.div>
               )}
-            </AnimatePresence>
-          </div>
-        </main>
+        </AnimatePresence>
       </div>
-    </div>
+    </AppLayout>
   );
 }

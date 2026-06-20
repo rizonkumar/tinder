@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDatePlanStore } from "../../store/useDatePlanStore";
 import { useAuthStore } from "../../store/useAuthStore";
-import Sidebar from "../../components/Sidebar";
-import { Header } from "../../components/Header";
+import AppLayout from "../../components/AppLayout";
 import {
   CalendarDays, MapPin, Clock, Coffee, Utensils, Wine, Compass
 } from "lucide-react";
@@ -92,13 +91,8 @@ export default function DateDashboard() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-background transition-colors duration-300 font-sans">
-      <Sidebar />
-      <div className="flex flex-grow flex-col h-full overflow-hidden">
-        <Header />
-
-        <main className="relative flex-grow h-[calc(100vh-72px)] overflow-y-auto p-4 md:p-8 bg-background font-outfit">
-          <div className="max-w-4xl mx-auto space-y-6">
+    <AppLayout variant="scroll">
+      <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-black tracking-tight text-foreground uppercase flex items-center gap-2">
                 <CalendarDays size={28} className="text-accent stroke-[2.5]" />
@@ -202,9 +196,7 @@ export default function DateDashboard() {
                 })}
               </div>
             )}
-          </div>
-        </main>
       </div>
-    </div>
+    </AppLayout>
   );
 }

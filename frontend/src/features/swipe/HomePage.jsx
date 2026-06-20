@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import { Header } from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
+import AppLayout from "../../components/AppLayout";
 import { useMatchStore } from "../../store/useMatchStore";
 import CardSwiper from "./CardSwiper";
 
@@ -20,22 +19,16 @@ export default function HomePage() {
   }, [getUserProfiles]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-background transition-colors duration-300 font-sans">
-      <Sidebar />
-      <div className="flex flex-grow flex-col h-full overflow-hidden">
-        <Header />
-        <main className="relative flex-grow h-[calc(100vh-72px)] overflow-hidden flex items-center justify-center p-4 bg-background-secondary">
-          <CardSwiper
-            userProfiles={userProfiles}
-            isLoadingUserProfiles={isLoadingUserProfiles}
-            onRefresh={getUserProfiles}
-            onSwipeLeft={swipeLeft}
-            onSwipeRight={swipeRight}
-            onSwipeSuperLike={swipeSuperLike}
-            onRewind={rewind}
-          />
-        </main>
-      </div>
-    </div>
+    <AppLayout variant="fixed">
+      <CardSwiper
+        userProfiles={userProfiles}
+        isLoadingUserProfiles={isLoadingUserProfiles}
+        onRefresh={getUserProfiles}
+        onSwipeLeft={swipeLeft}
+        onSwipeRight={swipeRight}
+        onSwipeSuperLike={swipeSuperLike}
+        onRewind={rewind}
+      />
+    </AppLayout>
   );
 }

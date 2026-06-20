@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useUserStore } from "../../store/useUserStore";
 import { useMatchStore } from "../../store/useMatchStore";
-import { Header } from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
+import AppLayout from "../../components/AppLayout";
 import {
   Crown,
   Sparkles,
@@ -87,14 +86,8 @@ export default function GoldHubPage() {
   const currentLikes = whoLikedMe?.length > 0 ? whoLikedMe : MOCK_LIKES;
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-background transition-colors duration-300 font-sans">
-      <Sidebar />
-      <div className="flex flex-grow flex-col h-full overflow-hidden bg-background text-foreground">
-        <Header />
-
-        {/* Scrolling strictly bound internally */}
-        <main className="flex-grow overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 h-[calc(100vh-72px)] scrollbar-none">
-          <div className="mx-auto max-w-4xl space-y-6 select-none">
+    <AppLayout variant="scroll">
+      <div className="space-y-6 select-none">
             <div className="flex flex-col items-center text-center space-y-4 rounded-3xl bg-background border border-border p-6 sm:p-8 shadow-card relative overflow-hidden">
               <motion.div
                 animate={{ y: [0, -4, 0] }}
@@ -351,8 +344,6 @@ export default function GoldHubPage() {
                 </div>
               )}
             </div>
-          </div>
-        </main>
       </div>
 
       <AnimatePresence>
@@ -452,6 +443,6 @@ export default function GoldHubPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </AppLayout>
   );
 }
