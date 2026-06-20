@@ -9,6 +9,7 @@ export default function CustomDatePicker({
   value,
   onChange,
   placeholder = "Select Date",
+  inline = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(
@@ -106,7 +107,11 @@ export default function CustomDatePicker({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[300px] z-[260] bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans"
+            className={`${
+              inline
+                ? "relative mt-2 w-full"
+                : "absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[300px] z-[260]"
+            } bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans`}
           >
             <div className="flex items-center justify-between mb-4 text-xs font-bold text-foreground font-outfit px-1 select-none">
               <button

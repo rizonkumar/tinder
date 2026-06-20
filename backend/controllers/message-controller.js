@@ -63,6 +63,11 @@ export const respondToDateProposal = asyncHandler(async (req, res) => {
   sendResponse(res, 200, updatedMessage, "Date response saved successfully");
 });
 
+export const getConfirmedDates = asyncHandler(async (req, res) => {
+  const dates = await messageService.getConfirmedDates(req.user._id);
+  sendResponse(res, 200, dates, "Confirmed dates retrieved successfully");
+});
+
 export const generateSmartReplies = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 

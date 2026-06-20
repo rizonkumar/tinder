@@ -1,210 +1,299 @@
 import { useEffect, useState } from "react";
 import { useDatePlanStore } from "../../store/useDatePlanStore";
 import { useAuthStore } from "../../store/useAuthStore";
-import Sidebar from "../../components/Sidebar";
-import { Header } from "../../components/Header";
+import AppLayout from "../../components/AppLayout";
+import { ACTIVITY_OPTIONS, DEFAULT_ACTIVITY } from "../../constants";
 import {
-  CalendarDays, MapPin, Clock, Coffee, Utensils, Wine, Compass
+  CalendarDays,
+  MapPin,
+  Clock,
+  Coffee,
+  Utensils,
+  Wine,
+  Compass,
+  Users,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-function CountdownTimer({ targetDateTime }) {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const target = new Date(`${targetDateTime.date}T${targetDateTime.time}`);
-    const now = new Date();
-    const diff = target.getTime() - now.getTime();
-    if (diff <= 0) return null;
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60)
-    };
-  });
+function normalizeTime(time) {
+  if (!time) return "00:00";
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return time;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3]?.toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return `${String(hours).padStart(2, "0")}:${minutes}`;
+}
+
+function computeTimeLeft(date, time) {
+  const diff = new Date(`${date}T${normalizeTime(time)}`).getTime() - Date.now();
+  if (diff <= 0) return null;
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60),
+  };
+}
+
+function CountdownTimer({ date, time }) {
+  const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(date, time));
 
   useEffect(() => {
-    const calculateTime = () => {
-      const target = new Date(`${targetDateTime.date}T${targetDateTime.time}`);
-      const now = new Date();
-      const diff = target.getTime() - now.getTime();
-      if (diff <= 0) return null;
-      return {
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
-        seconds: Math.floor((diff / 1000) % 60)
-      };
-    };
-
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTime());
-    }, 1000);
-
+    const timer = setInterval(() => setTimeLeft(computeTimeLeft(date, time)), 1000);
     return () => clearInterval(timer);
-  }, [targetDateTime]);
+  }, [date, time]);
 
   if (!timeLeft) {
     return (
-      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider">
-        Happening Now! ❤️
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-700 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+        Happening Now
       </span>
     );
   }
 
+  const cells = [
+    { label: "Days", value: timeLeft.days },
+    { label: "Hours", value: timeLeft.hours },
+    { label: "Mins", value: timeLeft.minutes },
+    { label: "Secs", value: timeLeft.seconds },
+  ];
+
   return (
-    <div className="grid grid-cols-4 gap-2 text-center max-w-[280px]">
-      <div className="bg-background-secondary border border-border p-2 rounded-xl">
-        <span className="block text-sm font-black text-foreground">{timeLeft.days}</span>
-        <span className="text-[8px] uppercase font-bold text-foreground-muted">Days</span>
-      </div>
-      <div className="bg-background-secondary border border-border p-2 rounded-xl">
-        <span className="block text-sm font-black text-foreground">{timeLeft.hours}</span>
-        <span className="text-[8px] uppercase font-bold text-foreground-muted">Hours</span>
-      </div>
-      <div className="bg-background-secondary border border-border p-2 rounded-xl">
-        <span className="block text-sm font-black text-foreground">{timeLeft.minutes}</span>
-        <span className="text-[8px] uppercase font-bold text-foreground-muted">Mins</span>
-      </div>
-      <div className="bg-background-secondary border border-border p-2 rounded-xl">
-        <span className="block text-sm font-black text-foreground">{timeLeft.seconds}</span>
-        <span className="text-[8px] uppercase font-bold text-foreground-muted">Secs</span>
-      </div>
+    <div className="grid max-w-[280px] grid-cols-4 gap-2 text-center">
+      {cells.map((cell) => (
+        <div key={cell.label} className="rounded-md border border-border bg-background-secondary p-2">
+          <span className="block text-sm font-bold text-foreground">{cell.value}</span>
+          <span className="text-[8px] font-bold uppercase text-foreground-muted">{cell.label}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
+function formatLongDate(date) {
+  if (!date) return "";
+  return new Date(`${date}T00:00`).toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function DateCard({ partner, activityLabel, ActivityIcon, surface, date, time, venueTitle, venueLocation, badge }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col justify-between rounded-lg border border-border bg-background p-5 shadow-card transition-colors hover:bg-surface-hover"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <img
+            src={partner.image || "/avatar.png"}
+            alt={partner.name}
+            className="h-12 w-12 rounded-full border border-border object-cover"
+          />
+          <div>
+            <h3 className="text-sm font-bold text-foreground">{partner.name}</h3>
+            <span className={`mt-1 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase ${surface}`}>
+              <ActivityIcon size={10} />
+              <span>{activityLabel}</span>
+            </span>
+          </div>
+        </div>
+        {badge && (
+          <span className="rounded-full border border-border bg-background-secondary px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-foreground-muted">
+            {badge}
+          </span>
+        )}
+      </div>
+
+      <div className="my-4 space-y-2 border-t border-border pt-4">
+        <div className="flex items-start gap-2.5">
+          <MapPin size={14} className="mt-0.5 shrink-0 text-foreground-muted" />
+          <div>
+            {venueTitle && <p className="text-xs font-bold text-foreground-secondary">{venueTitle}</p>}
+            <p className="text-[10px] text-foreground-muted">{venueLocation}</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-2.5">
+          <Clock size={14} className="mt-0.5 shrink-0 text-foreground-muted" />
+          <div>
+            <p className="text-xs font-bold text-foreground-secondary">{formatLongDate(date)}</p>
+            <p className="text-[10px] text-foreground-muted">at {time}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 border-t border-border pt-4">
+        <span className="text-[8px] font-bold uppercase tracking-wider text-foreground-muted">Countdown</span>
+        <CountdownTimer date={date} time={time} />
+      </div>
+    </motion.div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, description }) {
+  return (
+    <div className="flex h-64 flex-col items-center justify-center rounded-lg border border-border bg-background p-8 text-center">
+      <div className="mb-3 rounded-full bg-background-secondary p-3 text-foreground-muted">
+        <Icon size={24} />
+      </div>
+      <h3 className="text-sm font-bold text-foreground">{title}</h3>
+      <p className="mt-1 max-w-[260px] text-[11px] text-foreground-muted">{description}</p>
+    </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <div className="flex h-64 items-center justify-center">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 1 }}
+        className="h-10 w-10 rounded-full border-2 border-accent border-t-transparent"
+      />
+    </div>
+  );
+}
+
+const PLAN_CATEGORY_ICONS = {
+  Coffee,
+  Dinner: Utensils,
+  Drinks: Wine,
+  Outdoor: Compass,
+};
+
 export default function DateDashboard() {
   const { authUser } = useAuthStore();
-  const { upcomingDates, getUpcomingDates, isLoadingUpcoming } = useDatePlanStore();
+  const {
+    upcomingDates,
+    getUpcomingDates,
+    isLoadingUpcoming,
+    socialDates,
+    getConfirmedSocialDates,
+    isLoadingSocialDates,
+  } = useDatePlanStore();
+
+  const [activeTab, setActiveTab] = useState("social");
 
   useEffect(() => {
+    getConfirmedSocialDates();
     getUpcomingDates();
-  }, [getUpcomingDates]);
+  }, [getConfirmedSocialDates, getUpcomingDates]);
 
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case "Coffee": return Coffee;
-      case "Dinner": return Utensils;
-      case "Drinks": return Wine;
-      case "Outdoor": return Compass;
-      default: return CalendarDays;
-    }
-  };
+  const tabs = [
+    { id: "social", label: "Social Dates", count: socialDates.length },
+    { id: "plans", label: "Collaborative Plans", count: upcomingDates.length },
+  ];
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-background transition-colors duration-300 font-sans">
-      <Sidebar />
-      <div className="flex flex-grow flex-col h-full overflow-hidden">
-        <Header />
+    <AppLayout variant="scroll">
+      <div className="space-y-6">
+        <div>
+          <h1 className="flex items-center gap-2 text-3xl font-bold uppercase tracking-tight text-foreground">
+            <CalendarDays size={28} className="text-accent" />
+            <span>Date Dashboard</span>
+          </h1>
+          <p className="mt-1.5 text-xs font-medium text-foreground-secondary sm:text-sm">
+            Your confirmed social dates and finalized collaborative plans, all in one place.
+          </p>
+        </div>
 
-        <main className="relative flex-grow h-[calc(100vh-72px)] overflow-y-auto p-4 md:p-8 bg-background font-outfit">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div>
-              <h1 className="text-3xl font-black tracking-tight text-foreground uppercase flex items-center gap-2">
-                <CalendarDays size={28} className="text-accent stroke-[2.5]" />
-                <span>Date Dashboard</span>
-              </h1>
-              <p className="mt-1.5 text-xs sm:text-sm text-foreground-secondary font-medium">
-                Keep track of your upcoming collaborative dates and countdowns.
-              </p>
+        <div className="flex items-center gap-1 border-b border-border">
+          {tabs.map((tab) => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                  active
+                    ? "border-accent text-accent"
+                    : "border-transparent text-foreground-secondary hover:text-foreground"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                    active ? "bg-accent text-accent-foreground" : "bg-background-secondary text-foreground-muted"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {activeTab === "social" &&
+          (isLoadingSocialDates ? (
+            <Spinner />
+          ) : socialDates.length === 0 ? (
+            <EmptyState
+              icon={CalendarDays}
+              title="No Social Dates Yet"
+              description="Open a chat and use “Plan a Social Date” to propose one. Confirmed dates show up here."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {socialDates.map((d) => {
+                const activity = ACTIVITY_OPTIONS[d.activity] || DEFAULT_ACTIVITY;
+                return (
+                  <DateCard
+                    key={d.id}
+                    partner={d.partner}
+                    activityLabel={activity.label}
+                    ActivityIcon={activity.icon}
+                    surface={activity.surface}
+                    date={d.date}
+                    time={d.time}
+                    venueLocation={d.location}
+                    badge={d.proposedByMe ? "Proposed by you" : "Proposed to you"}
+                  />
+                );
+              })}
             </div>
+          ))}
 
-            {isLoadingUpcoming ? (
-              <div className="flex h-64 items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1 }}
-                  className="h-10 w-10 rounded-full border-2 border-accent border-t-transparent"
-                />
-              </div>
-            ) : upcomingDates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center p-8 bg-background border border-border rounded-3xl h-64">
-                <div className="p-3 rounded-full bg-background-secondary mb-3 text-foreground-muted">
-                  <CalendarDays size={24} />
-                </div>
-                <h3 className="text-sm font-bold text-foreground">No Upcoming Dates</h3>
-                <p className="text-[11px] text-foreground-muted mt-1 max-w-[240px]">
-                  Use the Date Planner inside any chat room to collaboratively plan a date and lock it in!
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {upcomingDates.map((d) => {
-                  const matchPartner = d.userA.id === authUser._id ? d.userB : d.userA;
-                  const votedCategory = d.categoryVotes.find(v => v.userId === authUser._id)?.category || d.categoryVotes[0]?.category;
-                  const CategoryIcon = getCategoryIcon(votedCategory);
-
-                  return (
-                    <motion.div
-                      key={d.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-background border border-border rounded-3xl p-5 shadow-card hover:bg-surface-hover transition-all flex flex-col justify-between"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={matchPartner.image || "/avatar.png"}
-                            alt={matchPartner.name}
-                            className="w-12 h-12 rounded-full border border-border object-cover shadow-card"
-                          />
-                          <div>
-                            <h3 className="text-sm font-bold text-foreground flex items-center gap-1">
-                              <span>Date with {matchPartner.name}</span>
-                            </h3>
-                            {votedCategory && (
-                              <span className="inline-flex items-center gap-1 mt-1 text-[9px] uppercase font-bold text-accent bg-background-secondary px-2 py-0.5 rounded-md border border-border">
-                                <CategoryIcon size={10} />
-                                <span>{votedCategory}</span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="my-4 border-t border-border pt-4 space-y-2">
-                        <div className="flex items-start gap-2.5">
-                          <MapPin size={14} className="text-foreground-muted shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-xs font-bold text-foreground-secondary">
-                              {d.finalVenue?.title}
-                            </p>
-                            <p className="text-[10px] text-foreground-muted">
-                              {d.finalVenue?.location}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start gap-2.5">
-                          <Clock size={14} className="text-foreground-muted shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-xs font-bold text-foreground-secondary">
-                              {new Date(d.finalDateTime?.date).toLocaleDateString(undefined, {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </p>
-                            <p className="text-[10px] text-foreground-muted">
-                              at {d.finalDateTime?.time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="border-t border-border pt-4 flex flex-col gap-2">
-                        <span className="text-[8px] uppercase font-bold text-foreground-muted tracking-wider">Countdown</span>
-                        <CountdownTimer targetDateTime={d.finalDateTime} />
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </main>
+        {activeTab === "plans" &&
+          (isLoadingUpcoming ? (
+            <Spinner />
+          ) : upcomingDates.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No Collaborative Plans Yet"
+              description="Use the Date Planner inside any chat room to vote on a venue and time, then finalize it together."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {upcomingDates.map((d) => {
+                const matchPartner = d.userA.id === authUser._id ? d.userB : d.userA;
+                const category =
+                  d.categoryVotes.find((v) => v.userId === authUser._id)?.category ||
+                  d.categoryVotes[0]?.category;
+                const CategoryIcon = PLAN_CATEGORY_ICONS[category] || CalendarDays;
+                return (
+                  <DateCard
+                    key={d.id}
+                    partner={matchPartner}
+                    activityLabel={category || "Date"}
+                    ActivityIcon={CategoryIcon}
+                    surface="bg-background-secondary text-foreground"
+                    date={d.finalDateTime?.date}
+                    time={d.finalDateTime?.time}
+                    venueTitle={d.finalVenue?.title}
+                    venueLocation={d.finalVenue?.location}
+                  />
+                );
+              })}
+            </div>
+          ))}
       </div>
-    </div>
+    </AppLayout>
   );
 }

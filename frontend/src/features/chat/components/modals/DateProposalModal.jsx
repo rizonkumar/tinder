@@ -95,7 +95,7 @@ export default function DateProposalModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={SPRING_TRANSITION}
-            className="w-full max-w-md bg-background border border-border shadow-modal p-6 font-sans text-foreground rounded-lg relative overflow-visible"
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-background border border-border shadow-modal p-6 font-sans text-foreground rounded-lg relative"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold tracking-tight text-foreground font-outfit flex items-center gap-2">
@@ -127,7 +127,7 @@ export default function DateProposalModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-foreground-muted uppercase tracking-widest font-outfit block">
                     Date
@@ -136,6 +136,7 @@ export default function DateProposalModal({
                     value={dateInput}
                     onChange={setDateInput}
                     placeholder="Select Date"
+                    inline
                   />
                 </div>
                 <div className="space-y-2">
@@ -146,6 +147,7 @@ export default function DateProposalModal({
                     value={timeInput}
                     onChange={setTimeInput}
                     placeholder="Select Time"
+                    inline
                   />
                 </div>
               </div>

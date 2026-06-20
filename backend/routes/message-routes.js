@@ -16,6 +16,7 @@ import {
   getUnreadCount,
   generateIcebreakers,
   respondToDateProposal,
+  getConfirmedDates,
   generateSmartReplies,
   searchMessages,
   editMessage,
@@ -35,6 +36,7 @@ router.get("/conversation/:userId", getConversation);
 router.get("/unread-count", getUnreadCount);
 router.post("/icebreakers/:userId", generateIcebreakers);
 router.post("/date/respond", validate(respondProposalSchema), respondToDateProposal);
+router.get("/dates/confirmed", getConfirmedDates);
 router.post("/game/respond", validate(respondGameSchema), respondToGameProposal);
 router.post("/smart-replies/:userId", generateSmartReplies);
 router.get("/search/:userId", validate(searchMessagesSchema, "query"), searchMessages);

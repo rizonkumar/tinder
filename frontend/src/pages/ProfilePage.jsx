@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Header } from "../components/Header";
+import AppLayout from "../components/AppLayout";
 import { useAuthStore } from "../store/useAuthStore";
 import { useUserStore } from "../store/useUserStore";
 import { motion } from "framer-motion";
@@ -27,7 +27,7 @@ export default function ProfilePage() {
     age: authUser?.age || "",
     gender: authUser?.gender || "",
     genderPreference: authUser?.genderPreference || "",
-    image: authUser?.image || null,
+    image: authUser?.image || "",
     interests: authUser?.interests || [],
   });
 
@@ -45,7 +45,7 @@ export default function ProfilePage() {
         age: authUser.age || "",
         gender: authUser.gender || "",
         genderPreference: authUser.genderPreference || "",
-        image: authUser.image || null,
+        image: authUser.image || "",
         interests: authUser.interests || [],
       });
     }
@@ -101,21 +101,17 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-background text-foreground transition-colors duration-300">
-      <Header />
+    <AppLayout variant="scroll">
+      <div className="space-y-6 select-none">
+        <Link
+          to="/"
+          className="inline-flex items-center space-x-2 text-sm font-bold text-foreground-muted hover:text-accent transition-colors font-outfit"
+        >
+          <ArrowLeft size={16} />
+          <span>Back to Feed</span>
+        </Link>
 
-      <div className="flex-grow overflow-y-auto pb-12">
-        <div className="mx-auto max-w-3xl px-4 pt-6 select-none">
-          <Link
-            to="/"
-            className="inline-flex items-center space-x-2 text-sm font-bold text-foreground-muted hover:text-accent transition-colors font-outfit"
-          >
-            <ArrowLeft size={16} />
-            <span>Back to Feed</span>
-          </Link>
-        </div>
-
-        <div className="mx-auto max-w-3xl px-4 py-6">
+        <div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -423,6 +419,6 @@ export default function ProfilePage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }

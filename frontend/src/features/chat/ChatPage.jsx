@@ -3,8 +3,7 @@ import { useParams } from "react-router-dom";
 import { useMatchStore } from "../../store/useMatchStore";
 import { useMessageStore } from "../../store/useMessageStore";
 import { useAuthStore } from "../../store/useAuthStore";
-import Sidebar from "../../components/Sidebar";
-import { Header } from "../../components/Header";
+import AppLayout from "../../components/AppLayout";
 import { useCallStore } from "../../store/useCallStore";
 
 import { useChatInit } from "./hooks/useChatInit";
@@ -156,11 +155,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background lg:flex-row transition-colors duration-300">
-      <Sidebar />
-      <div className="flex flex-grow flex-col overflow-hidden lg:w-3/4">
-        <Header />
-
+    <AppLayout variant="flush">
         {activeChatUser ? (
           <div className="flex flex-grow flex-row overflow-hidden bg-background border-t border-border lg:border-l lg:border-t-0 transition-colors duration-300">
             <div className="flex flex-grow flex-col overflow-hidden">
@@ -275,7 +270,6 @@ export default function ChatPage() {
             onlineUsers={onlineUsers}
           />
         )}
-      </div>
 
       <ProfileModal
         isOpen={isProfileModalOpen}
@@ -311,6 +305,6 @@ export default function ChatPage() {
         imageUrl={activeLightboxImage}
         onClose={() => setActiveLightboxImage(null)}
       />
-    </div>
+    </AppLayout>
   );
 }

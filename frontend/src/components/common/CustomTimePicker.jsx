@@ -8,6 +8,7 @@ export default function CustomTimePicker({
   value,
   onChange,
   placeholder = "Select Time",
+  inline = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
@@ -61,7 +62,11 @@ export default function CustomTimePicker({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[280px] z-[260] bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans h-[240px]"
+            className={`${
+              inline
+                ? "relative mt-2 w-full"
+                : "absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[280px] z-[260]"
+            } bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans h-[240px]`}
           >
             <div className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted text-center mb-3 shrink-0 select-none font-outfit">
               Select Time

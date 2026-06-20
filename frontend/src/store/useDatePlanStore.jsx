@@ -5,8 +5,10 @@ import showToast from "../components/common/Toast";
 export const useDatePlanStore = create((set) => ({
   activeDatePlan: null,
   upcomingDates: [],
+  socialDates: [],
   isLoadingPlan: false,
   isLoadingUpcoming: false,
+  isLoadingSocialDates: false,
 
   getActivePlan: async (matchUserId) => {
     try {
@@ -88,6 +90,18 @@ export const useDatePlanStore = create((set) => ({
       showToast.error(error.response?.data?.message || "Failed to fetch upcoming dates");
     } finally {
       set({ isLoadingUpcoming: false });
+    }
+  },
+
+  getConfirmedSocialDates: async () => {
+    try {
+      set({ isLoadingSocialDates: true });
+      const response = await axiosInstance.get("/messages/dates/confirmed");
+      set({ socialDates: response.data.data });
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to fetch social dates");
+    } finally {
+      set({ isLoadingSocialDates: false });
     }
   },
 
