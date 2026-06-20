@@ -101,14 +101,14 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 transition-colors duration-300">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-background text-foreground transition-colors duration-300">
       <Header />
 
       <div className="flex-grow overflow-y-auto pb-12">
         <div className="mx-auto max-w-3xl px-4 pt-6 select-none">
           <Link
             to="/"
-            className="inline-flex items-center space-x-2 text-sm font-bold text-slate-400 dark:text-slate-500 hover:text-pink-500 dark:hover:text-pink-400 transition-colors font-outfit"
+            className="inline-flex items-center space-x-2 text-sm font-bold text-foreground-muted hover:text-accent transition-colors font-outfit"
           >
             <ArrowLeft size={16} />
             <span>Back to Feed</span>
@@ -119,22 +119,22 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800/80 shadow-sm transition-colors duration-300"
+            className="overflow-hidden rounded-3xl bg-background border border-border shadow-card transition-colors duration-300"
           >
-            <div className="relative h-48 sm:h-56 bg-pink-500">
+            <div className="relative h-48 sm:h-56 bg-primary">
               <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 transform">
                 <div className="relative">
                   <motion.img
                     whileHover={{ scale: 1.03 }}
                     src={formData.image || "/avatar.png"}
                     alt="Profile"
-                    className="h-32 w-32 sm:h-36 sm:w-36 rounded-full border-4 border-white dark:border-zinc-900 object-cover shadow-sm"
+                    className="h-32 w-32 sm:h-36 sm:w-36 rounded-full border-4 border-background object-cover shadow-card"
                   />
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-1 right-1 rounded-full bg-pink-500 hover:bg-pink-600 text-white p-2.5 shadow-sm focus:outline-none"
+                    className="absolute bottom-1 right-1 rounded-full bg-primary hover:bg-primary-hover text-primary-foreground p-2.5 shadow-card focus-ring"
                     type="button"
                   >
                     <Camera size={18} />
@@ -151,15 +151,15 @@ export default function ProfilePage() {
             </div>
 
             <div className="px-4 sm:px-8 pb-8 pt-20">
-              <h1 className="mb-8 text-center text-2xl font-bold tracking-wide text-slate-850 dark:text-zinc-100 font-outfit">
+              <h1 className="mb-8 text-center text-2xl font-bold tracking-wide text-foreground font-outfit">
                 CUSTOMIZE YOUR PROFILE
               </h1>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit">
-                      <User size={14} className="text-pink-500" />
+                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
+                      <User size={14} className="text-accent" />
                       <span>Full Name</span>
                     </label>
                     <input
@@ -167,14 +167,14 @@ export default function ProfilePage() {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50/10 dark:bg-zinc-950/20 px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 outline-none transition-all hover:border-pink-200 dark:hover:border-slate-700 focus:border-pink-500 focus:bg-white dark:focus:bg-zinc-950"
+                      className="w-full rounded-2xl border border-border bg-background-secondary px-4 py-3 text-sm text-foreground placeholder-foreground-muted outline-none transition-all hover:border-border-strong focus:border-accent focus-ring"
                       placeholder="Enter your name"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit">
-                      <Calendar size={14} className="text-pink-500" />
+                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
+                      <Calendar size={14} className="text-accent" />
                       <span>Age</span>
                     </label>
                     <input
@@ -184,23 +184,23 @@ export default function ProfilePage() {
                       onChange={handleChange}
                       min="18"
                       max="120"
-                      className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50/10 dark:bg-zinc-950/20 px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 outline-none transition-all hover:border-pink-200 dark:hover:border-slate-700 focus:border-pink-500 focus:bg-white dark:focus:bg-zinc-950"
+                      className="w-full rounded-2xl border border-border bg-background-secondary px-4 py-3 text-sm text-foreground placeholder-foreground-muted outline-none transition-all hover:border-border-strong focus:border-accent focus-ring"
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit">
-                      <Users size={14} className="text-pink-500" />
+                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
+                      <Users size={14} className="text-accent" />
                       <span>Your Gender</span>
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       {["male", "female"].map((option) => (
                         <label
                           key={option}
-                          className={`flex cursor-pointer items-center justify-center space-x-2 rounded-2xl border p-3.5 text-xs font-bold transition-all shadow-sm ${
+                          className={`flex cursor-pointer items-center justify-center space-x-2 rounded-2xl border p-3.5 text-xs font-bold transition-all shadow-card ${
                             formData.gender === option
-                              ? "border-pink-500 bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400 ring-2 ring-pink-500/20"
-                              : "border-slate-100/50 dark:border-zinc-800 bg-slate-50/10 dark:bg-zinc-950/20 hover:bg-slate-50/20 dark:hover:bg-zinc-850 text-slate-500 dark:text-slate-400"
+                              ? "border-accent bg-background-secondary text-accent ring-2 ring-ring"
+                              : "border-border bg-background-secondary hover:bg-surface-hover text-foreground-secondary"
                           }`}
                         >
                           <input
@@ -218,18 +218,18 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit">
-                      <Heart size={14} className="text-pink-500" />
+                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
+                      <Heart size={14} className="text-accent" />
                       <span>Interested In</span>
                     </label>
                     <div className="grid grid-cols-3 gap-3">
                       {["male", "female", "both"].map((option) => (
                         <label
                           key={option}
-                          className={`flex cursor-pointer items-center justify-center space-x-1 rounded-2xl border py-3.5 text-[11px] font-bold transition-all shadow-sm ${
+                          className={`flex cursor-pointer items-center justify-center space-x-1 rounded-2xl border py-3.5 text-[11px] font-bold transition-all shadow-card ${
                             formData.genderPreference === option
-                              ? "border-pink-500 bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400 ring-2 ring-pink-500/20"
-                              : "border-slate-100/50 dark:border-zinc-800 bg-slate-50/10 dark:bg-zinc-950/20 hover:bg-slate-50/20 dark:hover:bg-zinc-850 text-slate-500 dark:text-slate-400"
+                              ? "border-accent bg-background-secondary text-accent ring-2 ring-ring"
+                              : "border-border bg-background-secondary hover:bg-surface-hover text-foreground-secondary"
                           }`}
                         >
                           <input
@@ -248,14 +248,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="flex items-center space-x-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit">
+                  <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
                     <Heart
                       size={14}
-                      className="text-pink-500 fill-current animate-pulse"
+                      className="text-accent fill-current animate-pulse"
                     />
                     <span>My Interests / Hobbies</span>
                   </label>
-                  <div className="flex flex-wrap gap-2 p-4 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-slate-50/20 dark:bg-zinc-950/20">
+                  <div className="flex flex-wrap gap-2 p-4 rounded-3xl border border-border bg-background-secondary">
                     {INTEREST_OPTIONS.map((tag) => {
                       const isSelected = formData.interests.includes(tag);
                       return (
@@ -272,10 +272,10 @@ export default function ProfilePage() {
                               return { ...prev, interests: newInterests };
                             });
                           }}
-                          className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all duration-200 shadow-sm ${
+                          className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all duration-200 shadow-card ${
                             isSelected
-                              ? "bg-pink-500 text-white border-transparent"
-                              : "bg-white dark:bg-zinc-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-zinc-800 hover:bg-pink-50/20 dark:hover:bg-slate-900 hover:text-pink-500 dark:hover:text-pink-400"
+                              ? "bg-primary text-primary-foreground border-transparent"
+                              : "bg-background text-foreground-secondary border-border hover:bg-surface-hover hover:text-foreground"
                           }`}
                         >
                           {tag}
@@ -286,8 +286,8 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-outfit">
-                    <Edit3 size={14} className="text-pink-500" />
+                  <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
+                    <Edit3 size={14} className="text-accent" />
                     <span>Bio</span>
                   </label>
                   <textarea
@@ -295,28 +295,28 @@ export default function ProfilePage() {
                     value={formData.bio}
                     onChange={handleChange}
                     rows={4}
-                    className="w-full rounded-2xl border border-slate-200 dark:border-zinc-800 bg-slate-50/10 dark:bg-zinc-950/20 px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 outline-none transition-all hover:border-pink-200 dark:hover:border-slate-700 focus:border-pink-500 focus:bg-white dark:focus:bg-zinc-950 leading-relaxed font-sans"
+                    className="w-full rounded-2xl border border-border bg-background-secondary px-4 py-3 text-sm text-foreground placeholder-foreground-muted outline-none transition-all hover:border-border-strong focus:border-accent focus-ring leading-relaxed font-sans"
                     placeholder="Tell us about yourself..."
                   />
                 </div>
 
-                <div className="space-y-4 rounded-3xl border border-slate-200 dark:border-zinc-800 bg-gradient-to-br from-pink-50/50 to-rose-50/30 dark:from-pink-950/10 dark:to-rose-950/5 p-5 transition-colors duration-300">
+                <div className="space-y-4 rounded-3xl border border-border bg-background-secondary p-5 transition-colors duration-300">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Sparkles
                         size={16}
-                        className="text-pink-500 fill-current animate-pulse"
+                        className="text-accent fill-current animate-pulse"
                       />
-                      <span className="text-sm font-bold text-slate-800 dark:text-zinc-150 font-outfit tracking-wide">
+                      <span className="text-sm font-bold text-foreground font-outfit tracking-wide">
                         AI BIO WINGMAN
                       </span>
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-pink-500 text-white px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
                       Gemini
                     </span>
                   </div>
 
-                  <p className="text-xs font-semibold leading-relaxed text-slate-400 dark:text-slate-500">
+                  <p className="text-xs font-semibold leading-relaxed text-foreground-muted">
                     Stuck on what to write? Choose a tone below and let our AI
                     assistant draft some polished options matching your
                     interests!
@@ -328,10 +328,10 @@ export default function ProfilePage() {
                         key={tone}
                         type="button"
                         onClick={() => setAiTone(tone)}
-                        className={`px-4 py-2 rounded-2xl text-xs font-bold capitalize transition-all border outline-none shadow-sm ${
+                        className={`px-4 py-2 rounded-2xl text-xs font-bold capitalize transition-all border outline-none shadow-card ${
                           aiTone === tone
-                            ? "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
-                            : "bg-white dark:bg-zinc-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-zinc-850 hover:bg-pink-50/20 dark:hover:bg-zinc-900/50"
+                            ? "border-accent bg-background text-accent"
+                            : "bg-background text-foreground-secondary border-border hover:bg-surface-hover"
                         }`}
                       >
                         {tone}
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleGenerateAiBio}
                     disabled={isGeneratingAi}
-                    className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 font-bold text-white text-xs tracking-wider outline-none shadow-sm disabled:opacity-70"
+                    className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover font-bold text-primary-foreground text-xs tracking-wider focus-ring shadow-card disabled:opacity-70"
                   >
                     {isGeneratingAi ? (
                       <>
@@ -366,16 +366,16 @@ export default function ProfilePage() {
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-3.5 mt-2"
                     >
-                      <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-foreground-muted">
                         Generated Suggestions
                       </h4>
                       <div className="space-y-3">
                         {aiSuggestions.map((suggestion, idx) => (
                           <div
                             key={idx}
-                            className="group relative flex flex-col p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-pink-300 dark:hover:border-zinc-750 shadow-sm transition-all"
+                            className="group relative flex flex-col p-4 rounded-2xl border border-border bg-background hover:border-border-strong shadow-card transition-all"
                           >
-                            <p className="text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-350 pr-4">
+                            <p className="text-xs font-semibold leading-relaxed text-foreground-secondary pr-4">
                               {suggestion}
                             </p>
                             <button
@@ -389,7 +389,7 @@ export default function ProfilePage() {
                                   `Applied option ${idx + 1}! Don't forget to Save Changes below.`,
                                 );
                               }}
-                              className="mt-3.5 self-end px-3 py-1.5 rounded-xl border border-pink-100 hover:border-pink-500 bg-pink-50/50 hover:bg-pink-500 text-pink-600 hover:text-white dark:bg-pink-950/15 dark:text-pink-400 dark:border-pink-950/40 text-[10px] font-black uppercase tracking-wider transition-all outline-none"
+                              className="mt-3.5 self-end px-3 py-1.5 rounded-xl border border-border hover:border-transparent bg-background-secondary hover:bg-primary text-foreground-secondary hover:text-primary-foreground text-[10px] font-black uppercase tracking-wider transition-all outline-none"
                             >
                               Apply Bio
                             </button>
@@ -405,7 +405,7 @@ export default function ProfilePage() {
                   whileTap={{ scale: 0.99 }}
                   disabled={loading}
                   type="submit"
-                  className="group relative w-full overflow-hidden rounded-2xl bg-pink-500 hover:bg-pink-600 active:bg-pink-700 px-8 py-4 font-bold text-white shadow-sm hover:shadow transition-all focus:outline-none disabled:opacity-70 font-outfit"
+                  className="group relative w-full overflow-hidden rounded-2xl bg-primary hover:bg-primary-hover px-8 py-4 font-bold text-primary-foreground shadow-card transition-all focus-ring disabled:opacity-70 font-outfit"
                 >
                   <div className="relative flex items-center justify-center space-x-2">
                     {loading ? (

@@ -182,6 +182,7 @@ Requirements:
       `That sounds so interesting, ${receiver.name}! Tell me more.`,
       `Haha, love that! You've got great energy.`,
       `Oh wow! What's the story behind that?`,
+    ];
   }
 
   async generateEnhancedBios(user, tone) {

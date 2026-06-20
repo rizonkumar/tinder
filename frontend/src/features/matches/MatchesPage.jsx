@@ -27,7 +27,7 @@ export default function MatchesPage() {
   }, [getMyMatches, getLikedUsers]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-zinc-950 lg:flex-row transition-colors duration-300">
+    <div className="flex h-screen w-screen overflow-hidden bg-background lg:flex-row transition-colors duration-300">
       <Sidebar />
       <div className="flex flex-grow flex-col overflow-hidden lg:w-3/4">
         <Header />
@@ -35,31 +35,31 @@ export default function MatchesPage() {
         <main className="flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-4xl space-y-8 select-none">
             <div className="flex items-center space-x-3.5">
-              <div className="rounded-2xl bg-pink-50 dark:bg-pink-950/40 border border-pink-100/40 dark:border-pink-900/30 p-3 text-pink-600 dark:text-pink-400">
+              <div className="rounded-lg bg-green-100 border border-green-200 p-3 text-green-700">
                 <Heart size={26} className="fill-current animate-pulse" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-slate-850 dark:text-zinc-100 font-outfit">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground font-outfit">
                   YOUR CONNECTIONS
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                <p className="text-sm text-foreground-secondary mt-0.5 font-medium">
                   See mutual connections and profiles you liked!
                 </p>
               </div>
             </div>
 
-            <div className="flex w-full space-x-6 border-b border-slate-200/60 dark:border-zinc-800 pb-px">
+            <div className="flex w-full space-x-6 border-b border-border pb-px">
               <button
                 onClick={() => setActiveTab("matches")}
                 className="relative pb-4 text-sm font-semibold tracking-wide outline-none transition-all flex items-center space-x-2"
               >
                 <span className={`flex items-center space-x-2 relative z-10 transition-colors duration-200 ${
-                  activeTab === "matches" ? "text-pink-600 dark:text-pink-400" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  activeTab === "matches" ? "text-accent" : "text-foreground-muted hover:text-foreground-secondary"
                 }`}>
                   <Heart size={15} className={activeTab === "matches" ? "fill-current" : ""} />
                   <span className="font-outfit">Mutual Matches</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-normal transition-colors ${
-                    activeTab === "matches" ? "bg-pink-100/80 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-slate-500"
+                    activeTab === "matches" ? "bg-accent text-accent-foreground" : "bg-background-secondary text-foreground-muted"
                   }`}>
                     {matches?.length || 0}
                   </span>
@@ -67,7 +67,7 @@ export default function MatchesPage() {
                 {activeTab === "matches" && (
                   <motion.div
                     layoutId="active_connections_tab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-pink-500 dark:bg-pink-400"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -78,12 +78,12 @@ export default function MatchesPage() {
                 className="relative pb-4 text-sm font-semibold tracking-wide outline-none transition-all flex items-center space-x-2"
               >
                 <span className={`flex items-center space-x-2 relative z-10 transition-colors duration-200 ${
-                  activeTab === "liked" ? "text-pink-600 dark:text-pink-400" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  activeTab === "liked" ? "text-accent" : "text-foreground-muted hover:text-foreground-secondary"
                 }`}>
-                  <Sparkles size={15} className={activeTab === "liked" ? "fill-current text-pink-500" : ""} />
+                  <Sparkles size={15} className={activeTab === "liked" ? "fill-current text-accent" : ""} />
                   <span className="font-outfit">People I Liked</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-normal transition-colors ${
-                    activeTab === "liked" ? "bg-pink-100/80 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-slate-500"
+                    activeTab === "liked" ? "bg-accent text-accent-foreground" : "bg-background-secondary text-foreground-muted"
                   }`}>
                     {likedUsers?.length || 0}
                   </span>
@@ -91,7 +91,7 @@ export default function MatchesPage() {
                 {activeTab === "liked" && (
                   <motion.div
                     layoutId="active_connections_tab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-pink-500 dark:bg-pink-400"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -123,7 +123,7 @@ export default function MatchesPage() {
                           variant: "primary"
                         }
                       ]}
-                      className="h-96 border border-slate-200/50 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-sm rounded-3xl"
+                      className="h-96 border border-border bg-background shadow-card rounded-lg"
                     />
                   ) : (
                     <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
@@ -134,7 +134,7 @@ export default function MatchesPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: idx * 0.04, type: "spring", stiffness: 260, damping: 20 }}
                           whileHover={{ y: -6 }}
-                          className="group relative overflow-hidden rounded-3xl border border-slate-200/50 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
+                          className="group relative overflow-hidden rounded-lg border border-border bg-background shadow-card transition-all duration-300 flex flex-col"
                         >
                           <div className="relative h-60 overflow-hidden shrink-0">
                             <img
@@ -142,21 +142,21 @@ export default function MatchesPage() {
                               alt={match.name}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-black/10 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/40" />
                             
                             <div className="absolute bottom-4 left-4 right-4 text-white">
                               <h3 className="text-xl font-bold tracking-wide font-outfit">
                                 {match.name},{" "}
                                 <span className="font-semibold">{match.age}</span>
                               </h3>
-                              <p className="text-xs text-pink-400 font-bold tracking-wider uppercase mt-0.5 font-outfit">
+                              <p className="text-xs text-green-100 font-bold tracking-wider uppercase mt-0.5 font-outfit">
                                 Mutual Match
                               </p>
                             </div>
                           </div>
 
                           <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-10 font-medium font-sans">
+                            <p className="text-xs text-foreground-secondary line-clamp-2 leading-relaxed h-10 font-medium font-sans">
                               {match.bio || "No bio available."}
                             </p>
 
@@ -164,7 +164,7 @@ export default function MatchesPage() {
                               {match.interests?.slice(0, 2).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
+                                  className="rounded-full bg-background-secondary border border-border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-foreground-secondary shrink-0 font-outfit"
                                 >
                                   {tag}
                                 </span>
@@ -176,7 +176,7 @@ export default function MatchesPage() {
                               whileTap={{ scale: 0.98 }}
                               transition={{ type: "spring", stiffness: 300, damping: 20 }}
                               onClick={() => navigate(`/chat/${match._id}`)}
-                              className="flex w-full items-center justify-center space-x-2 rounded-2xl bg-pink-500 hover:bg-pink-600 active:bg-pink-700 py-3 text-xs font-bold text-white shadow-sm hover:shadow transition-all duration-300 focus:outline-none"
+                              className="flex w-full items-center justify-center space-x-2 rounded-md bg-primary hover:bg-primary-hover py-3 text-xs font-bold text-primary-foreground shadow-card transition-all duration-300 focus-ring"
                             >
                               <MessageCircle size={15} />
                               <span className="font-outfit">Message Now</span>
@@ -211,7 +211,7 @@ export default function MatchesPage() {
                           variant: "primary"
                         }
                       ]}
-                      className="h-96 border border-slate-200/50 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-sm rounded-3xl"
+                      className="h-96 border border-border bg-background shadow-card rounded-lg"
                     />
                   ) : (
                     <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
@@ -222,7 +222,7 @@ export default function MatchesPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: idx * 0.04, type: "spring", stiffness: 260, damping: 20 }}
                           whileHover={{ y: -6 }}
-                          className="group relative overflow-hidden rounded-3xl border border-slate-200/50 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col"
+                          className="group relative overflow-hidden rounded-lg border border-border bg-background shadow-card transition-all duration-300 flex flex-col"
                         >
                           <div className="relative h-60 overflow-hidden shrink-0">
                             <img
@@ -230,22 +230,22 @@ export default function MatchesPage() {
                               alt={liked.name}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-black/10 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/40" />
                             
                             <div className="absolute bottom-4 left-4 right-4 text-white">
                               <h3 className="text-xl font-bold tracking-wide font-outfit">
                                 {liked.name},{" "}
                                 <span className="font-semibold">{liked.age}</span>
                               </h3>
-                              <div className="text-xs text-yellow-400 font-bold tracking-wider uppercase mt-0.5 flex items-center space-x-1 font-outfit">
-                                <Sparkles size={11} className="fill-current text-yellow-400" />
+                              <div className="text-xs text-blue-100 font-bold tracking-wider uppercase mt-0.5 flex items-center space-x-1 font-outfit">
+                                <Sparkles size={11} className="fill-current text-blue-100" />
                                 <span>Sent Like</span>
                               </div>
                             </div>
                           </div>
 
                           <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-10 font-medium font-sans">
+                            <p className="text-xs text-foreground-secondary line-clamp-2 leading-relaxed h-10 font-medium font-sans">
                               {liked.bio || "No bio available."}
                             </p>
 
@@ -253,14 +253,14 @@ export default function MatchesPage() {
                               {liked.interests?.slice(0, 2).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="rounded-full bg-pink-50 dark:bg-pink-950/20 border border-pink-100/40 dark:border-pink-900/30 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 shrink-0 font-outfit"
+                                  className="rounded-full bg-background-secondary border border-border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-foreground-secondary shrink-0 font-outfit"
                                 >
                                   {tag}
                                 </span>
                               ))}
                             </div>
 
-                            <div className="flex w-full items-center justify-center space-x-2 rounded-2xl bg-slate-50 dark:bg-zinc-950/40 border border-slate-100/80 dark:border-zinc-800/40 py-3 text-xs font-bold text-slate-400 dark:text-slate-500 select-none font-outfit">
+                            <div className="flex w-full items-center justify-center space-x-2 rounded-md bg-background-secondary border border-border py-3 text-xs font-bold text-foreground-muted select-none font-outfit">
                               <Clock size={14} className="stroke-[2.5]" />
                               <span>Waiting for Match...</span>
                             </div>

@@ -8,31 +8,31 @@ export function CustomToast({ t, type, message }) {
       case "success":
         return {
           icon: Check,
-          color: "text-emerald-500 bg-emerald-50 border-emerald-100",
-          progressBg: "bg-emerald-500",
-          shadowColor: "shadow-emerald-500/5",
+          color: "text-green-700 bg-green-100 border-border",
+          progressBg: "bg-green-700",
+          shadowColor: "",
         };
       case "error":
         return {
           icon: AlertCircle,
-          color: "text-rose-500 bg-rose-50 border-rose-100",
-          progressBg: "bg-rose-500",
-          shadowColor: "shadow-rose-500/5",
+          color: "text-red-800 bg-red-100 border-border",
+          progressBg: "bg-red-800",
+          shadowColor: "",
         };
       case "match":
         return {
           icon: Heart,
-          color: "text-pink-500 bg-pink-50 border-pink-100",
-          progressBg: "bg-pink-500",
-          shadowColor: "shadow-pink-500/5",
+          color: "text-green-700 bg-green-100 border-border",
+          progressBg: "bg-green-700",
+          shadowColor: "",
         };
       case "info":
       default:
         return {
           icon: Info,
-          color: "text-amber-500 bg-amber-50 border-amber-100",
-          progressBg: "bg-amber-500",
-          shadowColor: "shadow-amber-500/5",
+          color: "text-accent bg-accent/10 border-border",
+          progressBg: "bg-accent",
+          shadowColor: "",
         };
     }
   };
@@ -45,21 +45,21 @@ export function CustomToast({ t, type, message }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.9 }}
       transition={{ type: "spring", damping: 20, stiffness: 220 }}
-      className={`pointer-events-auto flex w-full max-w-sm overflow-hidden rounded-3xl border border-pink-100/50 bg-white/90 p-4 shadow-xl backdrop-blur-md select-none ${shadowColor}`}
+      className={`pointer-events-auto flex w-full max-w-sm overflow-hidden rounded-md border border-border bg-background p-4 shadow-popover select-none ${shadowColor}`}
     >
       <div className="flex w-full items-center justify-between space-x-3.5">
         <div className="flex items-center space-x-3">
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${color} shadow-sm`}>
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md border ${color} shadow-card`}>
             <Icon size={18} className={type === "match" ? "fill-current animate-pulse" : ""} />
           </div>
-          <p className="text-xs font-extrabold tracking-wide text-gray-800 leading-relaxed font-sans pr-4">
+          <p className="text-xs font-extrabold tracking-wide text-foreground leading-relaxed font-sans pr-4">
             {message}
           </p>
         </div>
 
         <button
           onClick={() => toast.dismiss(t.id)}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-background-secondary hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors"
         >
           <X size={14} />
         </button>

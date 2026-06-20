@@ -23,7 +23,7 @@ export default function ImageBubble({
           <button
             type="button"
             onClick={onToggleReactionPicker}
-            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+            className="p-1 text-foreground-muted hover:text-accent rounded-full hover:bg-surface-hover transition-all focus:outline-none"
             title="React to photo"
           >
             <Smile size={14} />
@@ -32,13 +32,13 @@ export default function ImageBubble({
       )}
 
       <div
-        className={`max-w-[65%] rounded-2xl overflow-hidden shadow-sm border relative transition-all duration-300 ${
+        className={`max-w-[65%] rounded-2xl overflow-hidden shadow-card border relative transition-all duration-300 ${
           isSentByMe
-            ? "bg-pink-500 p-1 rounded-tr-none order-1"
-            : "bg-white dark:bg-zinc-900 p-1 rounded-tl-none order-1 border-slate-200/30 dark:border-zinc-800/50"
+            ? "bg-primary p-1 rounded-tr-none order-1 border-border"
+            : "bg-background p-1 rounded-tl-none order-1 border-border"
         } ${
           isHighlighted
-            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02]"
+            ? "ring-2 ring-ring scale-[1.02]"
             : ""
         }`}
       >
@@ -52,8 +52,8 @@ export default function ImageBubble({
         <span
           className={`block text-[9px] mt-1 pr-1 text-right font-medium font-sans ${
             isSentByMe
-              ? "text-pink-100"
-              : "text-slate-400 dark:text-slate-500"
+              ? "text-primary-foreground"
+              : "text-foreground-muted"
           }`}
         >
           {new Date(message.createdAt).toLocaleTimeString([], {
@@ -83,7 +83,7 @@ export default function ImageBubble({
           <button
             type="button"
             onClick={onToggleReactionPicker}
-            className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+            className="p-1 text-foreground-muted hover:text-accent rounded-full hover:bg-surface-hover transition-all focus:outline-none"
             title="React to photo"
           >
             <Smile size={14} />

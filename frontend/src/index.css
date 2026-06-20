@@ -1,49 +1,213 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ===========================================================================
+   Geist design tokens — Light theme (default) and Dark theme (.dark)
+   Same token names, theme-swapped values. Components reference the semantic
+   colors (background, foreground, border, primary, accent, ring) and the
+   state scales (gray, blue, red, amber, green) via Tailwind.
+   =========================================================================== */
+:root {
+  /* Semantic surfaces & text */
+  --background: #ffffff;
+  --background-secondary: #fafafa;
+  --foreground: #171717;            /* gray-1000  — primary text/icons */
+  --foreground-secondary: #4d4d4d;  /* gray-900   — secondary text/icons */
+  --foreground-muted: #8f8f8f;      /* gray-700   — disabled/placeholder */
+  --border: #00000014;              /* gray-alpha-400 — default border */
+  --border-strong: #eaeaea;         /* gray-400 (opaque) */
+  --surface-hover: #0000000d;       /* gray-alpha-100 — hover wash */
+  --surface-active: #0000001a;      /* gray-alpha-300 — active wash */
+
+  --primary: #171717;               /* gray-1000 fill */
+  --primary-hover: #4d4d4d;         /* gray-900 */
+  --primary-foreground: #ffffff;    /* background-100 label */
+
+  --accent: #006bff;                /* blue-700 — links/focus/info */
+  --accent-hover: #0059ec;          /* blue-800 */
+  --accent-foreground: #ffffff;
+  --ring: #006bff;                  /* blue-700 focus ring */
+
+  /* Gray scale */
+  --gray-100: #f2f2f2;
+  --gray-200: #ebebeb;
+  --gray-300: #e6e6e6;
+  --gray-400: #eaeaea;
+  --gray-500: #c9c9c9;
+  --gray-600: #a8a8a8;
+  --gray-700: #8f8f8f;
+  --gray-800: #7d7d7d;
+  --gray-900: #4d4d4d;
+  --gray-1000: #171717;
+
+  /* Blue */
+  --blue-100: #f0f7ff;
+  --blue-200: #e9f4ff;
+  --blue-300: #dfefff;
+  --blue-400: #cae7ff;
+  --blue-500: #94ccff;
+  --blue-600: #48aeff;
+  --blue-700: #006bff;
+  --blue-800: #0059ec;
+  --blue-900: #005ff2;
+  --blue-1000: #002359;
+
+  /* Red */
+  --red-100: #ffeeef;
+  --red-200: #ffe8ea;
+  --red-300: #ffe3e4;
+  --red-400: #ffd7d6;
+  --red-500: #ffb1b3;
+  --red-600: #ff676d;
+  --red-700: #fc0035;
+  --red-800: #ea001d;
+  --red-900: #d8001b;
+  --red-1000: #47000c;
+
+  /* Amber */
+  --amber-100: #fff6de;
+  --amber-200: #fff4cf;
+  --amber-300: #fff1c1;
+  --amber-400: #ffdc73;
+  --amber-500: #ffc543;
+  --amber-600: #ffa600;
+  --amber-700: #ffae00;
+  --amber-800: #ff9300;
+  --amber-900: #aa4d00;
+  --amber-1000: #561900;
+
+  /* Green */
+  --green-100: #ecfdec;
+  --green-200: #e5fce7;
+  --green-300: #d3fad1;
+  --green-400: #b9f5bc;
+  --green-500: #82eb8d;
+  --green-600: #4ce15e;
+  --green-700: #28a948;
+  --green-800: #279141;
+  --green-900: #107d32;
+  --green-1000: #003a00;
+}
+
+.dark {
+  --background: #000000;
+  --background-secondary: #0a0a0a;
+  --foreground: #ededed;            /* gray-1000 */
+  --foreground-secondary: #a0a0a0;  /* gray-900 */
+  --foreground-muted: #8f8f8f;      /* gray-700 */
+  --border: #ffffff24;              /* gray-alpha-400 */
+  --border-strong: #2e2e2e;         /* gray-400 */
+  --surface-hover: #ffffff12;       /* gray-alpha-100 */
+  --surface-active: #ffffff21;      /* gray-alpha-300 */
+
+  --primary: #ededed;               /* gray-1000 fill */
+  --primary-hover: #a0a0a0;         /* gray-900 */
+  --primary-foreground: #000000;    /* background-100 label */
+
+  --accent: #006efe;                /* blue-700 */
+  --accent-hover: #005be7;          /* blue-800 */
+  --accent-foreground: #ffffff;
+  --ring: #47a8ff;                  /* blue-900 ring */
+
+  --gray-100: #1a1a1a;
+  --gray-200: #1f1f1f;
+  --gray-300: #292929;
+  --gray-400: #2e2e2e;
+  --gray-500: #454545;
+  --gray-600: #878787;
+  --gray-700: #8f8f8f;
+  --gray-800: #7d7d7d;
+  --gray-900: #a0a0a0;
+  --gray-1000: #ededed;
+
+  --blue-100: #06193a;
+  --blue-200: #022248;
+  --blue-300: #002f62;
+  --blue-400: #003674;
+  --blue-500: #00418b;
+  --blue-600: #0090ff;
+  --blue-700: #006efe;
+  --blue-800: #005be7;
+  --blue-900: #47a8ff;
+  --blue-1000: #eaf6ff;
+
+  --red-100: #330a11;
+  --red-200: #440d13;
+  --red-300: #5d0e17;
+  --red-400: #6f101b;
+  --red-500: #88151f;
+  --red-600: #f32e40;
+  --red-700: #f13242;
+  --red-800: #e2162a;
+  --red-900: #ff565f;
+  --red-1000: #ffe9ed;
+
+  --amber-100: #2a1700;
+  --amber-200: #361900;
+  --amber-300: #502800;
+  --amber-400: #5b3000;
+  --amber-500: #703e00;
+  --amber-600: #ed9a00;
+  --amber-700: #ffae00;
+  --amber-800: #ff9300;
+  --amber-900: #ff9300;
+  --amber-1000: #fff3d5;
+
+  --green-100: #002608;
+  --green-200: #00320b;
+  --green-300: #003a0e;
+  --green-400: #004615;
+  --green-500: #006717;
+  --green-600: #00952d;
+  --green-700: #00ac3a;
+  --green-800: #009432;
+  --green-900: #00ca50;
+  --green-1000: #d8ffe4;
+}
+
 @layer base {
   html, body, #root {
-    @apply antialiased transition-colors duration-300 font-sans h-screen w-screen overflow-hidden;
-    scrollbar-color: rgba(244, 63, 94, 0.2) transparent;
+    @apply antialiased font-sans h-screen w-screen overflow-hidden;
+    background-color: var(--background);
+    color: var(--foreground);
+    scrollbar-color: var(--gray-500) transparent;
   }
 
-  /* Premium scrollbar styles */
+  /* Minimal scrollbar */
   @supports not (scrollbar-color: auto) {
     ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(244, 63, 94, 0.2);
+      background: var(--gray-500);
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(244, 63, 94, 0.35);
+      background: var(--gray-600);
     }
     ::-webkit-scrollbar-track {
       background: transparent;
     }
   }
 
-  /* Selection style */
   ::selection {
-    @apply bg-pink-500/20 text-pink-600 dark:text-pink-400;
+    background: var(--blue-300);
+    color: var(--blue-1000);
   }
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 shadow-sm;
+  /* Geist two-layer focus ring: surface-colored gap, then accent ring */
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
   }
-  
-  .glass-card-hover {
-    @apply hover:border-pink-500/20 dark:hover:border-pink-500/20 transition-all duration-300;
-  }
-  
-  /* Utilities to hide scrollbars for clean minimal lists */
+
+  /* Hide scrollbars for clean minimal lists */
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
@@ -53,12 +217,15 @@
   }
 }
 
+/* Plain neutral chat surface (replaces the patterned glass wallpaper) */
 .chat-wallpaper {
-  background-color: #efeae2;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm1-61c3.16 0 6-1.84 6-5s-2.84-5-6-5-6 1.84-6 5 2.84 5 6 5zm29 57c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM25 54c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-7-25c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm35-6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 34c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm24-14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: var(--background-secondary);
 }
 
-.dark .chat-wallpaper {
-  background-color: #0b141a;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm1-61c3.16 0 6-1.84 6-5s-2.84-5-6-5-6 1.84-6 5 2.84 5 6 5zm29 57c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM25 54c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-7-25c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm35-6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 34c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm24-14c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z'/%3E%3C/g%3E%3C/svg%3E");
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

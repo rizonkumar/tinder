@@ -129,7 +129,7 @@ export default function ChatInputBar({
   return (
     <form
       onSubmit={onSend}
-      className="border-t border-slate-200/60 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shrink-0 relative flex flex-col z-10 select-none"
+      className="border-t border-border bg-background shrink-0 relative flex flex-col z-10 select-none"
     >
       <AnimatePresence>{children}</AnimatePresence>
 
@@ -147,7 +147,7 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={() => setEditingMessage(null)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-555 dark:text-zinc-400 focus:outline-none shrink-0"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-hover hover:bg-surface-active text-foreground-secondary focus:outline-none shrink-0"
               title="Cancel Edit"
             >
               <X size={17} />
@@ -157,27 +157,27 @@ export default function ChatInputBar({
               value={text}
               onChange={onTextChange}
               placeholder="Edit message..."
-              className="flex-grow rounded-full border border-pink-500/70 dark:border-pink-500/70 bg-slate-50/50 dark:bg-zinc-950/40 px-5 py-2.5 text-sm text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-slate-550 outline-none focus:bg-white dark:focus:bg-zinc-950 transition-all"
+              className="flex-grow rounded-md border border-border bg-background px-5 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus-ring transition-all"
               autoFocus
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               type="submit"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm shadow-emerald-500/10 focus:outline-none shrink-0"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-green-700 hover:bg-green-800 text-white shadow-card focus:outline-none shrink-0"
               title="Save Edit"
             >
               <Check size={17} />
             </motion.button>
           </motion.div>
         ) : isRecording ? (
-          <div className="flex-grow flex items-center justify-between bg-slate-50 dark:bg-zinc-950/60 rounded-full px-4 py-2 border border-slate-200/50 dark:border-zinc-800 select-none">
+          <div className="flex-grow flex items-center justify-between bg-background-secondary rounded-full px-4 py-2 border border-border select-none">
             <div className="flex items-center space-x-2.5">
               <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-red-500 font-outfit shrink-0">
+              <span className="text-[10px] font-black uppercase tracking-widest text-red-800 font-outfit shrink-0">
                 Recording
               </span>
-              <span className="text-xs font-semibold text-slate-550 dark:text-zinc-400 font-sans">
+              <span className="text-xs font-semibold text-foreground-secondary font-sans">
                 {formatDuration(recordingSeconds)}
               </span>
             </div>
@@ -185,7 +185,7 @@ export default function ChatInputBar({
               <button
                 type="button"
                 onClick={cancelRecording}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-250 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-500 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors focus:outline-none"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-hover hover:bg-surface-active text-foreground-secondary hover:text-foreground transition-colors focus:outline-none"
                 title="Cancel"
               >
                 <X size={14} />
@@ -193,7 +193,7 @@ export default function ChatInputBar({
               <button
                 type="button"
                 onClick={stopAndSendRecording}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 hover:bg-pink-650 text-white transition-colors focus:outline-none animate-bounce"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary hover:bg-primary-hover text-primary-foreground transition-colors focus:outline-none animate-bounce"
                 title="Send"
               >
                 <Send size={13} className="ml-0.5" />
@@ -215,7 +215,7 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-background-secondary border border-border text-foreground-secondary hover:text-accent transition-colors focus-ring shrink-0"
               title="Attach Photo"
             >
               <Paperclip size={17} />
@@ -226,10 +226,10 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={onToggleGifPicker}
-              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus:outline-none shrink-0 ${
+              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus-ring shrink-0 ${
                 showGifPicker
-                  ? "bg-pink-500 border-pink-500 text-white"
-                  : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-550 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : "bg-background-secondary border-border text-foreground-secondary hover:text-accent"
               }`}
               title="Share GIF"
             >
@@ -241,7 +241,7 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={onOpenDateModal}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-555 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-background-secondary border border-border text-foreground-secondary hover:text-accent transition-colors focus-ring shrink-0"
               title="Plan a Date"
             >
               <Calendar size={17} />
@@ -252,7 +252,7 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={onOpenGameModal}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-50 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-555 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors focus:outline-none shrink-0"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-background-secondary border border-border text-foreground-secondary hover:text-accent transition-colors focus-ring shrink-0"
               title="Play Two Truths & a Lie"
             >
               <Gamepad2 size={17} />
@@ -263,10 +263,10 @@ export default function ChatInputBar({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={onToggleAIAssistant}
-              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus:outline-none shrink-0 ${
+              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus-ring shrink-0 ${
                 showAIAssistant
-                  ? "bg-pink-500 border-pink-500 text-white shadow-md shadow-pink-500/25"
-                  : "bg-slate-50 dark:bg-zinc-900 border-slate-200/50 dark:border-zinc-800 text-slate-555 dark:text-slate-400 hover:text-pink-500 dark:hover:text-pink-400"
+                  ? "bg-primary border-primary text-primary-foreground shadow-card"
+                  : "bg-background-secondary border-border text-foreground-secondary hover:text-accent"
               }`}
               title="AI Assistant"
             >
@@ -278,7 +278,7 @@ export default function ChatInputBar({
               value={text}
               onChange={onTextChange}
               placeholder="Type a message..."
-              className="flex-grow rounded-full border border-slate-200/60 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/40 px-5 py-2.5 text-sm text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-slate-550 outline-none transition-all focus:border-pink-500 dark:focus:border-pink-500 focus:bg-white dark:focus:bg-zinc-950"
+              className="flex-grow rounded-md border border-border bg-background px-5 py-2.5 text-sm text-foreground placeholder:text-foreground-muted transition-all focus-ring"
             />
 
             {text.trim() ? (
@@ -286,7 +286,7 @@ export default function ChatInputBar({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-500 text-white shadow-sm transition-all hover:bg-pink-600 active:bg-pink-700 focus:outline-none shrink-0"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-card transition-all hover:bg-primary-hover focus:outline-none shrink-0"
               >
                 <Send size={16} className="ml-0.5" />
               </motion.button>
@@ -296,7 +296,7 @@ export default function ChatInputBar({
                 whileTap={{ scale: 0.95 }}
                 type="button"
                 onClick={startRecording}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-500 text-white shadow-sm transition-all hover:bg-pink-650 active:bg-pink-700 focus:outline-none shrink-0"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-card transition-all hover:bg-primary-hover focus:outline-none shrink-0"
                 title="Record Voice Note"
               >
                 <Mic size={17} />

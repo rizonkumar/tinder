@@ -22,7 +22,7 @@ export default function MatchCelebrationOverlay() {
         particleCount: 150,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ["#f43f5e", "#ec4899", "#d946ef", "#eab308"],
+        colors: ["#171717", "#28a948", "#006bff"],
       });
     };
 
@@ -57,7 +57,7 @@ export default function MatchCelebrationOverlay() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-lg select-none"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 select-none"
         >
           <button
             onClick={handleClose}
@@ -85,7 +85,7 @@ export default function MatchCelebrationOverlay() {
                   repeat: Infinity,
                   ease: "linear",
                 }}
-                className="absolute text-pink-500/30"
+                className="absolute text-white/20"
               >
                 <Heart size={40} className="fill-current" />
               </motion.div>
@@ -102,16 +102,16 @@ export default function MatchCelebrationOverlay() {
             <div className="absolute top-[-55px] animate-pulse">
               <Sparkles
                 size={84}
-                className="text-yellow-400 opacity-70 fill-current"
+                className="text-white opacity-70 fill-current"
               />
             </div>
 
-            <h1 className="bg-gradient-to-r from-red-400 via-pink-500 to-purple-400 bg-clip-text text-6xl font-extrabold tracking-wider text-transparent drop-shadow-xl font-serif">
+            <h1 className="text-6xl font-extrabold tracking-wider text-white font-serif">
               It's a Match!
             </h1>
             <p className="mt-4 text-xl font-light tracking-wide text-gray-300">
               You and{" "}
-              <span className="font-semibold text-pink-400">
+              <span className="font-semibold text-white">
                 {matchData.matchedUser.name}
               </span>{" "}
               liked each other!
@@ -122,7 +122,7 @@ export default function MatchCelebrationOverlay() {
                 initial={{ rotate: -15, x: -40, opacity: 0 }}
                 animate={{ rotate: -8, x: 0, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}
-                className="h-36 w-36 overflow-hidden rounded-3xl border-4 border-white shadow-2xl"
+                className="h-36 w-36 overflow-hidden rounded-lg border-4 border-white shadow-modal"
               >
                 <img
                   src={matchData.currentUser.image || "/avatar.png"}
@@ -135,7 +135,7 @@ export default function MatchCelebrationOverlay() {
                 initial={{ scale: 0 }}
                 animate={{ scale: [0, 1.4, 1] }}
                 transition={{ delay: 0.4, duration: 0.5 }}
-                className="z-10 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg border-4 border-white"
+                className="z-10 flex h-16 w-16 items-center justify-center rounded-full bg-green-700 text-white shadow-modal border-4 border-white"
               >
                 <Heart size={28} className="fill-current animate-bounce" />
               </motion.div>
@@ -144,7 +144,7 @@ export default function MatchCelebrationOverlay() {
                 initial={{ rotate: 15, x: 40, opacity: 0 }}
                 animate={{ rotate: 8, x: 0, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}
-                className="h-36 w-36 overflow-hidden rounded-3xl border-4 border-white shadow-2xl"
+                className="h-36 w-36 overflow-hidden rounded-lg border-4 border-white shadow-modal"
               >
                 <img
                   src={matchData.matchedUser.image || "/avatar.png"}
@@ -158,18 +158,18 @@ export default function MatchCelebrationOverlay() {
               onSubmit={handleSend}
               className="w-full max-w-md space-y-4 px-4 pointer-events-auto"
             >
-              <div className="flex items-center space-x-3 rounded-full border border-white/20 bg-white/10 px-5 py-3.5 backdrop-blur-md focus-within:border-pink-500 focus-within:bg-white/15">
+              <div className="flex items-center space-x-3 rounded-md border border-border bg-background px-5 py-3.5 focus-within:ring-ring">
                 <input
                   type="text"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder={`Say something nice to ${matchData.matchedUser.name}...`}
-                  className="flex-grow bg-transparent text-sm text-white placeholder-gray-400 outline-none"
+                  className="flex-grow bg-transparent text-sm text-foreground placeholder-foreground-muted outline-none"
                 />
                 <button
                   type="submit"
                   disabled={!text.trim()}
-                  className="text-pink-400 hover:text-pink-300 disabled:opacity-50 disabled:hover:text-pink-400"
+                  className="text-accent hover:text-accent-hover disabled:opacity-50 disabled:hover:text-accent"
                 >
                   <Send size={18} />
                 </button>
@@ -178,7 +178,7 @@ export default function MatchCelebrationOverlay() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="w-full rounded-full border border-gray-500 py-3.5 font-bold text-gray-200 transition-colors hover:bg-white/10 hover:text-white"
+                  className="w-full rounded-md bg-primary py-3.5 font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
                 >
                   Keep Swiping
                 </button>

@@ -40,11 +40,11 @@ export default function App() {
 
   if (checkingAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1 }}
-          className="h-16 w-16 rounded-full border-4 border-white border-t-transparent"
+          className="h-10 w-10 rounded-full border-2 border-border-strong border-t-foreground"
         />
       </div>
     );
@@ -52,7 +52,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 transition-colors duration-300 font-sans flex flex-col">
+      <div className="h-screen w-screen overflow-hidden bg-background text-foreground font-sans flex flex-col">
         <AnimatePresence mode="wait">
           <Routes>
             <Route
@@ -184,36 +184,27 @@ export default function App() {
           position="bottom-right"
           toastOptions={{
             style: {
-              background: "rgba(255, 255, 255, 0.88)",
-              backdropFilter: "blur(12px)",
-              color: "#1f2937",
-              borderRadius: "24px",
-              border: "1px solid rgba(244, 63, 94, 0.12)",
-              padding: "14px 22px",
-              fontWeight: "800",
-              fontSize: "13px",
-              letterSpacing: "0.025em",
-              boxShadow: "0 20px 25px -5px rgba(244, 63, 94, 0.08), 0 10px 10px -5px rgba(244, 63, 94, 0.04)",
-              fontFamily: "Outfit, Inter, sans-serif",
+              background: "var(--background)",
+              color: "var(--foreground)",
+              borderRadius: "12px",
+              border: "1px solid var(--border-strong)",
+              padding: "12px 16px",
+              fontWeight: "500",
+              fontSize: "14px",
+              boxShadow:
+                "0 1px 1px rgba(0,0,0,0.02), 0 8px 16px -4px rgba(0,0,0,0.04), 0 24px 32px -8px rgba(0,0,0,0.06)",
+              fontFamily: "Geist, Inter, sans-serif",
             },
             success: {
               iconTheme: {
-                primary: "#ec4899",
-                secondary: "#ffffff",
-              },
-              style: {
-                border: "1px solid rgba(236, 72, 153, 0.22)",
-                color: "#db2777",
+                primary: "var(--green-700)",
+                secondary: "var(--background)",
               },
             },
             error: {
               iconTheme: {
-                primary: "#f43f5e",
-                secondary: "#ffffff",
-              },
-              style: {
-                border: "1px solid rgba(244, 63, 94, 0.22)",
-                color: "#e11d48",
+                primary: "var(--red-800)",
+                secondary: "var(--background)",
               },
             },
           }}

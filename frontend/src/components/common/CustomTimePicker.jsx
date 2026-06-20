@@ -33,24 +33,24 @@ export default function CustomTimePicker({
     <div ref={containerRef} className="relative w-full select-none">
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full text-xs rounded-xl border px-3.5 py-3 cursor-pointer transition-all duration-200 font-sans ${
+        className={`flex items-center justify-between w-full text-xs rounded-md border px-3.5 py-3 cursor-pointer transition-all duration-200 font-sans ${
           isOpen
-            ? "border-pink-500 bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-pink-500/15"
-            : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-150 hover:border-slate-300 dark:hover:border-zinc-700"
+            ? "border-accent bg-background shadow-card ring-1 ring-ring"
+            : "border-border bg-background text-foreground hover:border-border-strong"
         }`}
       >
         <span
           className={
             value
-              ? "text-slate-800 dark:text-zinc-100 font-semibold"
-              : "text-slate-400 dark:text-zinc-500 font-medium"
+              ? "text-foreground font-semibold"
+              : "text-foreground-muted font-medium"
           }
         >
           {value || placeholder}
         </span>
         <Clock
           size={14}
-          className={`transition-colors duration-200 ${isOpen ? "text-pink-500" : "text-slate-400 dark:text-zinc-500"}`}
+          className={`transition-colors duration-200 ${isOpen ? "text-accent" : "text-foreground-muted"}`}
         />
       </div>
 
@@ -61,18 +61,15 @@ export default function CustomTimePicker({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[280px] z-[260] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-lg rounded-2xl p-4 flex flex-col font-sans h-[240px]"
+            className="absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[280px] z-[260] bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans h-[240px]"
           >
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 text-center mb-3 shrink-0 select-none font-outfit">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted text-center mb-3 shrink-0 select-none font-outfit">
               Select Time
             </div>
 
             <div className="relative flex flex-grow overflow-hidden gap-1.5 text-center h-full">
-              <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-b from-white dark:from-zinc-900 to-transparent pointer-events-none z-10" />
-              <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-t from-white dark:from-zinc-900 to-transparent pointer-events-none z-10" />
-
               {/* Hours */}
-              <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5 scrollbar-none border-r border-slate-100 dark:border-zinc-800 pb-3 pt-1.5">
+              <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5 scrollbar-none border-r border-border pb-3 pt-1.5">
                 {hours.map((h) => {
                   const isSel = h === hour;
                   return (
@@ -80,10 +77,10 @@ export default function CustomTimePicker({
                       key={h}
                       type="button"
                       onClick={() => handleSelect(h, minute, period)}
-                      className={`w-full py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                      className={`w-full py-1.5 text-xs font-semibold rounded-md transition-all ${
                         isSel
-                          ? "bg-pink-500 text-white"
-                          : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200"
+                          ? "bg-accent text-accent-foreground"
+                          : "text-foreground-secondary hover:bg-surface-hover hover:text-foreground"
                       }`}
                     >
                       {h}
@@ -93,7 +90,7 @@ export default function CustomTimePicker({
               </div>
 
               {/* Minutes */}
-              <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5 scrollbar-none border-r border-slate-100 dark:border-zinc-800 pb-3 pt-1.5">
+              <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5 scrollbar-none border-r border-border pb-3 pt-1.5">
                 {minutes.map((m) => {
                   const isSel = m === minute;
                   return (
@@ -101,10 +98,10 @@ export default function CustomTimePicker({
                       key={m}
                       type="button"
                       onClick={() => handleSelect(hour, m, period)}
-                      className={`w-full py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                      className={`w-full py-1.5 text-xs font-semibold rounded-md transition-all ${
                         isSel
-                          ? "bg-pink-500 text-white"
-                          : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200"
+                          ? "bg-accent text-accent-foreground"
+                          : "text-foreground-secondary hover:bg-surface-hover hover:text-foreground"
                       }`}
                     >
                       {m}
@@ -122,10 +119,10 @@ export default function CustomTimePicker({
                       key={p}
                       type="button"
                       onClick={() => handleSelect(hour, minute, p)}
-                      className={`w-full py-2.5 text-xs font-semibold rounded-lg transition-all ${
+                      className={`w-full py-2.5 text-xs font-semibold rounded-md transition-all ${
                         isSel
-                          ? "bg-pink-500 text-white"
-                          : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200"
+                          ? "bg-accent text-accent-foreground"
+                          : "text-foreground-secondary hover:bg-surface-hover hover:text-foreground"
                       }`}
                     >
                       {p}
@@ -135,11 +132,11 @@ export default function CustomTimePicker({
               </div>
             </div>
 
-            <div className="mt-2.5 shrink-0 pt-2.5 border-t border-slate-100 dark:border-zinc-800">
+            <div className="mt-2.5 shrink-0 pt-2.5 border-t border-border">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="w-full py-2 bg-pink-500 hover:bg-pink-600 active:bg-pink-700 text-white text-[10px] font-bold rounded-xl transition-colors uppercase tracking-widest font-outfit"
+                className="w-full py-2 bg-primary hover:bg-primary-hover text-primary-foreground text-[10px] font-bold rounded-md transition-colors uppercase tracking-widest font-outfit"
               >
                 Apply Time
               </button>

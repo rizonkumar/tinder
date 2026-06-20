@@ -156,13 +156,13 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-zinc-950 lg:flex-row transition-colors duration-300">
+    <div className="flex h-screen w-screen overflow-hidden bg-background lg:flex-row transition-colors duration-300">
       <Sidebar />
       <div className="flex flex-grow flex-col overflow-hidden lg:w-3/4">
         <Header />
 
         {activeChatUser ? (
-          <div className="flex flex-grow flex-row overflow-hidden bg-white dark:bg-zinc-900 border-t border-slate-200/60 dark:border-zinc-800 lg:border-l lg:border-t-0 transition-colors duration-300">
+          <div className="flex flex-grow flex-row overflow-hidden bg-background border-t border-border lg:border-l lg:border-t-0 transition-colors duration-300">
             <div className="flex flex-grow flex-col overflow-hidden">
               <ChatHeader
                 activeChatUser={activeChatUser}

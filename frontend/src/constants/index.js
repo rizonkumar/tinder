@@ -46,54 +46,56 @@ export const MOCK_LIKES = [
   },
 ];
 
+// `surface` is a solid Geist surface class (no gradients). Consumers apply it
+// directly instead of wrapping with `bg-gradient-to-*`.
 export const EXPLORE_CATEGORIES = [
   {
     id: "Gaming",
     name: "Gamers",
     iconName: "Gamepad2",
-    gradient: "from-indigo-500 to-purple-600",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Travel",
     name: "Travelers",
     iconName: "Plane",
-    gradient: "from-blue-500 to-cyan-500",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Food",
     name: "Foodies",
     iconName: "Utensils",
-    gradient: "from-amber-500 to-orange-600",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Coding",
     name: "Coders",
     iconName: "Code2",
-    gradient: "from-emerald-500 to-teal-600",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Music",
     name: "Music Lovers",
     iconName: "Music",
-    gradient: "from-pink-500 to-rose-600",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Fitness",
     name: "Fitness",
     iconName: "Dumbbell",
-    gradient: "from-red-500 to-pink-600",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Reading",
     name: "Readers",
     iconName: "BookOpen",
-    gradient: "from-sky-500 to-blue-600",
+    surface: "bg-gray-100 text-foreground",
   },
   {
     id: "Art",
     name: "Artists",
     iconName: "Palette",
-    gradient: "from-violet-500 to-fuchsia-600",
+    surface: "bg-gray-100 text-foreground",
   },
 ];
 
@@ -106,33 +108,35 @@ export const fallbackGifs = [
   { id: "6", title: "Heart Pop", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWp3ZnRnbXpxNm9nd2Jyd2NtdHA2cXR2ZzJ5djE5MTRxMXAxdGpxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/l41JWd1xzcx437nmw/giphy.gif" }
 ];
 
+// `surface` is a solid Geist surface class (no gradients). Consumers apply it
+// directly instead of wrapping with `bg-gradient-to-*`.
 export const ACTIVITY_OPTIONS = {
   Coffee: {
-    bg: "from-amber-400 to-orange-500",
+    surface: "bg-gray-100 text-foreground",
     icon: Coffee,
     label: "Coffee Date",
     emoji: "☕"
   },
   Dinner: {
-    bg: "from-rose-400 to-pink-600",
+    surface: "bg-gray-100 text-foreground",
     icon: Utensils,
     label: "Dinner Date",
     emoji: "🍽️"
   },
   Drinks: {
-    bg: "from-indigo-500 to-purple-600",
+    surface: "bg-gray-100 text-foreground",
     icon: Martini,
     label: "Drinks Date",
     emoji: "🍸"
   },
   Movie: {
-    bg: "from-cyan-400 to-blue-600",
+    surface: "bg-gray-100 text-foreground",
     icon: Film,
     label: "Movie Night",
     emoji: "🎬"
   },
   Walk: {
-    bg: "from-emerald-400 to-teal-600",
+    surface: "bg-gray-100 text-foreground",
     icon: Footprints,
     label: "Walk & Talk",
     emoji: "🌳"
@@ -140,7 +144,7 @@ export const ACTIVITY_OPTIONS = {
 };
 
 export const DEFAULT_ACTIVITY = {
-  bg: "from-pink-400 to-rose-500",
+  surface: "bg-gray-100 text-foreground",
   icon: Calendar,
   label: "Date Plan",
   emoji: "📅"

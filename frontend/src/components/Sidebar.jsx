@@ -22,17 +22,17 @@ const Sidebar = () => {
   return (
     <>
       <div
-        className={`fixed inset-y-0 left-0 z-20 w-64 h-full overflow-hidden bg-white dark:bg-zinc-900 shadow-md border-r border-slate-100 dark:border-zinc-800/80 transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-20 w-64 h-full overflow-hidden bg-background shadow-card border-r border-border transition-all duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } lg:static lg:w-1/4 lg:translate-x-0 flex flex-col shrink-0`}
       >
         <div className="flex h-full flex-col overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 px-4 h-[72px] shrink-0">
-            <h2 className="text-2xl font-black bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent font-outfit uppercase">
+          <div className="flex items-center justify-between border-b border-border px-4 h-[72px] shrink-0">
+            <h2 className="text-2xl font-black text-foreground font-outfit uppercase">
               Matches
             </h2>
             <button
-              className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 focus:outline-none lg:hidden"
+              className="p-1.5 text-foreground-muted hover:text-foreground focus-ring lg:hidden"
               onClick={toggleSidebar}
             >
               <X size={24} />
@@ -40,7 +40,7 @@ const Sidebar = () => {
           </div>
 
           {/* Scrolling limited strictly to matches list wrapper */}
-          <div className="relative z-10 flex-grow overflow-y-auto p-3 space-y-1 scrollbar-none bg-slate-50/30 dark:bg-zinc-900/10">
+          <div className="relative z-10 flex-grow overflow-y-auto p-3 space-y-1 scrollbar-none bg-background-secondary">
             {isLoadingMyMatches ? (
               <LoadingState />
             ) : matches?.length === 0 ? (
@@ -61,37 +61,37 @@ const Sidebar = () => {
                     className="block"
                   >
                     <div
-                      className={`flex cursor-pointer items-center rounded-2xl p-3 transition-all duration-300 ${
+                      className={`flex cursor-pointer items-center rounded-md p-3 transition-all duration-300 ${
                         isActive
-                          ? "bg-pink-50 dark:bg-pink-950/20 border-l-4 border-pink-500 shadow-sm"
-                          : "hover:bg-slate-100/50 dark:hover:bg-zinc-800/30"
+                          ? "bg-accent/10 border-l-4 border-accent shadow-card"
+                          : "hover:bg-surface-hover"
                       }`}
                     >
                       <div className="relative mr-3.5">
                         <img
                           src={match.image || "/avatar.png"}
                           alt={match.name}
-                          className="size-11 rounded-full border border-slate-200 dark:border-zinc-800 object-cover"
+                          className="size-11 rounded-full border border-border object-cover"
                         />
                         <span
-                          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm ${
-                            isOnline ? "bg-green-500" : "bg-slate-300 dark:bg-zinc-700"
+                          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background shadow-card ${
+                            isOnline ? "bg-green-700" : "bg-gray-400"
                           }`}
                         />
                       </div>
 
                       <div className="flex flex-col overflow-hidden">
                         <div className="flex items-center space-x-1 overflow-hidden">
-                          <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">
+                          <h3 className="font-bold text-foreground text-sm truncate">
                             {match.name}
                           </h3>
                           {isChatVerified && (
-                            <span className="text-emerald-500 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
-                              <ShieldCheck size={13} className="fill-emerald-500/10 stroke-[2.5]" />
+                            <span className="text-green-700 shrink-0 select-none animate-pulse" title="E2E Encryption Verified">
+                              <ShieldCheck size={13} className="fill-green-700/10 stroke-[2.5]" />
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        <p className="text-[11px] text-foreground-secondary font-medium">
                           {isOnline ? "Active now" : "Offline"}
                         </p>
                       </div>
@@ -106,7 +106,7 @@ const Sidebar = () => {
 
       {!isChatRoom && (
         <button
-          className="fixed left-4 bottom-4 z-30 rounded-full bg-pink-500 hover:bg-pink-600 p-4 text-white shadow-2xl transition-transform hover:scale-105 active:scale-95 lg:hidden"
+          className="fixed left-4 bottom-4 z-30 rounded-full bg-primary hover:bg-primary-hover p-4 text-primary-foreground shadow-modal transition-transform hover:scale-105 active:scale-95 lg:hidden"
           onClick={toggleSidebar}
         >
           <MessageCircle size={26} />
@@ -120,11 +120,11 @@ export default Sidebar;
 
 const NoMatchesFound = () => (
   <div className="flex h-full flex-col items-center justify-center text-center p-4 py-16">
-    <div className="p-3.5 rounded-full bg-pink-50 dark:bg-pink-950/20 mb-4 animate-pulse">
-      <Heart className="text-pink-500 fill-current" size={28} />
+    <div className="p-3.5 rounded-full bg-green-100 mb-4 animate-pulse">
+      <Heart className="text-green-700 fill-current" size={28} />
     </div>
-    <h3 className="mb-1 text-base font-black text-slate-800 dark:text-slate-200 uppercase font-outfit">No Matches Yet</h3>
-    <p className="max-w-[200px] text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed font-medium">
+    <h3 className="mb-1 text-base font-black text-foreground uppercase font-outfit">No Matches Yet</h3>
+    <p className="max-w-[200px] text-[11px] text-foreground-muted leading-relaxed font-medium">
       Keep swiping! Your perfect match is out there, waiting for you to swipe right.
     </p>
   </div>
@@ -132,10 +132,10 @@ const NoMatchesFound = () => (
 
 const LoadingState = () => (
   <div className="flex h-full flex-col items-center justify-center text-center p-4 py-16">
-    <Loader className="mb-3 animate-spin text-pink-500" size={32} />
-    <h3 className="mb-1 text-base font-bold text-slate-800 dark:text-slate-200 font-outfit">
+    <Loader className="mb-3 animate-spin text-accent" size={32} />
+    <h3 className="mb-1 text-base font-bold text-foreground font-outfit">
       Loading Matches
     </h3>
-    <p className="max-w-xs text-[11px] text-slate-400 dark:text-slate-500">Finding your matches...</p>
+    <p className="max-w-xs text-[11px] text-foreground-muted">Finding your matches...</p>
   </div>
 );

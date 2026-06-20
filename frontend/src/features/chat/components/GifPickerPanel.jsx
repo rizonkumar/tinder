@@ -14,16 +14,16 @@ export default function GifPickerPanel({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="absolute bottom-20 left-4 right-4 z-50 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 flex flex-col h-[280px]"
+      className="absolute bottom-20 left-4 right-4 z-50 rounded-md bg-background border border-border shadow-popover p-4 flex flex-col h-[280px]"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-outfit uppercase tracking-wider">
+        <span className="text-xs font-bold text-foreground-secondary font-outfit uppercase tracking-wider">
           Search GIPHY GIFs
         </span>
         <button
           type="button"
           onClick={onClose}
-          className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 focus:outline-none"
+          className="text-xs font-bold text-foreground-muted hover:text-foreground focus:outline-none"
         >
           Close
         </button>
@@ -34,7 +34,7 @@ export default function GifPickerPanel({
         value={gifQuery}
         onChange={(e) => onGifQueryChange(e.target.value)}
         placeholder="Type keyword e.g. wink, wave, cat..."
-        className="w-full text-xs rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 px-3.5 py-2 outline-none mb-3 focus:border-pink-500 text-slate-800 dark:text-zinc-100"
+        className="w-full text-xs rounded-md border border-border bg-background-secondary px-3.5 py-2 outline-none mb-3 focus-ring text-foreground"
       />
 
       <div className="flex-grow overflow-y-auto grid grid-cols-3 gap-2 pr-0.5 scrollbar-none">
@@ -43,7 +43,7 @@ export default function GifPickerPanel({
             <LoadingState message="" type="inline" />
           </div>
         ) : gifs.length === 0 ? (
-          <div className="col-span-3 text-center text-xs text-slate-400 italic py-8">
+          <div className="col-span-3 text-center text-xs text-foreground-muted italic py-8">
             No GIFs found.
           </div>
         ) : (
@@ -51,7 +51,7 @@ export default function GifPickerPanel({
             <div
               key={g.id}
               onClick={() => onSelectGif(g)}
-              className="aspect-square rounded-lg overflow-hidden cursor-pointer border border-slate-100 dark:border-zinc-800/80 hover:border-pink-500 hover:scale-[1.02] active:scale-[0.98] transition-all bg-slate-50 dark:bg-zinc-955 shrink-0"
+              className="aspect-square rounded-md overflow-hidden cursor-pointer border border-border hover:border-border-strong hover:scale-[1.02] active:scale-[0.98] transition-all bg-background-secondary shrink-0"
             >
               <img
                 src={g.url}

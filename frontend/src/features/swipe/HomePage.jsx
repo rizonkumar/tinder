@@ -20,11 +20,11 @@ export default function HomePage() {
   }, [getUserProfiles]);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-slate-50 dark:bg-zinc-950 transition-colors duration-300 font-sans">
+    <div className="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-background transition-colors duration-300 font-sans">
       <Sidebar />
       <div className="flex flex-grow flex-col h-full overflow-hidden">
         <Header />
-        <main className="relative flex-grow h-[calc(100vh-72px)] overflow-hidden flex items-center justify-center p-4 bg-slate-50/50 dark:bg-zinc-950/20">
+        <main className="relative flex-grow h-[calc(100vh-72px)] overflow-hidden flex items-center justify-center p-4 bg-background-secondary">
           <CardSwiper
             userProfiles={userProfiles}
             isLoadingUserProfiles={isLoadingUserProfiles}
