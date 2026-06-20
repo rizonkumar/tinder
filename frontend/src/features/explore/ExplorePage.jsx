@@ -3,7 +3,7 @@ import { Header } from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import CardSwiper from "../swipe/CardSwiper";
 import { useMatchStore } from "../../store/useMatchStore";
-import { ArrowLeft, Compass, Sparkles } from "lucide-react";
+import { ArrowLeft, Compass } from "lucide-react";
 import * as Icons from "lucide-react";
 import { motion } from "framer-motion";
 import { EXPLORE_CATEGORIES } from "../../constants";

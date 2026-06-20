@@ -14,11 +14,9 @@ import {
 } from "lucide-react";
 import { calculateCompatibility } from "../../utils/compatibility";
 import { useAuthStore } from "../../store/useAuthStore";
-import { useThemeStore } from "../../store/useThemeStore";
 
 export default function CompatibilityRadar({ profile }) {
   const { authUser } = useAuthStore();
-  const { theme } = useThemeStore();
   const [activeAxis, setActiveAxis] = useState(0);
 
   const { scores, metadata } = calculateCompatibility(authUser, profile);

@@ -84,7 +84,7 @@ export default function ProfilePage() {
       const suggestions = await enhanceProfile(aiTone);
       setAiSuggestions(suggestions);
       toast.success("AI bio suggestions generated!");
-    } catch (err) {
+    } catch {
       toast.error("Failed to generate AI bio suggestions. Please try again.");
     } finally {
       setIsGeneratingAi(false);

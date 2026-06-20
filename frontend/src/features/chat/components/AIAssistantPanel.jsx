@@ -12,7 +12,6 @@ export default function AIAssistantPanel({
   onSelectReply,
   onRegenerateReplies,
   onRegenerateIcebreakers,
-  chatId,
 }) {
   return (
     <motion.div

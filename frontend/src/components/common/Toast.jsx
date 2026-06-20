@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { Sparkles, X, Heart, AlertCircle, Info, Check } from "lucide-react";
+import { X, Heart, AlertCircle, Info, Check } from "lucide-react";
 
 export function CustomToast({ t, type, message }) {
   const getColorsAndIcons = () => {
@@ -37,7 +37,7 @@ export function CustomToast({ t, type, message }) {
     }
   };
 
-  const { icon: Icon, color, progressBg, shadowColor } = getColorsAndIcons();
+  const { icon: Icon, color, shadowColor } = getColorsAndIcons();
 
   return (
     <motion.div

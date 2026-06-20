@@ -1006,7 +1006,7 @@ export default function MessageList({
   const deleteMessage = useMessageStore((state) => state.deleteMessage);
   const setEditingMessage = useMessageStore((state) => state.setEditingMessage);
 
-  const handleStartEdit = (messageId, content) => {
+  const handleStartEdit = (messageId) => {
     const msg = messages.find((m) => m._id === messageId);
     if (msg) {
       setEditingMessage(msg);
