@@ -1,6 +1,22 @@
 import Message from "../models/message-model.js";
+import { MESSAGE_TYPES } from "../constants/message-types.js";
+import { DATE_STATUSES } from "../constants/date-statuses.js";
 
 class MessageRepository {
+  async findConfirmedDates(userId, populateOptions = []) {
+    let query = Message.find({
+      messageType: MESSAGE_TYPES.DATE_PROPOSAL,
+      "dateInfo.status": DATE_STATUSES.ACCEPTED,
+      $or: [{ sender: userId }, { receiver: userId }],
+      deletedFor: { $ne: userId },
+    }).sort({ createdAt: -1 });
+
+    if (populateOptions.length > 0) {
+      query = query.populate(populateOptions);
+    }
+    return await query;
+  }
+
   async findById(id, populateOptions = []) {
     let query = Message.findById(id);
     if (populateOptions.length > 0) {

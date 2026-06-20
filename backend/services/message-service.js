@@ -135,6 +135,33 @@ class MessageService {
     return new MessageDto(populatedMessage, userId);
   }
 
+  async getConfirmedDates(userId) {
+    const messages = await messageRepository.findConfirmedDates(userId, [
+      { path: "sender", select: "name image" },
+      { path: "receiver", select: "name image" },
+    ]);
+
+    return messages.map((message) => {
+      const proposedByMe = message.sender._id.toString() === userId.toString();
+      const partner = proposedByMe ? message.receiver : message.sender;
+      return {
+        id: message._id,
+        partner: {
+          _id: partner._id,
+          name: partner.name,
+          image: partner.image,
+        },
+        activity: message.dateInfo.activity,
+        date: message.dateInfo.date,
+        time: message.dateInfo.time,
+        location: message.dateInfo.location,
+        status: message.dateInfo.status,
+        proposedByMe,
+        createdAt: message.createdAt,
+      };
+    });
+  }
+
   async searchMessages(currentUserId, otherUserId, query) {
     const messages = await messageRepository.searchConversation(
       currentUserId,

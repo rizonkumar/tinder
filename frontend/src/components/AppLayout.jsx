@@ -24,7 +24,7 @@ export default function AppLayout({ children, variant = "scroll" }) {
         )}
         {variant === "scroll" && (
           <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 [scrollbar-gutter:stable] sm:px-6 lg:px-8">
-            <div className="mx-auto w-full max-w-4xl">{children}</div>
+            <div className="w-full max-w-5xl">{children}</div>
           </main>
         )}
       </div>

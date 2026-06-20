@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Heart, Loader, ShieldCheck, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMatchStore } from "../store/useMatchStore.jsx";
 import { useAuthStore } from "../store/useAuthStore.jsx";
 import { useMessageStore } from "../store/useMessageStore.jsx";
@@ -11,7 +11,6 @@ const Sidebar = () => {
   const { getMyMatches, matches, isLoadingMyMatches } = useMatchStore();
   const { onlineUsers } = useAuthStore();
   const { activeChatUser } = useMessageStore();
-  const location = useLocation();
 
   useEffect(() => {
     getMyMatches();
@@ -21,13 +20,13 @@ const Sidebar = () => {
     <>
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+          className="fixed inset-x-0 bottom-0 top-16 z-20 bg-black/40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex w-72 flex-col overflow-hidden border-r border-border bg-background transition-all duration-300 ease-in-out lg:static lg:z-auto lg:translate-x-0 lg:shrink-0 ${
+        className={`fixed bottom-0 left-0 top-16 z-30 flex w-72 flex-col overflow-hidden border-r border-border bg-background transition-all duration-300 ease-in-out lg:static lg:top-auto lg:z-auto lg:translate-x-0 lg:shrink-0 ${
           isSidebarOpen
             ? "translate-x-0 lg:w-80"
             : "-translate-x-full lg:w-0 lg:border-r-0"
