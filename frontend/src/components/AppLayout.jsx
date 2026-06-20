@@ -23,8 +23,8 @@ export default function AppLayout({ children, variant = "scroll" }) {
           </main>
         )}
         {variant === "scroll" && (
-          <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 [scrollbar-gutter:stable] sm:px-6 lg:px-8">
-            <div className="w-full max-w-5xl">{children}</div>
+          <main className="min-w-0 flex-1 overflow-y-auto flex flex-col bg-background-secondary px-4 py-6 [scrollbar-gutter:stable] sm:px-6 lg:px-8">
+            <div className="w-full max-w-5xl mx-auto flex-1">{children}</div>
           </main>
         )}
       </div>
