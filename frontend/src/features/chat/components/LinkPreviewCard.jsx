@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Globe, ExternalLink } from "lucide-react";
+import { useLinkPreview } from "../hooks/useLinkPreview";
+import { metaTextClass } from "../utils/chatBubbleStyles";
 
 function getHostname(url) {
   try {
@@ -10,8 +12,37 @@ function getHostname(url) {
 }
 
 export default function LinkPreviewCard({ url, isSentByMe }) {
+  const { data, isLoading } = useLinkPreview(url);
   const [iconFailed, setIconFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
   const hostname = getHostname(url);
+  const containerClass = `mt-2 block overflow-hidden rounded-md border transition-colors ${
+    isSentByMe
+      ? "border-blue-1000/20 bg-blue-1000/5 hover:bg-blue-1000/10"
+      : "border-border bg-background hover:bg-surface-hover"
+  }`;
+  const mutedClass = metaTextClass(isSentByMe);
+  const titleClass = isSentByMe ? "text-blue-1000" : "text-foreground";
+
+  if (isLoading) {
+    return (
+      <div className={`${containerClass} animate-pulse`}>
+        <div className="flex items-center gap-2.5 px-3 py-2">
+          <span className="h-8 w-8 shrink-0 rounded-md bg-surface-active" />
+          <span className="flex-grow space-y-1.5">
+            <span className="block h-2.5 w-1/2 rounded bg-surface-active" />
+            <span className="block h-2 w-3/4 rounded bg-surface-active" />
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const hasImage = data?.image && !imageFailed;
+  const title = data?.title || hostname;
+  const description = data?.description;
+  const siteName = data?.siteName || hostname;
   const faviconSrc = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
 
   return (
@@ -20,43 +51,49 @@ export default function LinkPreviewCard({ url, isSentByMe }) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={(event) => event.stopPropagation()}
-      className={`mt-2 flex items-center gap-2.5 rounded-md border px-3 py-2 transition-colors ${
-        isSentByMe
-          ? "border-primary-foreground/20 bg-primary-foreground/10 hover:bg-primary-foreground/15"
-          : "border-border bg-background hover:bg-surface-hover"
-      }`}
+      className={containerClass}
     >
-      <span
-        className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md ${
-          isSentByMe ? "bg-primary-foreground/15" : "bg-background-secondary"
-        }`}
-      >
-        {iconFailed ? (
-          <Globe size={15} className="opacity-70" />
-        ) : (
-          <img
-            src={faviconSrc}
-            alt=""
-            width={18}
-            height={18}
-            loading="lazy"
-            onError={() => setIconFailed(true)}
-          />
+      {hasImage && (
+        <img
+          src={data.image}
+          alt=""
+          className="h-32 w-full object-cover"
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+        />
+      )}
+      <div className="flex items-center gap-2.5 px-3 py-2">
+        {!hasImage && (
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background-secondary">
+            {iconFailed ? (
+              <Globe size={15} className="opacity-70" />
+            ) : (
+              <img
+                src={faviconSrc}
+                alt=""
+                width={18}
+                height={18}
+                loading="lazy"
+                onError={() => setIconFailed(true)}
+              />
+            )}
+          </span>
         )}
-      </span>
-      <span className="min-w-0 flex-grow">
-        <span className="block text-[11px] font-bold tracking-tight truncate font-outfit">
-          {hostname}
+        <span className="min-w-0 flex-grow">
+          <span className={`block text-[11px] font-bold tracking-tight truncate font-outfit ${titleClass}`}>
+            {title}
+          </span>
+          {description && (
+            <span className={`block text-[10px] leading-snug line-clamp-2 ${mutedClass}`}>
+              {description}
+            </span>
+          )}
+          <span className={`mt-0.5 flex items-center gap-1 text-[10px] truncate ${mutedClass}`}>
+            <span className="truncate">{siteName}</span>
+            <ExternalLink size={11} className="shrink-0 opacity-70" />
+          </span>
         </span>
-        <span
-          className={`block text-[10px] truncate ${
-            isSentByMe ? "text-primary-foreground/70" : "text-foreground-muted"
-          }`}
-        >
-          {url}
-        </span>
-      </span>
-      <ExternalLink size={13} className="shrink-0 opacity-60" />
+      </div>
     </a>
   );
 }

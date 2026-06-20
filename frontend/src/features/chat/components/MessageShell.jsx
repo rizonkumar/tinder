@@ -3,6 +3,7 @@ import {
   Smile,
   ChevronDown,
   Reply,
+  Forward,
   Copy,
   Edit3,
   Pin,
@@ -10,6 +11,7 @@ import {
   Trash,
   Trash2,
   CheckCheck,
+  Timer,
   Image as ImageIcon,
   Mic,
   Calendar,
@@ -17,12 +19,25 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EMOJI_REACTIONS } from "../../../constants";
+import { metaTextClass } from "../utils/chatBubbleStyles";
 
-export function ReadReceipt({ read }) {
+const FORWARDABLE_TYPES = ["text", "image", "voice_note"];
+
+function formatReadTime(readAt) {
+  if (!readAt) return null;
+  return new Date(readAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function ReadReceipt({ read, readAt }) {
+  const readTime = read ? formatReadTime(readAt) : null;
   return (
     <CheckCheck
       size={13}
-      className={read ? "text-accent stroke-[2.5]" : "text-foreground-muted stroke-[1.8]"}
+      title={readTime ? `Read ${readTime}` : "Sent"}
+      className={read ? "text-accent stroke-[2.5]" : "text-blue-1000/40 stroke-[1.8]"}
     />
   );
 }
@@ -30,17 +45,18 @@ export function ReadReceipt({ read }) {
 export function MessageMeta({ message, isSentByMe, showReceipt = true }) {
   return (
     <div className="flex items-center justify-end space-x-1 mt-1.5 pr-0.5 select-none">
-      <span
-        className={`block text-[9px] font-medium font-sans ${
-          isSentByMe ? "text-primary-foreground/80" : "text-foreground-muted"
-        }`}
-      >
+      {message.expiresAt && (
+        <Timer size={11} className={metaTextClass(isSentByMe)} title="Disappearing message" />
+      )}
+      <span className={`block text-[9px] font-medium font-sans ${metaTextClass(isSentByMe)}`}>
         {new Date(message.createdAt).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         })}
       </span>
-      {isSentByMe && showReceipt && <ReadReceipt read={message.read} />}
+      {isSentByMe && showReceipt && (
+        <ReadReceipt read={message.read} readAt={message.readAt} />
+      )}
     </div>
   );
 }
@@ -158,7 +174,7 @@ export function QuotedReply({ replyTo, isSentByMe, onClick }) {
       onClick={onClick}
       className={`flex w-full items-stretch gap-2 mb-2 overflow-hidden rounded-md border-l-2 pl-2 pr-2 py-1 text-left transition-colors ${
         isSentByMe
-          ? "border-primary-foreground/60 bg-primary-foreground/10 hover:bg-primary-foreground/15"
+          ? "border-blue-1000/40 bg-blue-1000/10 hover:bg-blue-1000/15"
           : "border-accent bg-surface-hover hover:bg-surface-active"
       }`}
     >
@@ -172,14 +188,14 @@ export function QuotedReply({ replyTo, isSentByMe, onClick }) {
       <span className="min-w-0 flex-grow">
         <span
           className={`block text-[10px] font-bold truncate font-outfit ${
-            isSentByMe ? "text-primary-foreground" : "text-accent"
+            isSentByMe ? "text-blue-1000" : "text-accent"
           }`}
         >
           {replyTo.senderName || "Message"}
         </span>
         <span
           className={`flex items-center gap-1 text-[11px] truncate ${
-            isSentByMe ? "text-primary-foreground/75" : "text-foreground-secondary"
+            isSentByMe ? "text-blue-1000/75" : "text-foreground-secondary"
           }`}
         >
           {Icon && <Icon size={11} className="shrink-0" />}
@@ -190,10 +206,24 @@ export function QuotedReply({ replyTo, isSentByMe, onClick }) {
   );
 }
 
+export function ForwardedTag({ isSentByMe }) {
+  return (
+    <span
+      className={`flex items-center gap-1 text-[10px] italic font-medium mb-1 ${
+        isSentByMe ? "text-blue-1000/60" : "text-foreground-muted"
+      }`}
+    >
+      <Forward size={11} />
+      <span>Forwarded</span>
+    </span>
+  );
+}
+
 function MessageActionsMenu({
   message,
   isSentByMe,
   onReply,
+  onForward,
   onEdit,
   onDelete,
   onTogglePin,
@@ -216,6 +246,9 @@ function MessageActionsMenu({
   const itemClass =
     "flex items-center w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors space-x-2";
 
+  const canForward =
+    onForward && !message.isDeleted && FORWARDABLE_TYPES.includes(message.messageType);
+
   return (
     <div
       ref={menuRef}
@@ -234,6 +267,20 @@ function MessageActionsMenu({
         <Reply size={13} className="text-foreground-muted" />
         <span>Reply</span>
       </button>
+
+      {canForward && (
+        <button
+          type="button"
+          onClick={() => {
+            onForward(message);
+            onClose();
+          }}
+          className={itemClass}
+        >
+          <Forward size={13} className="text-foreground-muted" />
+          <span>Forward</span>
+        </button>
+      )}
 
       {onToggleReactionPicker && (
         <button
@@ -333,6 +380,7 @@ function MenuArea({
   activeMenuMessageId,
   onToggleMenu,
   onReply,
+  onForward,
   onEdit,
   onDelete,
   onTogglePin,
@@ -347,7 +395,7 @@ function MenuArea({
         }
         className={`p-0.5 rounded-full shadow-card transition-all focus:outline-none ${
           isSentByMe
-            ? "bg-primary-hover text-primary-foreground hover:bg-primary-hover"
+            ? "bg-blue-300 text-blue-1000 hover:bg-blue-400"
             : "bg-surface-hover text-foreground-muted hover:bg-surface-active hover:text-foreground-secondary"
         }`}
         aria-label="Message actions"
@@ -359,6 +407,7 @@ function MenuArea({
           message={message}
           isSentByMe={isSentByMe}
           onReply={onReply}
+          onForward={onForward}
           onEdit={onEdit}
           onDelete={onDelete}
           onTogglePin={onTogglePin}
@@ -397,6 +446,7 @@ export default function MessageShell({
   isHighlighted,
   reaction,
   bubbleClassName,
+  showTail = false,
   triggerTitle = "React to message",
   activeReactionPickerMessageId,
   onToggleReactionPicker,
@@ -404,6 +454,7 @@ export default function MessageShell({
   activeMenuMessageId,
   onToggleMenu,
   onReply,
+  onForward,
   onStartEdit,
   onDeleteMessage,
   onTogglePin,
@@ -411,13 +462,18 @@ export default function MessageShell({
   children,
 }) {
   const showChrome = !message.isDeleted;
+  const tailClass = showTail
+    ? isSentByMe
+      ? "bubble-tail-sent"
+      : "bubble-tail-received"
+    : "";
 
   return (
     <div
       id={`msg-${message._id}`}
       className={`flex w-full ${
         isSentByMe ? "justify-end" : "justify-start"
-      } my-2 relative group items-center`}
+      } relative group items-center`}
     >
       {!isSentByMe && showChrome && (
         <SideTrigger
@@ -430,7 +486,7 @@ export default function MessageShell({
       )}
 
       <div
-        className={`order-1 relative transition-all duration-300 ${bubbleClassName} ${
+        className={`order-1 relative transition-all duration-300 ${bubbleClassName} ${tailClass} ${
           isHighlighted ? "ring-2 ring-ring shadow-card scale-[1.02]" : ""
         }`}
       >
@@ -441,11 +497,16 @@ export default function MessageShell({
             activeMenuMessageId={activeMenuMessageId}
             onToggleMenu={onToggleMenu}
             onReply={onReply}
+            onForward={onForward}
             onEdit={onStartEdit}
             onDelete={onDeleteMessage}
             onTogglePin={onTogglePin}
             onToggleReactionPicker={onToggleReactionPicker}
           />
+        )}
+
+        {message.isForwarded && !message.isDeleted && (
+          <ForwardedTag isSentByMe={isSentByMe} />
         )}
 
         {message.replyTo && (

@@ -15,6 +15,7 @@ export const useMessageStore = create((set, get) => ({
   isTypingUser: false,
   editingMessage: null,
   replyingTo: null,
+  disappearingDuration: 0,
 
   setActiveChatUser: (user) =>
     set({
@@ -22,6 +23,7 @@ export const useMessageStore = create((set, get) => ({
       isTypingUser: false,
       editingMessage: null,
       replyingTo: null,
+      disappearingDuration: 0,
     }),
 
   setEditingMessage: (message) =>
@@ -29,6 +31,8 @@ export const useMessageStore = create((set, get) => ({
 
   setReplyingTo: (message) =>
     set({ replyingTo: message, editingMessage: null }),
+
+  setDisappearingDuration: (seconds) => set({ disappearingDuration: seconds }),
 
   getMessages: async (userId) => {
     try {
@@ -44,8 +48,8 @@ export const useMessageStore = create((set, get) => ({
     }
   },
 
-  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null, gameInfo = null) => {
-    const { activeChatUser, messages, replyingTo } = get();
+  sendMessage: async (content, messageType = "text", mediaUrl = "", dateInfo = null, gameInfo = null, options = {}) => {
+    const { activeChatUser, messages, replyingTo, disappearingDuration } = get();
     if (!activeChatUser) return;
     try {
       const response = await axiosInstance.post("/messages/send", {
@@ -56,11 +60,34 @@ export const useMessageStore = create((set, get) => ({
         dateInfo,
         gameInfo,
         replyTo: replyingTo?._id || null,
+        callInfo: options.callInfo || null,
+        isForwarded: options.isForwarded || false,
+        expireInSeconds: options.expireInSeconds ?? disappearingDuration ?? 0,
       });
       const newMessage = response.data.data;
       set({ messages: [...messages, newMessage], replyingTo: null });
     } catch (error) {
       showToast.error(error.response?.data?.message || "Failed to send message");
+    }
+  },
+
+  forwardMessage: async (message, targetUserId) => {
+    try {
+      const response = await axiosInstance.post("/messages/send", {
+        receiverId: targetUserId,
+        content: message.content,
+        messageType: message.messageType,
+        mediaUrl: message.mediaUrl || "",
+        isForwarded: true,
+      });
+      const newMessage = response.data.data;
+      const { activeChatUser, messages } = get();
+      if (activeChatUser && targetUserId === activeChatUser._id) {
+        set({ messages: [...messages, newMessage] });
+      }
+      showToast.success("Message forwarded");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to forward message");
     }
   },
 
@@ -266,12 +293,13 @@ export const useMessageStore = create((set, get) => ({
     });
 
     socket.off("messagesRead");
-    socket.on("messagesRead", ({ readerId }) => {
+    socket.on("messagesRead", ({ readerId, readAt }) => {
       const { activeChatUser, messages } = get();
       if (activeChatUser && activeChatUser._id === readerId) {
+        const readTimestamp = readAt || new Date().toISOString();
         set({
           messages: messages.map((m) =>
-            m.read ? m : { ...m, read: true }
+            m.read ? m : { ...m, read: true, readAt: readTimestamp }
           ),
         });
       }

@@ -10,9 +10,11 @@ import {
   Check,
   Gamepad2,
   Reply,
+  Timer,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMessageStore } from "../../../store/useMessageStore";
+import { DISAPPEARING_OPTIONS } from "../../../constants";
 
 const REPLY_PREVIEW_LABELS = {
   image: "Photo",
@@ -47,6 +49,24 @@ export default function ChatInputBar({
   const setEditingMessage = useMessageStore((state) => state.setEditingMessage);
   const replyingTo = useMessageStore((state) => state.replyingTo);
   const setReplyingTo = useMessageStore((state) => state.setReplyingTo);
+  const disappearingDuration = useMessageStore((state) => state.disappearingDuration);
+  const setDisappearingDuration = useMessageStore(
+    (state) => state.setDisappearingDuration
+  );
+
+  const isDisappearing = disappearingDuration > 0;
+  const activeDisappearingOption = DISAPPEARING_OPTIONS.find(
+    (option) => option.seconds === disappearingDuration
+  );
+
+  const cycleDisappearing = () => {
+    const currentIndex = DISAPPEARING_OPTIONS.findIndex(
+      (option) => option.seconds === disappearingDuration
+    );
+    const next =
+      DISAPPEARING_OPTIONS[(currentIndex + 1) % DISAPPEARING_OPTIONS.length];
+    setDisappearingDuration(next.seconds);
+  };
 
   useEffect(() => {
     return () => {
@@ -308,6 +328,30 @@ export default function ChatInputBar({
               title="Play Two Truths & a Lie"
             >
               <Gamepad2 size={17} />
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={cycleDisappearing}
+              className={`relative flex h-11 w-11 items-center justify-center rounded-full border transition-colors focus-ring shrink-0 ${
+                isDisappearing
+                  ? "bg-primary border-primary text-primary-foreground"
+                  : "bg-background-secondary border-border text-foreground-secondary hover:text-accent"
+              }`}
+              title={
+                isDisappearing
+                  ? `Disappearing messages: ${activeDisappearingOption?.label}`
+                  : "Disappearing messages off"
+              }
+            >
+              <Timer size={17} />
+              {isDisappearing && (
+                <span className="absolute -top-1 -right-1 rounded-full bg-accent px-1 text-[8px] font-black text-white leading-tight font-outfit">
+                  {activeDisappearingOption?.label}
+                </span>
+              )}
             </motion.button>
 
             <motion.button

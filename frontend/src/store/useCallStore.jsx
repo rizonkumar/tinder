@@ -4,6 +4,7 @@ import { useMessageStore } from "./useMessageStore";
 import showToast from "../components/common/Toast";
 import webrtcService from "../services/webrtc";
 import socketService from "../services/socket";
+import { CALL_STATUSES } from "../constants";
 
 export const useCallStore = create((set, get) => ({
   callState: "idle",
@@ -122,7 +123,9 @@ export const useCallStore = create((set, get) => ({
       const content = `Missed ${callType === "video" ? "video" : "voice"} call`;
       useMessageStore
         .getState()
-        .sendMessage(content, callType === "video" ? "video" : "audio");
+        .sendMessage(content, callType === "video" ? "video" : "audio", "", null, null, {
+          callInfo: { status: CALL_STATUSES.REJECTED, duration: 0 },
+        });
     }
 
     set({
@@ -152,6 +155,7 @@ export const useCallStore = create((set, get) => ({
 
     if (targetId && callType) {
       let content = `Missed ${callType === "video" ? "video" : "voice"} call`;
+      let callInfo = { status: CALL_STATUSES.MISSED, duration: 0 };
       if (callStartTime) {
         const durationSecs = Math.floor((Date.now() - callStartTime) / 1000);
         const minutes = Math.floor(durationSecs / 60);
@@ -159,10 +163,13 @@ export const useCallStore = create((set, get) => ({
         const durationStr =
           minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
         content = `${callType === "video" ? "Video" : "Voice"} call ended (${durationStr})`;
+        callInfo = { status: CALL_STATUSES.COMPLETED, duration: durationSecs };
       }
       useMessageStore
         .getState()
-        .sendMessage(content, callType === "video" ? "video" : "audio");
+        .sendMessage(content, callType === "video" ? "video" : "audio", "", null, null, {
+          callInfo,
+        });
     }
 
     set({

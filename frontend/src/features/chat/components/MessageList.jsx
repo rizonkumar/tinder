@@ -2,7 +2,9 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import {
   Heart,
   Video,
-  Phone,
+  PhoneOutgoing,
+  PhoneIncoming,
+  PhoneMissed,
   Play,
   Pause,
   Volume2,
@@ -13,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMessageStore } from "../../../store/useMessageStore";
+import { CALL_STATUSES } from "../../../constants";
 import LoadingState from "../../../components/common/LoadingState";
 import FallbackState from "../../../components/common/FallbackState";
 import MessageShell, { MessageMeta } from "./MessageShell";
@@ -21,6 +24,8 @@ import TwoTruthsLieCard from "./TwoTruthsLieCard";
 import LinkPreviewCard from "./LinkPreviewCard";
 import { isEmojiOnly } from "../utils/isEmojiOnly";
 import { linkify, extractFirstUrl } from "../utils/linkify";
+import { getBubbleClass, metaTextClass, linkTextClass } from "../utils/chatBubbleStyles";
+import { decorateMessages, formatDateSeparator } from "../utils/messageGrouping";
 
 const PINNED_LABELS = {
   image: "Photo",
@@ -29,19 +34,48 @@ const PINNED_LABELS = {
   game_ttal: "Two Truths & a Lie",
 };
 
-function CallLogBubble({ message }) {
-  const isMissed = message.content.toLowerCase().includes("missed");
-  const CallIcon = message.messageType === "video" ? Video : Phone;
+const CARD_TYPES = ["date_proposal", "game_ttal", "audio", "video"];
+
+function formatCallDuration(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+}
+
+function CallLogBubble({ message, isSentByMe }) {
+  const info = message.callInfo;
+  const isVideo = message.messageType === "video";
+  const missed = info
+    ? info.status === CALL_STATUSES.MISSED || info.status === CALL_STATUSES.REJECTED
+    : message.content.toLowerCase().includes("missed");
+  const duration = info?.duration || 0;
+
+  let CallIcon;
+  if (isVideo) CallIcon = Video;
+  else if (missed) CallIcon = PhoneMissed;
+  else CallIcon = isSentByMe ? PhoneOutgoing : PhoneIncoming;
+
+  const label = isVideo
+    ? missed
+      ? "Missed video call"
+      : "Video call"
+    : missed
+      ? "Missed voice call"
+      : "Voice call";
+  const durationText = !missed && duration > 0 ? formatCallDuration(duration) : null;
 
   return (
     <div className="flex justify-center my-2">
-      <div className="flex items-center space-x-2.5 rounded-md bg-background border border-border px-4 py-2 text-xs font-semibold text-foreground-secondary shadow-card">
+      <div className="flex items-center space-x-2.5 rounded-full bg-background border border-border px-4 py-2 text-xs font-semibold text-foreground-secondary shadow-card">
         <CallIcon
-          size={13}
-          className={isMissed ? "text-red-700 animate-pulse" : "text-green-700"}
+          size={14}
+          className={missed ? "text-red-700" : "text-green-700"}
         />
-        <span className="font-outfit">{message.content}</span>
-        <span className="text-[9px] text-foreground-muted font-medium ml-1">
+        <span className="font-outfit">{label}</span>
+        {durationText && (
+          <span className="text-foreground-muted font-medium">· {durationText}</span>
+        )}
+        <span className="text-[9px] text-foreground-muted font-medium ml-0.5">
           {new Date(message.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -64,21 +98,14 @@ function TextBody({ message, isSentByMe }) {
 
   const emojiOnly = isEmojiOnly(message.content);
   const previewUrl = extractFirstUrl(message.content);
-  const linkClass = `underline underline-offset-2 ${
-    isSentByMe ? "text-primary-foreground" : "text-accent"
-  }`;
 
   return (
     <>
       <p className={emojiOnly ? "text-4xl leading-tight" : "break-words"}>
-        {linkify(message.content, linkClass)}
+        {linkify(message.content, linkTextClass(isSentByMe))}
       </p>
       {message.isEdited && (
-        <span
-          className={`block text-[8px] text-right font-medium font-sans ${
-            isSentByMe ? "text-primary-foreground/60" : "text-foreground-muted"
-          }`}
-        >
+        <span className={`block text-[8px] text-right font-medium font-sans ${metaTextClass(isSentByMe)}`}>
           (edited)
         </span>
       )}
@@ -188,7 +215,7 @@ function VoiceBody({ message, isSentByMe }) {
           onClick={handlePlayPause}
           className={`flex h-9 w-9 items-center justify-center rounded-full shrink-0 transition-colors focus:outline-none ${
             isSentByMe
-              ? "bg-primary-foreground text-primary hover:bg-gray-100"
+              ? "bg-blue-700 text-white hover:bg-blue-800"
               : "bg-primary text-primary-foreground hover:bg-primary-hover"
           }`}
           aria-label={isPlaying ? "Pause voice note" : "Play voice note"}
@@ -204,14 +231,10 @@ function VoiceBody({ message, isSentByMe }) {
             onChange={handleSeek}
             aria-label="Seek voice note"
             className={`w-full h-1 rounded-lg appearance-none cursor-pointer ${
-              isSentByMe ? "bg-primary-hover accent-white" : "bg-gray-300 accent-primary"
+              isSentByMe ? "bg-blue-300 accent-blue-700" : "bg-gray-300 accent-primary"
             }`}
           />
-          <div
-            className={`flex items-center justify-between text-[9px] font-semibold tracking-wider ${
-              isSentByMe ? "text-primary-foreground/80" : "text-foreground-muted"
-            }`}
-          >
+          <div className={`flex items-center justify-between text-[9px] font-semibold tracking-wider ${metaTextClass(isSentByMe)}`}>
             <span>
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>
@@ -226,7 +249,7 @@ function VoiceBody({ message, isSentByMe }) {
           onClick={toggleSpeed}
           className={`rounded-full px-2 py-0.5 text-[9px] font-black shrink-0 uppercase tracking-widest focus:outline-none transition-all ${
             isSentByMe
-              ? "bg-white/25 text-primary-foreground hover:bg-white/35"
+              ? "bg-blue-1000/15 text-blue-1000 hover:bg-blue-1000/25"
               : "bg-gray-200 text-foreground-secondary hover:bg-surface-active"
           }`}
         >
@@ -240,7 +263,7 @@ function VoiceBody({ message, isSentByMe }) {
 
 function TypingIndicator({ userName }) {
   return (
-    <div className="flex justify-start my-2 animate-pulse">
+    <div className="flex justify-start mt-2 animate-pulse">
       <div className="bg-gray-100 text-foreground border border-border rounded-md rounded-tl-none px-4 py-2.5 shadow-card text-xs flex items-center space-x-1.5 font-outfit">
         <span className="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider font-outfit pr-0.5">
           {userName} is typing
@@ -260,6 +283,16 @@ function TypingIndicator({ userName }) {
   );
 }
 
+function DateSeparator({ date }) {
+  return (
+    <div className="flex justify-center my-4 select-none">
+      <span className="rounded-full bg-background/85 backdrop-blur border border-border px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-foreground-muted font-outfit shadow-card">
+        {formatDateSeparator(date)}
+      </span>
+    </div>
+  );
+}
+
 function UnreadDivider() {
   return (
     <div className="flex items-center gap-3 my-3 select-none">
@@ -273,8 +306,7 @@ function UnreadDivider() {
 }
 
 function PinnedBanner({ pinnedMessage, onScrollToMessage, onTogglePin }) {
-  const snippet =
-    PINNED_LABELS[pinnedMessage.messageType] || pinnedMessage.content;
+  const snippet = PINNED_LABELS[pinnedMessage.messageType] || pinnedMessage.content;
 
   return (
     <div className="absolute top-0 left-0 right-0 z-20 flex items-center gap-2.5 bg-background/95 backdrop-blur border-b border-border px-4 py-2 shadow-card select-none">
@@ -303,20 +335,6 @@ function PinnedBanner({ pinnedMessage, onScrollToMessage, onTogglePin }) {
   );
 }
 
-const TEXT_SENT =
-  "max-w-[70%] rounded-md px-4 py-2.5 text-sm shadow-card leading-relaxed font-sans bg-primary text-primary-foreground rounded-tr-none";
-const TEXT_RECEIVED =
-  "max-w-[70%] rounded-md px-4 py-2.5 text-sm shadow-card leading-relaxed font-sans bg-gray-100 text-foreground border border-border rounded-tl-none font-medium";
-const TEXT_EMOJI = "max-w-[70%] px-1 py-0.5";
-const IMAGE_SENT =
-  "max-w-[65%] rounded-md shadow-card border p-1 bg-primary border-primary rounded-tr-none";
-const IMAGE_RECEIVED =
-  "max-w-[65%] rounded-md shadow-card border p-1 bg-gray-100 border-border rounded-tl-none";
-const VOICE_SENT =
-  "max-w-[75%] rounded-md p-3 shadow-card border bg-primary text-primary-foreground border-primary rounded-tr-none";
-const VOICE_RECEIVED =
-  "max-w-[75%] rounded-md p-3 shadow-card border bg-gray-100 text-foreground border-border rounded-tl-none";
-
 export default function MessageList({
   messages,
   isLoadingMessages,
@@ -332,13 +350,13 @@ export default function MessageList({
   onRespondToDate,
   onRespondToGame,
   onReply,
+  onForward,
   onTogglePin,
   onScrollToMessage,
   messagesEndRef,
 }) {
   const [activeMenuMessageId, setActiveMenuMessageId] = useState(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const scrollContainerRef = useRef(null);
 
   const deleteMessage = useMessageStore((state) => state.deleteMessage);
   const setEditingMessage = useMessageStore((state) => state.setEditingMessage);
@@ -370,6 +388,8 @@ export default function MessageList({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const decorated = useMemo(() => decorateMessages(messages), [messages]);
+
   const pinnedMessage = useMemo(() => {
     const pinned = messages.filter((m) => m.isPinned && !m.isDeleted);
     return pinned.length > 0 ? pinned[pinned.length - 1] : null;
@@ -377,8 +397,8 @@ export default function MessageList({
 
   const firstUnreadId = useMemo(() => {
     const unread = messages.find((m) => {
-      const senderId = m.sender?._id || m.sender;
-      return !m.read && senderId === activeChatUser?._id;
+      const sender = m.sender?._id || m.sender;
+      return !m.read && sender === activeChatUser?._id;
     });
     return unread ? unread._id : null;
   }, [messages, activeChatUser]);
@@ -390,23 +410,23 @@ export default function MessageList({
     activeMenuMessageId,
     onToggleMenu: handleToggleMenu,
     onReply,
+    onForward,
     onTogglePin,
     onScrollToMessage,
   };
 
-  const renderMessage = (message) => {
+  const renderMessage = (message, isFirstOfGroup) => {
     const isSentByMe =
       message.sender === authUser?._id || message.sender?._id === authUser?._id;
     const isHighlighted = message._id === activeHighlightedMessageId;
 
     if (message.messageType === "audio" || message.messageType === "video") {
-      return <CallLogBubble key={message._id} message={message} />;
+      return <CallLogBubble message={message} isSentByMe={isSentByMe} />;
     }
 
     if (message.messageType === "date_proposal") {
       return (
         <DateProposalCard
-          key={message._id}
           message={message}
           isSentByMe={isSentByMe}
           activeChatUserName={activeChatUser.name}
@@ -419,7 +439,6 @@ export default function MessageList({
     if (message.messageType === "game_ttal") {
       return (
         <TwoTruthsLieCard
-          key={message._id}
           message={message}
           isSentByMe={isSentByMe}
           isHighlighted={isHighlighted}
@@ -432,12 +451,12 @@ export default function MessageList({
     if (message.messageType === "image") {
       return (
         <MessageShell
-          key={message._id}
           message={message}
           isSentByMe={isSentByMe}
           isHighlighted={isHighlighted}
           reaction={reactions[message._id]}
-          bubbleClassName={isSentByMe ? IMAGE_SENT : IMAGE_RECEIVED}
+          bubbleClassName={getBubbleClass("image", isSentByMe, isFirstOfGroup)}
+          showTail={isFirstOfGroup}
           triggerTitle="React to photo"
           onStartEdit={null}
           onDeleteMessage={handleDeleteMessage}
@@ -455,12 +474,12 @@ export default function MessageList({
     if (message.messageType === "voice_note") {
       return (
         <MessageShell
-          key={message._id}
           message={message}
           isSentByMe={isSentByMe}
           isHighlighted={isHighlighted}
           reaction={reactions[message._id]}
-          bubbleClassName={isSentByMe ? VOICE_SENT : VOICE_RECEIVED}
+          bubbleClassName={getBubbleClass("voice_note", isSentByMe, isFirstOfGroup)}
+          showTail={isFirstOfGroup}
           triggerTitle="React to voice message"
           onStartEdit={null}
           onDeleteMessage={handleDeleteMessage}
@@ -472,24 +491,18 @@ export default function MessageList({
     }
 
     const emojiOnly = !message.isDeleted && isEmojiOnly(message.content);
-    const textBubbleClass = message.isDeleted
-      ? isSentByMe
-        ? TEXT_SENT
-        : TEXT_RECEIVED
-      : emojiOnly
-        ? TEXT_EMOJI
-        : isSentByMe
-          ? TEXT_SENT
-          : TEXT_RECEIVED;
+    const bubbleClassName = emojiOnly
+      ? "max-w-[70%] px-1 py-0.5"
+      : getBubbleClass("text", isSentByMe, isFirstOfGroup);
 
     return (
       <MessageShell
-        key={message._id}
         message={message}
         isSentByMe={isSentByMe}
         isHighlighted={isHighlighted}
         reaction={reactions[message._id]}
-        bubbleClassName={textBubbleClass}
+        bubbleClassName={bubbleClassName}
+        showTail={!emojiOnly && isFirstOfGroup}
         triggerTitle="React to message"
         onStartEdit={handleStartEdit}
         onDeleteMessage={handleDeleteMessage}
@@ -511,9 +524,8 @@ export default function MessageList({
       )}
 
       <div
-        ref={scrollContainerRef}
         onScroll={handleScroll}
-        className={`flex-grow overflow-y-auto p-4 space-y-4 chat-wallpaper select-none ${
+        className={`flex-grow overflow-y-auto p-4 chat-wallpaper select-none ${
           pinnedMessage ? "pt-16" : ""
         }`}
       >
@@ -526,12 +538,19 @@ export default function MessageList({
             description={`You matched with ${activeChatUser.name}. Break the ice and send a message!`}
           />
         ) : (
-          messages.map((message) => (
-            <div key={message._id}>
-              {message._id === firstUnreadId && <UnreadDivider />}
-              {renderMessage(message)}
-            </div>
-          ))
+          decorated.map(({ message, showDateSeparator, isFirstOfGroup }) => {
+            const isCard = CARD_TYPES.includes(message.messageType);
+            const marginClass = isCard ? "" : isFirstOfGroup ? "mt-3" : "mt-0.5";
+            return (
+              <div key={message._id}>
+                {showDateSeparator && <DateSeparator date={message.createdAt} />}
+                {message._id === firstUnreadId && <UnreadDivider />}
+                <div className={marginClass}>
+                  {renderMessage(message, isFirstOfGroup)}
+                </div>
+              </div>
+            );
+          })
         )}
 
         {isTypingUser && <TypingIndicator userName={activeChatUser.name} />}
@@ -543,7 +562,6 @@ export default function MessageList({
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
           type="button"
           onClick={scrollToBottom}
           className="absolute bottom-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border text-foreground-secondary shadow-popover hover:bg-surface-hover transition-colors focus:outline-none"
