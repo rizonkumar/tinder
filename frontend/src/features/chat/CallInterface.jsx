@@ -45,7 +45,7 @@ export default function CallInterface() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/95 p-2 sm:p-4 backdrop-blur-xl select-none text-white"
+        className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90 p-2 sm:p-4 select-none text-white"
       >
         {callState === "ringing" && (
           <motion.div
@@ -54,22 +54,17 @@ export default function CallInterface() {
             className="flex flex-col items-center text-center max-w-sm px-4"
           >
             <div className="relative mb-8">
-              <motion.div
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-pink-500/25 blur-md"
-              />
               <img
                 src={callerInfo?.image || "/avatar.png"}
                 alt={callerInfo?.name}
-                className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-pink-400 object-cover shadow-2xl"
+                className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-white/20 object-cover shadow-modal"
               />
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wide">
               {callerInfo?.name}
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-pink-300 font-medium uppercase tracking-wider animate-pulse">
+            <p className="mt-2 text-xs sm:text-sm text-gray-300 font-medium uppercase tracking-wider animate-pulse">
               Incoming {callType} call...
             </p>
 
@@ -78,7 +73,7 @@ export default function CallInterface() {
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={rejectIncomingCall}
-                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 focus:outline-none"
+                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-red-800 text-white shadow-card hover:bg-red-900 focus:outline-none"
               >
                 <PhoneOff size={24} />
               </motion.button>
@@ -87,7 +82,7 @@ export default function CallInterface() {
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={acceptIncomingCall}
-                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg hover:bg-emerald-600 focus:outline-none"
+                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-green-700 text-white shadow-card hover:bg-green-800 focus:outline-none"
               >
                 <Phone size={24} />
               </motion.button>
@@ -102,20 +97,15 @@ export default function CallInterface() {
             className="flex flex-col items-center text-center max-w-sm px-4"
           >
             <div className="relative mb-8">
-              <motion.div
-                animate={{ scale: [1, 1.4, 1] }}
-                transition={{ duration: 2.2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full bg-blue-500/25 blur-md"
-              />
-              <div className="h-28 w-28 sm:h-32 sm:w-32 overflow-hidden rounded-full border-4 border-blue-400 shadow-2xl flex items-center justify-center bg-gray-800">
-                <Phone size={36} className="text-blue-300 animate-bounce" />
+              <div className="h-28 w-28 sm:h-32 sm:w-32 overflow-hidden rounded-full border-4 border-white/20 shadow-modal flex items-center justify-center bg-gray-800">
+                <Phone size={36} className="text-gray-300 animate-bounce" />
               </div>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-bold tracking-wide">
               Calling...
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-blue-300 font-medium uppercase tracking-wider animate-pulse">
+            <p className="mt-2 text-xs sm:text-sm text-gray-300 font-medium uppercase tracking-wider animate-pulse">
               Waiting for match to answer...
             </p>
 
@@ -124,7 +114,7 @@ export default function CallInterface() {
                 whileHover={{ scale: 1.15 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={endCall}
-                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 focus:outline-none"
+                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-red-800 text-white shadow-card hover:bg-red-900 focus:outline-none"
               >
                 <PhoneOff size={24} />
               </motion.button>
@@ -135,7 +125,7 @@ export default function CallInterface() {
         {callState === "connected" && (
           <div
             ref={containerRef}
-            className="relative h-[85vh] sm:h-full w-full max-w-4xl overflow-hidden rounded-3xl bg-black/60 shadow-2xl border border-white/5"
+            className="relative h-[85vh] sm:h-full w-full max-w-4xl overflow-hidden rounded-lg bg-black shadow-modal border border-white/10"
           >
             {callType === "video" ? (
               <div className="h-full w-full relative">
@@ -144,10 +134,10 @@ export default function CallInterface() {
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    className="h-full w-full object-cover rounded-3xl"
+                    className="h-full w-full object-cover rounded-lg"
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-gray-900 text-sm tracking-widest text-gray-500">
+                  <div className="h-full w-full flex items-center justify-center bg-gray-900 text-sm tracking-widest text-gray-400">
                     CONNECTING MEDIA FEED...
                   </div>
                 )}
@@ -169,23 +159,18 @@ export default function CallInterface() {
                 )}
               </div>
             ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center space-y-6 bg-zinc-900 rounded-3xl px-4">
+              <div className="h-full w-full flex flex-col items-center justify-center space-y-6 bg-gray-900 rounded-lg px-4">
                 <div className="relative">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="absolute inset-0 rounded-full bg-pink-500/20 blur-md"
-                  />
                   <img
                     src={callerInfo?.image || "/avatar.png"}
                     alt={callerInfo?.name}
-                    className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-pink-400/40 object-cover shadow-2xl"
+                    className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-white/20 object-cover shadow-modal"
                   />
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold tracking-wide">
                   Active Voice Call
                 </h3>
-                <p className="text-[10px] sm:text-xs text-pink-300 font-semibold tracking-widest uppercase">
+                <p className="text-[10px] sm:text-xs text-gray-300 font-semibold tracking-widest uppercase">
                   Connected
                 </p>
                 {localStream && (
@@ -235,27 +220,27 @@ export default function CallInterface() {
             </div>
 
             {/* call reaction emoji panel */}
-            <div className="absolute bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-3.5 rounded-2xl bg-black/50 border border-white/10 px-4.5 py-2 backdrop-blur-md shadow-2xl">
+            <div className="absolute bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-3.5 rounded-lg bg-gray-900 border border-white/10 px-4.5 py-2 shadow-modal">
               {["💖", "🎉", "😂", "🔥", "😮"].map((emoji) => (
                 <motion.button
                   key={emoji}
                   whileHover={{ scale: 1.3, rotate: 6 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => sendCallReaction(emoji)}
-                  className="text-2xl cursor-pointer hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.7)] transition-all select-none"
+                  className="text-2xl cursor-pointer transition-all select-none"
                 >
                   {emoji}
                 </motion.button>
               ))}
             </div>
 
-            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-4 sm:space-x-6 rounded-full border border-white/10 bg-black/60 px-5 sm:px-8 py-2.5 sm:py-3.5 backdrop-blur-md shadow-2xl">
+            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-4 sm:space-x-6 rounded-full border border-white/10 bg-gray-900 px-5 sm:px-8 py-2.5 sm:py-3.5 shadow-modal">
               <button
                 onClick={toggleMic}
                 className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-colors ${
                   micActive
                     ? "bg-white/10 text-white hover:bg-white/20"
-                    : "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-red-800 text-white hover:bg-red-900"
                 }`}
               >
                 {micActive ? <Mic size={18} /> : <MicOff size={18} />}
@@ -267,7 +252,7 @@ export default function CallInterface() {
                   className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-colors ${
                     cameraActive
                       ? "bg-white/10 text-white hover:bg-white/20"
-                      : "bg-red-500 text-white hover:bg-red-600"
+                      : "bg-red-800 text-white hover:bg-red-900"
                   }`}
                 >
                   {cameraActive ? <Video size={18} /> : <VideoOff size={18} />}
@@ -276,7 +261,7 @@ export default function CallInterface() {
 
               <button
                 onClick={endCall}
-                className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600"
+                className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-red-800 text-white shadow-card hover:bg-red-900"
               >
                 <PhoneOff size={20} />
               </button>

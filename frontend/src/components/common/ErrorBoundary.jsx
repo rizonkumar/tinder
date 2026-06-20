@@ -24,8 +24,8 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-red-50 p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white/80 p-8 shadow-2xl backdrop-blur-md border border-pink-100 text-center">
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+          <div className="w-full max-w-md rounded-lg bg-background p-8 shadow-modal border border-border text-center">
             <FallbackState
               icon={AlertTriangle}
               title="Oops! Something went wrong"
@@ -40,11 +40,11 @@ export default class ErrorBoundary extends React.Component {
               ]}
             />
             {import.meta.env.DEV && this.state.error && (
-              <details className="mt-6 text-left bg-gray-50 p-4 rounded-2xl border border-gray-100 max-h-48 overflow-y-auto">
-                <summary className="text-xs font-black uppercase tracking-wider text-red-500 cursor-pointer select-none">
+              <details className="mt-6 text-left bg-background-secondary p-4 rounded-md border border-border max-h-48 overflow-y-auto">
+                <summary className="text-xs font-black uppercase tracking-wider text-red-800 cursor-pointer select-none">
                   Error Details (Dev Only)
                 </summary>
-                <pre className="mt-2 text-[10px] text-gray-600 font-mono whitespace-pre-wrap leading-relaxed select-text">
+                <pre className="mt-2 text-[10px] text-foreground-secondary font-mono whitespace-pre-wrap leading-relaxed select-text">
                   {this.state.error.toString()}
                 </pre>
               </details>

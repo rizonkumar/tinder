@@ -15,7 +15,7 @@ export default function ReactionPill({
       onClick={onRemove}
       className={`absolute ${bottomOffset} ${
         isSentByMe ? "left-3" : "right-3"
-      } bg-white dark:bg-zinc-800 border border-slate-150 dark:border-zinc-700/60 rounded-full px-1.5 py-0.5 shadow-sm text-[11px] leading-none flex items-center select-none cursor-pointer border-pink-100 dark:border-pink-900/20 hover:scale-110 active:scale-95 transition-all`}
+      } bg-gray-100 text-foreground border border-border rounded-full px-1.5 py-0.5 shadow-card text-[11px] leading-none flex items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-all`}
       title="Click to remove reaction"
     >
       {emoji}

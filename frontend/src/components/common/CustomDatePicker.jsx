@@ -63,10 +63,10 @@ export default function CustomDatePicker({
         onClick={() => handleSelectDay(d)}
         className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold font-sans transition-colors ${
           isSelected
-            ? "bg-pink-500 text-white"
+            ? "bg-accent text-accent-foreground"
             : isToday(d)
-              ? "bg-pink-50 dark:bg-pink-950/20 text-pink-500 font-bold"
-              : "text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-100"
+              ? "bg-accent/10 text-accent font-bold"
+              : "text-foreground hover:bg-surface-hover hover:text-foreground"
         }`}
       >
         {d}
@@ -78,24 +78,24 @@ export default function CustomDatePicker({
     <div ref={containerRef} className="relative w-full select-none">
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full text-xs rounded-xl border px-3.5 py-3 cursor-pointer transition-all duration-200 font-sans ${
+        className={`flex items-center justify-between w-full text-xs rounded-md border px-3.5 py-3 cursor-pointer transition-all duration-200 font-sans ${
           isOpen
-            ? "border-pink-500 bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-pink-500/15"
-            : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-150 hover:border-slate-300 dark:hover:border-zinc-700"
+            ? "border-accent bg-background shadow-card ring-1 ring-ring"
+            : "border-border bg-background text-foreground hover:border-border-strong"
         }`}
       >
         <span
           className={
             formattedDisplay
-              ? "text-slate-800 dark:text-zinc-100 font-semibold"
-              : "text-slate-400 dark:text-zinc-500 font-medium"
+              ? "text-foreground font-semibold"
+              : "text-foreground-muted font-medium"
           }
         >
           {formattedDisplay || placeholder}
         </span>
         <Calendar
           size={14}
-          className={`transition-colors duration-200 ${isOpen ? "text-pink-500" : "text-slate-400 dark:text-zinc-500"}`}
+          className={`transition-colors duration-200 ${isOpen ? "text-accent" : "text-foreground-muted"}`}
         />
       </div>
 
@@ -106,13 +106,13 @@ export default function CustomDatePicker({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[300px] z-[260] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-lg rounded-2xl p-4 flex flex-col font-sans"
+            className="absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[300px] z-[260] bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans"
           >
-            <div className="flex items-center justify-between mb-4 text-xs font-bold text-slate-800 dark:text-zinc-100 font-outfit px-1 select-none">
+            <div className="flex items-center justify-between mb-4 text-xs font-bold text-foreground font-outfit px-1 select-none">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors focus:outline-none"
+                className="p-1.5 rounded-full hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors focus-ring"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -122,13 +122,13 @@ export default function CustomDatePicker({
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors focus:outline-none"
+                className="p-1.5 rounded-full hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors focus-ring"
               >
                 <ChevronRight size={16} />
               </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500 text-center mb-2 select-none">
+            <div className="grid grid-cols-7 gap-1 text-[10px] font-bold uppercase tracking-widest text-foreground-muted text-center mb-2 select-none">
               {DAYS_OF_WEEK.map((day) => (
                 <div key={day} className="py-1 shrink-0">
                   {day}

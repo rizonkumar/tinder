@@ -9,20 +9,20 @@ export default function NoChatSelected({
   onlineUsers,
 }) {
   return (
-    <div className="flex flex-col flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-zinc-950 select-none">
+    <div className="flex flex-col flex-grow overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background-secondary select-none">
       <FallbackState
         icon={Heart}
         title="Your Chats"
         description="Select a match from the sidebar list to start exchanging sweet messages and setting up dates!"
-        className="hidden bg-white dark:bg-zinc-900 rounded-3xl m-4 border border-slate-200/50 dark:border-zinc-800/80 shadow-sm lg:flex lg:flex-grow"
+        className="hidden bg-background rounded-3xl m-4 border border-border shadow-card lg:flex lg:flex-grow"
       />
 
       <div className="flex flex-col flex-grow lg:hidden">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="rounded-2xl bg-pink-50 dark:bg-pink-950/40 border border-pink-100/40 dark:border-pink-900/30 p-2.5 text-pink-600 dark:text-pink-400">
+          <div className="rounded-2xl bg-background-secondary border border-border p-2.5 text-accent">
             <MessageCircle size={22} />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-zinc-100 font-outfit">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground font-outfit">
             MESSAGES
           </h1>
         </div>
@@ -36,7 +36,7 @@ export default function NoChatSelected({
             icon={Heart}
             title="No Matches Yet"
             description="Once you match with someone, they will appear here so you can start chatting!"
-            className="border border-slate-200/50 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm py-16 rounded-3xl"
+            className="border border-border bg-background shadow-card py-16 rounded-3xl"
           />
         ) : (
           <div className="space-y-3">
@@ -46,25 +46,25 @@ export default function NoChatSelected({
                 <Link
                   key={match._id}
                   to={`/chat/${match._id}`}
-                  className="flex items-center rounded-2xl border border-slate-200/50 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 p-3.5 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-zinc-800 active:scale-[0.99]"
+                  className="flex items-center rounded-2xl border border-border bg-background p-3.5 shadow-card transition-all hover:bg-surface-hover active:scale-[0.99]"
                 >
                   <div className="relative mr-3.5">
                     <img
                       src={match.image || "/avatar.png"}
                       alt={match.name}
-                      className="h-11 w-11 rounded-full border border-slate-200/50 dark:border-zinc-800 object-cover shadow-sm"
+                      className="h-11 w-11 rounded-full border border-border object-cover shadow-card"
                     />
                     <span
-                      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm ${
+                      className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background shadow-card ${
                         isOnline
-                          ? "bg-green-500"
-                          : "bg-slate-350 dark:bg-zinc-700"
+                          ? "bg-green-700"
+                          : "bg-gray-400"
                       }`}
                     />
                   </div>
                   <div className="flex-grow">
                     <div className="flex items-center space-x-1.5 overflow-hidden">
-                      <h3 className="font-bold text-slate-800 dark:text-zinc-200 text-base leading-snug font-outfit truncate">
+                      <h3 className="font-bold text-foreground text-base leading-snug font-outfit truncate">
                         {match.name}
                       </h3>
                       {(() => {
@@ -75,18 +75,18 @@ export default function NoChatSelected({
                           : {};
                         return verifiedMap[match._id] ? (
                           <span
-                            className="text-emerald-500 shrink-0 select-none animate-pulse"
+                            className="text-green-700 shrink-0 select-none animate-pulse"
                             title="E2E Encryption Verified"
                           >
                             <ShieldCheck
                               size={14}
-                              className="fill-emerald-500/10 stroke-[2.2]"
+                              className="stroke-[2.2]"
                             />
                           </span>
                         ) : null;
                       })()}
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 leading-none mt-1">
+                    <p className="text-xs text-foreground-muted leading-none mt-1">
                       {isOnline ? "Active now" : "Offline"}
                     </p>
                   </div>

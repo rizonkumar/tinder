@@ -17,7 +17,7 @@ export default function ReactionPicker({
           exit={{ opacity: 0, scale: 0.9, y: 10 }}
           className={`absolute -top-11 ${
             isSentByMe ? "right-0" : "left-0"
-          } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
+          } z-30 flex items-center space-x-1.5 bg-background px-2.5 py-1.5 rounded-full shadow-popover border border-border select-none`}
         >
           {EMOJI_REACTIONS.map((emoji) => (
             <button

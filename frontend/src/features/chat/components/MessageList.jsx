@@ -37,13 +37,13 @@ function CallLogBubble({ message }) {
 
   return (
     <div className="flex justify-center my-2">
-      <div className="flex items-center space-x-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 px-4 py-2 text-xs font-semibold text-slate-600 dark:text-zinc-400 shadow-sm">
+      <div className="flex items-center space-x-2.5 rounded-md bg-background border border-border px-4 py-2 text-xs font-semibold text-foreground-secondary shadow-card">
         <CallIcon
           size={13}
-          className={isMissed ? "text-red-500 animate-pulse" : "text-green-500"}
+          className={isMissed ? "text-red-800 animate-pulse" : "text-green-600"}
         />
         <span className="font-outfit">{message.content}</span>
-        <span className="text-[9px] text-slate-400 dark:text-slate-550 font-medium ml-1">
+        <span className="text-[9px] text-foreground-muted font-medium ml-1">
           {new Date(message.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -88,46 +88,46 @@ function DateProposalCard({
       }`}
     >
       <div
-        className={`w-full max-w-[310px] rounded-2xl p-5 shadow-sm border relative overflow-hidden transition-all duration-205 ${
+        className={`w-full max-w-[310px] rounded-md p-5 shadow-card border relative overflow-hidden transition-all duration-205 ${
           isAccepted
-            ? "bg-white dark:bg-zinc-900 border-emerald-200 dark:border-emerald-800/40"
+            ? "bg-background border-green-300"
             : isDeclined
-              ? "bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 opacity-50"
-              : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800"
+              ? "bg-background-secondary border-border opacity-50"
+              : "bg-background border-border"
         } ${
           isHighlighted
-            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30"
+            ? "ring-2 ring-ring shadow-card"
             : ""
         }`}
       >
         <div
           className={`absolute top-0 left-0 right-0 h-[3px] ${
             isAccepted
-              ? "bg-emerald-500"
+              ? "bg-green-700"
               : isDeclined
-                ? "bg-slate-300 dark:bg-zinc-700"
-                : "bg-pink-500"
+                ? "bg-gray-400"
+                : "bg-primary"
           }`}
         />
 
         <div className="flex items-center justify-between mb-4 mt-0.5 select-none">
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-550 font-outfit">
+          <span className="text-[9px] font-black uppercase tracking-widest text-foreground-muted font-outfit">
             Date Proposal
           </span>
           {isAccepted && (
-            <span className="flex items-center space-x-1.5 rounded-full bg-emerald-50 dark:bg-emerald-955/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="flex items-center space-x-1.5 rounded-full bg-green-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-green-800">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-700" />
               <span>Confirmed</span>
             </span>
           )}
           {isDeclined && (
-            <span className="flex items-center space-x-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-550">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-zinc-650" />
+            <span className="flex items-center space-x-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-foreground-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
               <span>Declined</span>
             </span>
           )}
           {isPending && (
-            <span className="flex items-center space-x-1.5 rounded-full bg-amber-50 dark:bg-amber-955/20 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <span className="flex items-center space-x-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-800">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               <span>Pending</span>
             </span>
@@ -136,45 +136,45 @@ function DateProposalCard({
 
         <div className="flex items-center space-x-3.5 mb-4">
           <div
-            className={`relative flex h-11 w-11 items-center justify-center rounded-xl ${
+            className={`relative flex h-11 w-11 items-center justify-center rounded-md ${
               isAccepted
-                ? "bg-emerald-500"
+                ? "bg-green-700"
                 : isDeclined
-                  ? "bg-slate-300 dark:bg-zinc-700"
-                  : "bg-pink-500"
+                  ? "bg-gray-400"
+                  : "bg-primary"
             } text-white shrink-0`}
           >
             <IconComponent size={20} className="stroke-[2.2]" />
           </div>
           <div className="overflow-hidden">
-            <h4 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 font-outfit tracking-tight leading-none mb-1.5">
+            <h4 className="text-sm font-extrabold text-foreground font-outfit tracking-tight leading-none mb-1.5">
               {act.label}
             </h4>
-            <p className="text-[9px] text-slate-400 dark:text-zinc-550 truncate font-bold font-outfit uppercase tracking-wider">
+            <p className="text-[9px] text-foreground-muted truncate font-bold font-outfit uppercase tracking-wider">
               Suggested by {isSentByMe ? "You" : activeChatUser.name}
             </p>
           </div>
         </div>
 
-        <div className="space-y-2 text-xs text-slate-600 dark:text-zinc-300 font-medium font-sans mb-4 border-t border-b border-slate-100 dark:border-zinc-800 py-3 mt-1 select-none">
+        <div className="space-y-2 text-xs text-foreground-secondary font-medium font-sans mb-4 border-t border-b border-border py-3 mt-1 select-none">
           <div className="flex items-center space-x-2.5">
             <Calendar
               size={13}
-              className="text-slate-400 dark:text-zinc-550 shrink-0"
+              className="text-foreground-muted shrink-0"
             />
             <span className="truncate">{info.date}</span>
           </div>
           <div className="flex items-center space-x-2.5">
             <Clock
               size={13}
-              className="text-slate-400 dark:text-zinc-550 shrink-0"
+              className="text-foreground-muted shrink-0"
             />
             <span className="truncate">{info.time}</span>
           </div>
           <div className="flex items-center space-x-2.5">
             <MapPin
               size={13}
-              className="text-slate-400 dark:text-zinc-555 shrink-0"
+              className="text-foreground-muted shrink-0"
             />
             <span className="truncate font-semibold">
               {info.location || "To be decided"}
@@ -185,7 +185,7 @@ function DateProposalCard({
         {isPending && (
           <div className="w-full mt-2">
             {isSentByMe ? (
-              <div className="flex items-center justify-center space-x-2 text-center text-[10px] text-slate-400 dark:text-zinc-550 bg-slate-50 dark:bg-zinc-800/50 rounded-xl py-2.5 font-outfit font-semibold tracking-wide">
+              <div className="flex items-center justify-center space-x-2 text-center text-[10px] text-foreground-muted bg-background-secondary rounded-md py-2.5 font-outfit font-semibold tracking-wide">
                 <Clock size={12} />
                 <span>Awaiting {activeChatUser.name}'s reply</span>
               </div>
@@ -194,7 +194,7 @@ function DateProposalCard({
                 <button
                   type="button"
                   onClick={() => handleRespond("declined")}
-                  className="flex-1 py-2 rounded-xl text-[10px] font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-slate-700 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
+                  className="flex-1 py-2 rounded-md text-[10px] font-bold text-red-800 border border-border hover:bg-surface-hover transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
                 >
                   <X size={12} />
                   <span>Decline</span>
@@ -202,7 +202,7 @@ function DateProposalCard({
                 <button
                   type="button"
                   onClick={() => handleRespond("accepted")}
-                  className="flex-1 py-2 rounded-xl text-[10px] font-bold text-white bg-pink-500 hover:bg-pink-600 active:bg-pink-700 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
+                  className="flex-1 py-2 rounded-md text-[10px] font-bold text-white bg-green-700 hover:bg-green-800 transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-1.5 uppercase tracking-wider"
                 >
                   <Heart size={12} className="fill-white" />
                   <span>Accept</span>
@@ -212,7 +212,7 @@ function DateProposalCard({
           </div>
         )}
 
-        <span className="block text-[8px] mt-2.5 text-right font-medium text-slate-400 dark:text-slate-550 font-sans">
+        <span className="block text-[8px] mt-2.5 text-right font-medium text-foreground-muted font-sans">
           {new Date(message.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -253,7 +253,7 @@ function ReactionPicker({
             renderDownwards ? "top-full mt-2.5" : "-top-11"
           } ${
             isSentByMe ? "right-0" : "left-0"
-          } z-30 flex items-center space-x-1.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-full shadow-lg border border-slate-200/60 dark:border-zinc-800 select-none`}
+          } z-30 flex items-center space-x-1.5 bg-background px-2.5 py-1.5 rounded-full shadow-popover border border-border select-none`}
         >
           {EMOJI_REACTIONS.map((emoji) => (
             <button
@@ -281,7 +281,7 @@ function ReactionPill({ messageId, reaction, isSentByMe, onRemoveReaction }) {
       onClick={() => onRemoveReaction(messageId)}
       className={`absolute -bottom-2.5 ${
         isSentByMe ? "left-3" : "right-3"
-      } bg-white dark:bg-zinc-800 border border-slate-150 dark:border-zinc-700/60 rounded-full px-1.5 py-0.5 shadow-sm text-[11px] leading-none flex items-center select-none cursor-pointer border-pink-100 dark:border-pink-900/20 hover:scale-110 active:scale-95 transition-all`}
+      } bg-background border border-border rounded-full px-1.5 py-0.5 shadow-card text-[11px] leading-none flex items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-all`}
       title="Click to remove reaction"
     >
       {reaction}
@@ -303,7 +303,7 @@ function ReactionTriggerButton({
           activeReactionPickerMessageId === messageId ? null : messageId,
         )
       }
-      className="p-1 text-slate-400 hover:text-pink-500 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800/60 transition-all focus:outline-none"
+      className="p-1 text-foreground-muted hover:text-accent rounded-full hover:bg-surface-hover transition-all focus:outline-none"
       title={title}
     >
       <Smile size={14} />
@@ -338,7 +338,7 @@ function MessageActionsMenu({
   return (
     <div
       ref={menuRef}
-      className={`absolute z-50 bg-white/95 dark:bg-zinc-900/95 border border-slate-200/80 dark:border-zinc-800/80 rounded-2xl shadow-xl p-1.5 min-w-[155px] flex flex-col space-y-0.5 backdrop-blur-md transition-all duration-200 ${
+      className={`absolute z-50 bg-background border border-border rounded-md shadow-popover p-1.5 min-w-[155px] flex flex-col space-y-0.5 transition-all duration-200 ${
         renderUpwards ? "bottom-full mb-2" : "top-full mt-2"
       } ${isSentByMe ? "right-0" : "left-0"}`}
     >
@@ -347,10 +347,10 @@ function MessageActionsMenu({
         onClick={() => {
           onClose();
         }}
-        className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 text-left transition-colors"
+        className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors"
       >
         <span className="flex items-center space-x-2">
-          <Reply size={13} className="text-slate-400 dark:text-zinc-400" />
+          <Reply size={13} className="text-foreground-muted" />
           <span>Reply</span>
         </span>
       </button>
@@ -362,10 +362,10 @@ function MessageActionsMenu({
             onToggleReactionPicker(message._id);
             onClose();
           }}
-          className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 text-left transition-colors"
+          className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors"
         >
           <span className="flex items-center space-x-2">
-            <Smile size={13} className="text-slate-400 dark:text-zinc-400" />
+            <Smile size={13} className="text-foreground-muted" />
             <span>React</span>
           </span>
         </button>
@@ -377,34 +377,34 @@ function MessageActionsMenu({
           navigator.clipboard.writeText(message.content || "");
           onClose();
         }}
-        className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 text-left transition-colors"
+        className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors"
       >
         <span className="flex items-center space-x-2">
-          <Copy size={13} className="text-slate-400 dark:text-zinc-400" />
+          <Copy size={13} className="text-foreground-muted" />
           <span>Copy Text</span>
         </span>
       </button>
 
       {isSentByMe && !message.isDeleted && onEdit && (
         <>
-          <div className="border-t border-slate-100 dark:border-zinc-850 my-0.5" />
+          <div className="border-t border-border my-0.5" />
           <button
             type="button"
             onClick={() => {
               onEdit(message._id, message.content);
               onClose();
             }}
-            className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 text-left transition-colors"
+            className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors"
           >
             <span className="flex items-center space-x-2">
-              <Edit3 size={13} className="text-slate-400 dark:text-zinc-400" />
+              <Edit3 size={13} className="text-foreground-muted" />
               <span>Edit Message</span>
             </span>
           </button>
         </>
       )}
 
-      <div className="border-t border-slate-100 dark:border-zinc-850 my-0.5" />
+      <div className="border-t border-border my-0.5" />
 
       {isSentByMe && !message.isDeleted && (
         <button
@@ -413,10 +413,10 @@ function MessageActionsMenu({
             onDelete(message._id, true);
             onClose();
           }}
-          className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 text-left transition-colors"
+          className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-red-800 hover:bg-red-100 text-left transition-colors"
         >
           <span className="flex items-center space-x-2">
-            <Trash2 size={13} className="text-red-500 dark:text-red-400" />
+            <Trash2 size={13} className="text-red-800" />
             <span>Delete for All</span>
           </span>
         </button>
@@ -428,10 +428,10 @@ function MessageActionsMenu({
           onDelete(message._id, false);
           onClose();
         }}
-        className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 text-left transition-colors"
+        className="flex items-center justify-between w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors"
       >
         <span className="flex items-center space-x-2">
-          <Trash size={13} className="text-slate-400 dark:text-zinc-400" />
+          <Trash size={13} className="text-foreground-muted" />
           <span>Delete for Me</span>
         </span>
       </button>
@@ -441,12 +441,12 @@ function MessageActionsMenu({
 
 function ReadReceipt({ read }) {
   if (read) {
-    return <CheckCheck size={13} className="text-pink-500 stroke-[2.5]" />;
+    return <CheckCheck size={13} className="text-accent stroke-[2.5]" />;
   }
   return (
     <CheckCheck
       size={13}
-      className="text-slate-350 dark:text-zinc-650 stroke-[1.8]"
+      className="text-foreground-muted stroke-[1.8]"
     />
   );
 }
@@ -541,13 +541,13 @@ function VoiceNoteBubble({
       )}
 
       <div
-        className={`max-w-[70%] rounded-2xl p-3 shadow-sm border relative transition-all duration-300 ${
+        className={`max-w-[70%] rounded-md p-3 shadow-card border relative transition-all duration-300 ${
           isSentByMe
-            ? "bg-pink-500 text-white border-pink-500 rounded-tr-none order-1"
-            : "bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border-slate-200/40 dark:border-zinc-800/80 rounded-tl-none order-1"
+            ? "bg-primary text-primary-foreground border-primary rounded-tr-none order-1"
+            : "bg-gray-100 text-foreground border-border rounded-tl-none order-1"
         } ${
           isHighlighted
-            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02]"
+            ? "ring-2 ring-ring shadow-card scale-[1.02]"
             : ""
         }`}
       >
@@ -560,10 +560,10 @@ function VoiceNoteBubble({
                   activeMenuMessageId === message._id ? null : message._id,
                 )
               }
-              className={`p-0.5 rounded-full backdrop-blur-sm shadow-sm transition-all focus:outline-none ${
+              className={`p-0.5 rounded-full shadow-card transition-all focus:outline-none ${
                 isSentByMe
-                  ? "bg-pink-650/40 text-pink-100 hover:bg-pink-650/60 hover:text-white"
-                  : "bg-slate-100/65 dark:bg-zinc-800/65 text-slate-400 dark:text-zinc-500 hover:bg-slate-200/80 dark:hover:bg-zinc-700/80 hover:text-slate-600 dark:hover:text-zinc-350"
+                  ? "bg-primary-hover text-primary-foreground hover:bg-primary-hover"
+                  : "bg-surface-hover text-foreground-muted hover:bg-surface-active hover:text-foreground-secondary"
               }`}
             >
               <ChevronDown size={13} />
@@ -594,8 +594,8 @@ function VoiceNoteBubble({
               onClick={handlePlayPause}
               className={`flex h-9 w-9 items-center justify-center rounded-full shrink-0 ${
                 isSentByMe
-                  ? "bg-white text-pink-500 hover:bg-slate-50"
-                  : "bg-pink-500 text-white hover:bg-pink-600"
+                  ? "bg-primary-foreground text-primary hover:bg-gray-100"
+                  : "bg-primary text-primary-foreground hover:bg-primary-hover"
               } transition-colors focus:outline-none`}
             >
               {isPlaying ? (
@@ -613,13 +613,13 @@ function VoiceNoteBubble({
                 onChange={handleSeek}
                 className={`w-full h-1 rounded-lg appearance-none cursor-pointer accent-current ${
                   isSentByMe
-                    ? "bg-pink-300 accent-white"
-                    : "bg-slate-200 dark:bg-zinc-800 accent-pink-500"
+                    ? "bg-primary-hover accent-white"
+                    : "bg-gray-200 accent-primary"
                 }`}
               />
               <div
                 className={`flex items-center justify-between text-[9px] font-semibold tracking-wider ${
-                  isSentByMe ? "text-pink-100" : "text-slate-400"
+                  isSentByMe ? "text-primary-foreground" : "text-foreground-muted"
                 }`}
               >
                 <span>
@@ -636,8 +636,8 @@ function VoiceNoteBubble({
               onClick={toggleSpeed}
               className={`rounded-full px-2 py-0.5 text-[9px] font-black shrink-0 uppercase tracking-widest focus:outline-none transition-all ${
                 isSentByMe
-                  ? "bg-white/25 text-white hover:bg-white/35"
-                  : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700"
+                  ? "bg-white/25 text-primary-foreground hover:bg-white/35"
+                  : "bg-gray-200 text-foreground-secondary hover:bg-surface-active"
               }`}
             >
               {playbackRate}x
@@ -649,8 +649,8 @@ function VoiceNoteBubble({
           <span
             className={`block text-[9px] font-medium font-sans ${
               isSentByMe
-                ? "text-pink-100"
-                : "text-slate-400 dark:text-slate-555"
+                ? "text-primary-foreground"
+                : "text-foreground-muted"
             }`}
           >
             {new Date(message.createdAt).toLocaleTimeString([], {
@@ -721,13 +721,13 @@ function ImageBubble({
       )}
 
       <div
-        className={`max-w-[65%] rounded-2xl shadow-sm border relative transition-all duration-300 ${
+        className={`max-w-[65%] rounded-md shadow-card border relative transition-all duration-300 ${
           isSentByMe
-            ? "bg-pink-500 p-1 rounded-tr-none order-1"
-            : "bg-white dark:bg-zinc-900 p-1 rounded-tl-none order-1 border-slate-200/30 dark:border-zinc-800/50"
+            ? "bg-primary border-primary p-1 rounded-tr-none order-1"
+            : "bg-gray-100 p-1 rounded-tl-none order-1 border-border"
         } ${
           isHighlighted
-            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02]"
+            ? "ring-2 ring-ring shadow-card scale-[1.02]"
             : ""
         }`}
       >
@@ -740,10 +740,10 @@ function ImageBubble({
                   activeMenuMessageId === message._id ? null : message._id,
                 )
               }
-              className={`p-0.5 rounded-full backdrop-blur-sm shadow-sm transition-all focus:outline-none ${
+              className={`p-0.5 rounded-full shadow-card transition-all focus:outline-none ${
                 isSentByMe
-                  ? "bg-pink-650/40 text-pink-100 hover:bg-pink-650/60 hover:text-white"
-                  : "bg-slate-100/65 dark:bg-zinc-800/65 text-slate-400 dark:text-zinc-550 hover:bg-slate-200/80 dark:hover:bg-zinc-700/80 hover:text-slate-600 dark:hover:text-zinc-300"
+                  ? "bg-primary-hover text-primary-foreground hover:bg-primary-hover"
+                  : "bg-surface-hover text-foreground-muted hover:bg-surface-active hover:text-foreground-secondary"
               }`}
             >
               <ChevronDown size={13} />
@@ -762,7 +762,7 @@ function ImageBubble({
         )}
 
         {message.isDeleted ? (
-          <div className="flex items-center space-x-2 text-xs py-2.5 px-4 select-none italic opacity-75 text-slate-500">
+          <div className="flex items-center space-x-2 text-xs py-2.5 px-4 select-none italic opacity-75 text-foreground-secondary">
             <Trash size={12} />
             <span>This image was deleted</span>
           </div>
@@ -780,8 +780,8 @@ function ImageBubble({
           <span
             className={`block text-[9px] pr-1 text-right font-medium font-sans ${
               isSentByMe
-                ? "text-pink-100"
-                : "text-slate-400 dark:text-slate-550"
+                ? "text-primary-foreground"
+                : "text-foreground-muted"
             }`}
           >
             {new Date(message.createdAt).toLocaleTimeString([], {
@@ -799,7 +799,7 @@ function ImageBubble({
             onClick={() => onAddReaction(message._id, null)}
             className={`absolute -bottom-1.5 ${
               isSentByMe ? "left-3" : "right-3"
-            } bg-white dark:bg-zinc-800 border border-slate-150 dark:border-zinc-700/60 rounded-full px-1.5 py-0.5 shadow-sm text-[11px] leading-none flex items-center select-none cursor-pointer border-pink-100 dark:border-pink-900/20 hover:scale-110 active:scale-95 transition-all`}
+            } bg-background border border-border rounded-full px-1.5 py-0.5 shadow-card text-[11px] leading-none flex items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-all`}
             title="Click to remove reaction"
           >
             {reaction}
@@ -859,13 +859,13 @@ function MessageBubble({
       )}
 
       <div
-        className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm leading-relaxed font-sans relative transition-all duration-305 ${
+        className={`max-w-[70%] rounded-md px-4 py-2.5 text-sm shadow-card leading-relaxed font-sans relative transition-all duration-305 ${
           isSentByMe
-            ? "bg-pink-500 text-white rounded-tr-none order-1"
-            : "bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border border-slate-200/45 dark:border-zinc-800/80 rounded-tl-none font-medium order-1"
+            ? "bg-primary text-primary-foreground rounded-tr-none order-1"
+            : "bg-gray-100 text-foreground border border-border rounded-tl-none font-medium order-1"
         } ${
           isHighlighted
-            ? "ring-4 ring-pink-500/40 shadow-lg shadow-pink-500/30 scale-[1.02] bg-pink-100 dark:bg-pink-955/20"
+            ? "ring-2 ring-ring shadow-card scale-[1.02]"
             : ""
         }`}
       >
@@ -878,10 +878,10 @@ function MessageBubble({
                   activeMenuMessageId === message._id ? null : message._id,
                 )
               }
-              className={`p-0.5 rounded-full backdrop-blur-sm shadow-sm transition-all focus:outline-none ${
+              className={`p-0.5 rounded-full shadow-card transition-all focus:outline-none ${
                 isSentByMe
-                  ? "bg-pink-650/40 text-pink-100 hover:bg-pink-650/60 hover:text-white"
-                  : "bg-slate-100/65 dark:bg-zinc-800/65 text-slate-400 dark:text-zinc-550 hover:bg-slate-200/80 dark:hover:bg-zinc-700/80 hover:text-slate-600 dark:hover:text-zinc-300"
+                  ? "bg-primary-hover text-primary-foreground hover:bg-primary-hover"
+                  : "bg-surface-hover text-foreground-muted hover:bg-surface-active hover:text-foreground-secondary"
               }`}
             >
               <ChevronDown size={13} />
@@ -904,7 +904,7 @@ function MessageBubble({
         </p>
         {message.isEdited && !message.isDeleted && (
           <span
-            className={`block text-[8px] text-right font-medium font-sans ${isSentByMe ? "text-pink-100/60" : "text-slate-400"}`}
+            className={`block text-[8px] text-right font-medium font-sans ${isSentByMe ? "text-primary-foreground/60" : "text-foreground-muted"}`}
           >
             (edited)
           </span>
@@ -914,8 +914,8 @@ function MessageBubble({
           <span
             className={`block text-[9px] mt-0.5 text-right font-medium font-sans ${
               isSentByMe
-                ? "text-pink-100"
-                : "text-slate-400 dark:text-slate-550"
+                ? "text-primary-foreground"
+                : "text-foreground-muted"
             }`}
           >
             {new Date(message.createdAt).toLocaleTimeString([], {
@@ -959,25 +959,25 @@ function MessageBubble({
 function TypingIndicator({ userName }) {
   return (
     <div className="flex justify-start my-2 animate-pulse">
-      <div className="bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 border border-slate-200/40 dark:border-zinc-800/80 rounded-2xl rounded-tl-none px-4 py-2.5 shadow-sm text-xs flex items-center space-x-1.5 font-outfit">
-        <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-550 uppercase tracking-wider font-outfit pr-0.5">
+      <div className="bg-gray-100 text-foreground border border-border rounded-md rounded-tl-none px-4 py-2.5 shadow-card text-xs flex items-center space-x-1.5 font-outfit">
+        <span className="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider font-outfit pr-0.5">
           {userName} is typing
         </span>
         <div className="flex items-center space-x-1 h-3">
           <motion.div
             animate={{ y: [0, -3, 0] }}
             transition={{ repeat: Infinity, duration: 0.6, delay: 0 }}
-            className="w-1.5 h-1.5 rounded-full bg-pink-500"
+            className="w-1.5 h-1.5 rounded-full bg-foreground-muted"
           />
           <motion.div
             animate={{ y: [0, -3, 0] }}
             transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }}
-            className="w-1.5 h-1.5 rounded-full bg-pink-500"
+            className="w-1.5 h-1.5 rounded-full bg-foreground-muted"
           />
           <motion.div
             animate={{ y: [0, -3, 0] }}
             transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }}
-            className="w-1.5 h-1.5 rounded-full bg-pink-500"
+            className="w-1.5 h-1.5 rounded-full bg-foreground-muted"
           />
         </div>
       </div>
@@ -1006,7 +1006,7 @@ export default function MessageList({
   const deleteMessage = useMessageStore((state) => state.deleteMessage);
   const setEditingMessage = useMessageStore((state) => state.setEditingMessage);
 
-  const handleStartEdit = (messageId, content) => {
+  const handleStartEdit = (messageId) => {
     const msg = messages.find((m) => m._id === messageId);
     if (msg) {
       setEditingMessage(msg);

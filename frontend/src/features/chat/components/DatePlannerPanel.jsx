@@ -74,30 +74,30 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
     {
       name: "Coffee",
       icon: Coffee,
-      bg: "bg-amber-50 dark:bg-amber-950/20",
-      border: "border-amber-200 dark:border-amber-900/50",
-      text: "text-amber-600 dark:text-amber-400",
+      bg: "bg-background-secondary",
+      border: "border-border",
+      text: "text-foreground-secondary",
     },
     {
       name: "Dinner",
       icon: Utensils,
-      bg: "bg-emerald-50 dark:bg-emerald-950/20",
-      border: "border-emerald-200 dark:border-emerald-900/50",
-      text: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-background-secondary",
+      border: "border-border",
+      text: "text-foreground-secondary",
     },
     {
       name: "Drinks",
       icon: Wine,
-      bg: "bg-rose-50 dark:bg-rose-950/20",
-      border: "border-rose-200 dark:border-rose-900/50",
-      text: "text-rose-600 dark:text-rose-400",
+      bg: "bg-background-secondary",
+      border: "border-border",
+      text: "text-foreground-secondary",
     },
     {
       name: "Outdoor",
       icon: Compass,
-      bg: "bg-sky-50 dark:bg-sky-950/20",
-      border: "border-sky-200 dark:border-sky-900/50",
-      text: "text-sky-600 dark:text-sky-400",
+      bg: "bg-background-secondary",
+      border: "border-border",
+      text: "text-foreground-secondary",
     },
   ];
 
@@ -141,21 +141,21 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ type: "tween", duration: 0.3 }}
-      className="w-full md:w-[400px] border-l border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col h-full z-40 shadow-xl overflow-hidden font-outfit"
+      className="w-full md:w-[400px] border-l border-border bg-background flex flex-col h-full z-40 shadow-card overflow-hidden font-outfit"
     >
-      <div className="p-4 border-b border-slate-100 dark:border-zinc-900/80 flex items-center justify-between shrink-0">
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
-          <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-2">
-            <CalendarDays size={18} className="text-pink-500" />
+          <h3 className="font-bold text-foreground flex items-center gap-2">
+            <CalendarDays size={18} className="text-accent" />
             <span>Date Planner</span>
           </h3>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+          <p className="text-[11px] text-foreground-muted font-medium">
             Plan your special day with {matchUser?.name}
           </p>
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-full hover:bg-slate-50 dark:hover:bg-zinc-900 text-slate-400 dark:text-slate-500 transition-colors"
+          className="p-1.5 rounded-full hover:bg-surface-hover text-foreground-muted transition-colors"
         >
           <X size={18} />
         </button>
@@ -164,44 +164,44 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
       <div className="flex-grow overflow-y-auto p-4 space-y-6 scrollbar-thin">
         {activeDatePlan.status === "finalized" ? (
           <div className="space-y-6">
-            <div className="bg-pink-50/20 dark:bg-pink-950/10 border border-pink-100 dark:border-pink-900/30 rounded-2xl p-6 text-center space-y-4">
+            <div className="bg-background-secondary border border-border rounded-2xl p-6 text-center space-y-4">
               <div className="flex justify-center items-center gap-3">
                 <img
                   src={authUser?.image || "/avatar.png"}
                   alt={authUser?.name}
-                  className="w-12 h-12 rounded-full border-2 border-white dark:border-zinc-900 object-cover shadow-sm"
+                  className="w-12 h-12 rounded-full border-2 border-background object-cover shadow-card"
                 />
                 <Heart
                   size={24}
-                  className="text-pink-500 fill-pink-500 animate-pulse"
+                  className="text-accent fill-accent animate-pulse"
                 />
                 <img
                   src={matchUser?.image || "/avatar.png"}
                   alt={matchUser?.name}
-                  className="w-12 h-12 rounded-full border-2 border-white dark:border-zinc-900 object-cover shadow-sm"
+                  className="w-12 h-12 rounded-full border-2 border-background object-cover shadow-card"
                 />
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-800 dark:text-zinc-100 text-lg">
+                <h4 className="font-bold text-foreground text-lg">
                   It's a Date!
                 </h4>
-                <p className="text-xs text-pink-500 font-semibold uppercase tracking-wider mt-1">
+                <p className="text-xs text-accent font-semibold uppercase tracking-wider mt-1">
                   Plan Locked In
                 </p>
               </div>
 
-              <div className="border-t border-slate-100 dark:border-zinc-900/60 pt-4 space-y-3 text-left">
+              <div className="border-t border-border pt-4 space-y-3 text-left">
                 <div className="flex items-start gap-2.5">
                   <MapPin
                     size={15}
-                    className="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5"
+                    className="text-foreground-muted shrink-0 mt-0.5"
                   />
                   <div>
-                    <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                    <p className="text-xs font-bold text-foreground-secondary">
                       {activeDatePlan.finalVenue?.title}
                     </p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                    <p className="text-[10px] text-foreground-muted">
                       {activeDatePlan.finalVenue?.location}
                     </p>
                   </div>
@@ -210,10 +210,10 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                 <div className="flex items-start gap-2.5">
                   <Clock
                     size={15}
-                    className="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5"
+                    className="text-foreground-muted shrink-0 mt-0.5"
                   />
                   <div>
-                    <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                    <p className="text-xs font-bold text-foreground-secondary">
                       {new Date(
                         activeDatePlan.finalDateTime?.date,
                       ).toLocaleDateString(undefined, {
@@ -223,7 +223,7 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                         day: "numeric",
                       })}
                     </p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                    <p className="text-[10px] text-foreground-muted">
                       at {activeDatePlan.finalDateTime?.time}
                     </p>
                   </div>
@@ -234,7 +234,7 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
         ) : (
           <>
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
                 1. Choose a Vibe
               </h4>
               <div className="grid grid-cols-2 gap-2">
@@ -250,10 +250,10 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                       onClick={() => voteCategory(activeDatePlan.id, c.name)}
                       className={`p-3 rounded-xl border text-left transition-all relative flex flex-col justify-between h-20 ${c.bg} ${
                         isMutual
-                          ? "border-pink-500 dark:border-pink-500 shadow-sm shadow-pink-500/10 ring-1 ring-pink-500"
+                          ? "border-border-strong shadow-card ring-1 ring-ring"
                           : isSelectedByMe
-                            ? "border-slate-300 dark:border-zinc-700 shadow-sm"
-                            : "border-slate-100 dark:border-zinc-900/60 hover:bg-slate-50 dark:hover:bg-zinc-900/50"
+                            ? "border-border-strong shadow-card"
+                            : "border-border hover:bg-surface-hover"
                       }`}
                     >
                       <div className="flex justify-between items-start w-full">
@@ -263,25 +263,25 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                             <img
                               src={authUser?.image || "/avatar.png"}
                               alt="Me"
-                              className="w-4 h-4 rounded-full border border-white dark:border-zinc-900 object-cover"
+                              className="w-4 h-4 rounded-full border border-background object-cover"
                             />
                           )}
                           {isSelectedByPartner && (
                             <img
                               src={matchUser?.image || "/avatar.png"}
                               alt={matchUser?.name}
-                              className="w-4 h-4 rounded-full border border-white dark:border-zinc-900 object-cover"
+                              className="w-4 h-4 rounded-full border border-background object-cover"
                             />
                           )}
                         </div>
                       </div>
 
                       <div className="mt-2">
-                        <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                        <span className="text-xs font-bold text-foreground">
                           {c.name}
                         </span>
                         {isMutual && (
-                          <span className="block text-[8px] font-bold text-pink-500 uppercase tracking-wide">
+                          <span className="block text-[8px] font-bold text-accent uppercase tracking-wide">
                             Mutual match!
                           </span>
                         )}
@@ -293,20 +293,20 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
                 2. Venues
               </h4>
 
               <form
                 onSubmit={handleVenueSubmit}
-                className="flex flex-col gap-2 bg-slate-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-slate-100 dark:border-zinc-900/50"
+                className="flex flex-col gap-2 bg-background-secondary p-3 rounded-xl border border-border"
               >
                 <input
                   type="text"
                   placeholder="Venue name (e.g. Starbucks)"
                   value={venueTitle}
                   onChange={(e) => setVenueTitle(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 focus:outline-none focus:border-pink-500 transition-colors"
+                  className="px-2.5 py-1.5 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
                 />
                 <div className="flex gap-2">
                   <input
@@ -314,11 +314,11 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                     placeholder="Location/Street"
                     value={venueLocation}
                     onChange={(e) => setVenueLocation(e.target.value)}
-                    className="flex-grow px-2.5 py-1.5 text-xs rounded-lg border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 focus:outline-none focus:border-pink-500 transition-colors"
+                    className="flex-grow px-2.5 py-1.5 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
                   />
                   <button
                     type="submit"
-                    className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-slate-800 dark:bg-zinc-800 text-white hover:bg-pink-500 dark:hover:bg-pink-500 transition-colors"
+                    className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
                   >
                     <Plus size={14} />
                   </button>
@@ -337,21 +337,21 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                       key={v.id}
                       className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
                         isMutual
-                          ? "border-pink-500/80 bg-pink-50/10 dark:bg-pink-950/5 shadow-sm"
+                          ? "border-border-strong bg-background-secondary shadow-card ring-1 ring-ring"
                           : hasMyVote
-                            ? "border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-950"
-                            : "border-slate-100 dark:border-zinc-900/60 bg-white dark:bg-zinc-950"
+                            ? "border-border-strong bg-background"
+                            : "border-border bg-background"
                       }`}
                     >
                       <div className="flex-grow mr-2 overflow-hidden">
-                        <h5 className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
+                        <h5 className="text-xs font-bold text-foreground truncate">
                           {v.title}
                         </h5>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate flex items-center gap-1">
+                        <p className="text-[10px] text-foreground-muted truncate flex items-center gap-1">
                           <MapPin size={10} />
                           <span>{v.location}</span>
                         </p>
-                        <span className="block text-[8px] text-slate-400 dark:text-slate-500 font-medium mt-1">
+                        <span className="block text-[8px] text-foreground-muted font-medium mt-1">
                           Proposed by {isCreatorMe ? "You" : matchUser.name}
                         </span>
                       </div>
@@ -362,14 +362,14 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                             <img
                               src={authUser?.image || "/avatar.png"}
                               alt="Me"
-                              className="w-4 h-4 rounded-full border border-white dark:border-zinc-900 object-cover"
+                              className="w-4 h-4 rounded-full border border-background object-cover"
                             />
                           )}
                           {hasPartnerVote && (
                             <img
                               src={matchUser?.image || "/avatar.png"}
                               alt={matchUser?.name}
-                              className="w-4 h-4 rounded-full border border-white dark:border-zinc-900 object-cover"
+                              className="w-4 h-4 rounded-full border border-background object-cover"
                             />
                           )}
                         </div>
@@ -378,8 +378,8 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                           onClick={() => voteVenue(activeDatePlan.id, v.id)}
                           className={`h-7 w-7 rounded-lg flex items-center justify-center border transition-all ${
                             hasMyVote
-                              ? "bg-pink-500 border-pink-500 text-white shadow-sm"
-                              : "border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-slate-500 hover:border-pink-500 dark:hover:border-pink-500 hover:text-pink-500"
+                              ? "bg-accent border-accent text-accent-foreground shadow-card"
+                              : "border-border text-foreground-muted hover:border-border-strong hover:text-accent"
                           }`}
                         >
                           <Check size={12} />
@@ -392,29 +392,29 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
                 3. Date & Time
               </h4>
 
               <form
                 onSubmit={handleDateTimeSubmit}
-                className="flex gap-2 bg-slate-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-slate-100 dark:border-zinc-900/50"
+                className="flex gap-2 bg-background-secondary p-3 rounded-xl border border-border"
               >
                 <input
                   type="date"
                   value={dateVal}
                   onChange={(e) => setDateVal(e.target.value)}
-                  className="flex-grow px-2 py-1 text-xs rounded-lg border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 focus:outline-none focus:border-pink-500 transition-colors"
+                  className="flex-grow px-2 py-1 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
                 />
                 <input
                   type="time"
                   value={timeVal}
                   onChange={(e) => setTimeVal(e.target.value)}
-                  className="px-2 py-1 text-xs rounded-lg border border-slate-100 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 text-slate-800 dark:text-zinc-100 focus:outline-none focus:border-pink-500 transition-colors"
+                  className="px-2 py-1 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
                 />
                 <button
                   type="submit"
-                  className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-slate-800 dark:bg-zinc-800 text-white hover:bg-pink-500 dark:hover:bg-pink-500 transition-colors"
+                  className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
                 >
                   <Plus size={14} />
                 </button>
@@ -432,28 +432,28 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                       key={t.id}
                       className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
                         isMutual
-                          ? "border-pink-500/80 bg-pink-50/10 dark:bg-pink-950/5 shadow-sm"
+                          ? "border-border-strong bg-background-secondary shadow-card ring-1 ring-ring"
                           : hasMyVote
-                            ? "border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-950"
-                            : "border-slate-100 dark:border-zinc-900/60 bg-white dark:bg-zinc-950"
+                            ? "border-border-strong bg-background"
+                            : "border-border bg-background"
                       }`}
                     >
                       <div className="flex-grow mr-2 overflow-hidden">
-                        <h5 className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate flex items-center gap-1">
+                        <h5 className="text-xs font-bold text-foreground truncate flex items-center gap-1">
                           <Clock
                             size={12}
-                            className="text-slate-400 dark:text-slate-500"
+                            className="text-foreground-muted"
                           />
                           <span>{t.time}</span>
                         </h5>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                        <p className="text-[10px] text-foreground-muted truncate mt-0.5">
                           {new Date(t.date).toLocaleDateString(undefined, {
                             weekday: "short",
                             month: "short",
                             day: "numeric",
                           })}
                         </p>
-                        <span className="block text-[8px] text-slate-400 dark:text-slate-500 font-medium mt-1">
+                        <span className="block text-[8px] text-foreground-muted font-medium mt-1">
                           Proposed by {isCreatorMe ? "You" : matchUser.name}
                         </span>
                       </div>
@@ -464,14 +464,14 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                             <img
                               src={authUser?.image || "/avatar.png"}
                               alt="Me"
-                              className="w-4 h-4 rounded-full border border-white dark:border-zinc-900 object-cover"
+                              className="w-4 h-4 rounded-full border border-background object-cover"
                             />
                           )}
                           {hasPartnerVote && (
                             <img
                               src={matchUser?.image || "/avatar.png"}
                               alt={matchUser?.name}
-                              className="w-4 h-4 rounded-full border border-white dark:border-zinc-900 object-cover"
+                              className="w-4 h-4 rounded-full border border-background object-cover"
                             />
                           )}
                         </div>
@@ -480,8 +480,8 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
                           onClick={() => voteDateTime(activeDatePlan.id, t.id)}
                           className={`h-7 w-7 rounded-lg flex items-center justify-center border transition-all ${
                             hasMyVote
-                              ? "bg-pink-500 border-pink-500 text-white shadow-sm"
-                              : "border-slate-200 dark:border-zinc-800 text-slate-400 dark:text-slate-500 hover:border-pink-500 dark:hover:border-pink-500 hover:text-pink-500"
+                              ? "bg-accent border-accent text-accent-foreground shadow-card"
+                              : "border-border text-foreground-muted hover:border-border-strong hover:text-accent"
                           }`}
                         >
                           <Check size={12} />
@@ -497,23 +497,23 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
       </div>
 
       {activeDatePlan.status !== "finalized" && (
-        <div className="p-4 border-t border-slate-100 dark:border-zinc-900/80 bg-slate-50/50 dark:bg-zinc-900/20 shrink-0">
+        <div className="p-4 border-t border-border bg-background-secondary shrink-0">
           {canFinalize ? (
             <button
               onClick={handleFinalize}
               disabled={isFinalizing}
-              className="w-full py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 hover:shadow-pink-500/30 transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs shadow-card transition-all flex items-center justify-center gap-2"
             >
-              <Heart size={14} className="fill-white" />
+              <Heart size={14} className="fill-current" />
               <span>
                 {isFinalizing ? "Locking in plan..." : "Lock in Date! ✨"}
               </span>
             </button>
           ) : (
-            <div className="flex gap-2 p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-900/80 text-[10px] text-slate-500 dark:text-slate-400 font-semibold border border-slate-200/50 dark:border-zinc-800/80">
+            <div className="flex gap-2 p-2.5 rounded-xl bg-gray-100 text-[10px] text-foreground-secondary font-semibold border border-border">
               <AlertCircle
                 size={14}
-                className="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5"
+                className="text-foreground-muted shrink-0 mt-0.5"
               />
               <span>
                 To lock in plans, both you and {matchUser?.name} must vote for
