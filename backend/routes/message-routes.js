@@ -8,6 +8,7 @@ import {
   editMessageSchema,
   deleteMessageSchema,
   reactionSchema,
+  togglePinSchema,
   respondGameSchema,
 } from "../validators/message-validator.js";
 import {
@@ -23,6 +24,7 @@ import {
   deleteMessage,
   clearConversation,
   toggleReaction,
+  togglePin,
   markConversationAsRead,
   respondToGameProposal,
 } from "../controllers/message-controller.js";
@@ -44,6 +46,7 @@ router.patch("/:messageId", validate(editMessageSchema), editMessage);
 router.delete("/:messageId", validate(deleteMessageSchema), deleteMessage);
 router.delete("/conversation/:userId", clearConversation);
 router.post("/react/:messageId", validate(reactionSchema), toggleReaction);
+router.patch("/:messageId/pin", validate(togglePinSchema), togglePin);
 router.post("/read/:userId", markConversationAsRead);
 
 export default router;

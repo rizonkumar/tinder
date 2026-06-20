@@ -15,6 +15,9 @@ const sendMessageSchema = Joi.object({
     .default(MESSAGE_TYPES.TEXT)
     .optional(),
   mediaUrl: Joi.string().trim().allow("").optional(),
+  replyTo: Joi.string().regex(objectIdRegex).allow(null).optional().messages({
+    "string.pattern.base": "Invalid reply reference format",
+  }),
   dateInfo: Joi.object({
     date: Joi.string().trim().required(),
     time: Joi.string().trim().required(),
@@ -94,6 +97,13 @@ const reactionSchema = Joi.object({
   emoji: Joi.string().trim().allow(null, "").optional(),
 });
 
+const togglePinSchema = Joi.object({
+  isPinned: Joi.boolean().required().messages({
+    "any.required": "Pin state is required",
+    "boolean.base": "Pin state must be a boolean",
+  }),
+});
+
 const respondGameSchema = Joi.object({
   messageId: Joi.string().regex(objectIdRegex).required().messages({
     "any.required": "Message ID is required",
@@ -114,5 +124,6 @@ export {
   editMessageSchema,
   deleteMessageSchema,
   reactionSchema,
+  togglePinSchema,
   respondGameSchema,
 };

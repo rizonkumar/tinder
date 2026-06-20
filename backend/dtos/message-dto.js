@@ -13,6 +13,9 @@ class MessageDto {
     this.messageType = msgObj.messageType;
     this.mediaUrl = this.isDeleted ? "" : (msgObj.mediaUrl || "");
     this.read = !!msgObj.read;
+    this.isPinned = !!msgObj.isPinned;
+    this.pinnedBy = msgObj.pinnedBy ? msgObj.pinnedBy.toString() : null;
+    this.replyTo = this._mapReplyTo(msgObj.replyTo);
     this.reactions = msgObj.reactions
       ? msgObj.reactions.map((r) => ({
           userId: r.user.toString(),
@@ -54,6 +57,21 @@ class MessageDto {
 
     this.createdAt = msgObj.createdAt;
     this.updatedAt = msgObj.updatedAt;
+  }
+
+  _mapReplyTo(ref) {
+    if (!ref || typeof ref !== "object" || !ref._id) return null;
+    const isDeleted = !!ref.isDeleted;
+    const senderName =
+      ref.sender && typeof ref.sender === "object" ? ref.sender.name : null;
+    return {
+      id: ref._id.toString(),
+      content: isDeleted ? "This message was deleted" : ref.content,
+      messageType: ref.messageType,
+      mediaUrl: isDeleted ? "" : ref.mediaUrl || "",
+      senderName,
+      isDeleted,
+    };
   }
 
   _mapUserRef(ref) {

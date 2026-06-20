@@ -27,6 +27,20 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
+    pinnedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     read: {
       type: Boolean,
       default: false,

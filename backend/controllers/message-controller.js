@@ -4,7 +4,8 @@ import aiService from "../services/ai-service.js";
 import sendResponse from "../utils/responseHandler.js";
 
 export const sendMessage = asyncHandler(async (req, res) => {
-  const { content, receiverId, messageType, mediaUrl, dateInfo, gameInfo } = req.body;
+  const { content, receiverId, messageType, mediaUrl, dateInfo, gameInfo, replyTo } =
+    req.body;
 
   const message = await messageService.sendMessage(
     req.user._id,
@@ -13,7 +14,8 @@ export const sendMessage = asyncHandler(async (req, res) => {
     messageType,
     mediaUrl,
     dateInfo,
-    gameInfo
+    gameInfo,
+    replyTo
   );
 
   sendResponse(res, 200, message, "Message sent successfully");
@@ -133,6 +135,19 @@ export const toggleReaction = asyncHandler(async (req, res) => {
   );
 
   sendResponse(res, 200, message, "Reaction updated successfully");
+});
+
+export const togglePin = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { isPinned } = req.body;
+
+  const message = await messageService.togglePin(
+    messageId,
+    req.user._id,
+    isPinned
+  );
+
+  sendResponse(res, 200, message, "Message pin updated successfully");
 });
 
 export const markConversationAsRead = asyncHandler(async (req, res) => {
