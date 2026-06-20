@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { fallbackGifs } from "../../../constants";
 import { useMessageStore } from "../../../store/useMessageStore";
+import showToast from "../../../components/common/Toast";
+import { compressImage, estimateDataUrlBytes } from "../utils/compressImage";
 
 const GIPHY_API_KEY = "dc6zaTOxFJmzC";
 const GIPHY_LIMIT = 12;
 const DEBOUNCE_MS = 500;
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
 export function useGifPicker() {
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -48,20 +51,26 @@ export function useGifPicker() {
   }, [gifQuery, showGifPicker]);
 
   const handleImageUpload = useCallback(
-    (e) => {
-      const file = e.target.files[0];
+    async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
       if (!file) return;
 
-      if (file.size > 2 * 1024 * 1024) {
-        alert("File is too large. Max size is 2MB");
+      if (!file.type.startsWith("image/")) {
+        showToast.error("Please select an image file");
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = async () => {
-        await sendMessage("", "image", reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const dataUrl = await compressImage(file);
+        if (estimateDataUrlBytes(dataUrl) > MAX_UPLOAD_BYTES) {
+          showToast.error("This image is too large to send. Max size is 2MB.");
+          return;
+        }
+        await sendMessage("", "image", dataUrl);
+      } catch (error) {
+        showToast.error(error.message || "Could not process the selected image");
+      }
     },
     [sendMessage],
   );
