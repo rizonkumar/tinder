@@ -204,27 +204,21 @@ export default function DateDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-1 border-b border-border">
+        <div className="flex items-center gap-6 border-b border-border">
           {tabs.map((tab) => {
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+                className={`-mb-px flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                   active
                     ? "border-accent text-accent"
                     : "border-transparent text-foreground-secondary hover:text-foreground"
                 }`}
               >
                 <span>{tab.label}</span>
-                <span
-                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                    active ? "bg-accent text-accent-foreground" : "bg-background-secondary text-foreground-muted"
-                  }`}
-                >
-                  {tab.count}
-                </span>
+                <span className="text-xs font-semibold text-foreground-muted">{tab.count}</span>
               </button>
             );
           })}

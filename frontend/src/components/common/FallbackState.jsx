@@ -8,7 +8,7 @@ export default function FallbackState({
   className = "",
 }) {
   return (
-    <div className={`flex h-full flex-col items-center justify-center p-8 text-center max-w-md mx-auto select-none transition-colors duration-300 ${className}`}>
+    <div className={`flex h-full w-full flex-col items-center justify-center p-8 text-center select-none transition-colors duration-300 ${className}`}>
       {Icon && (
         <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-background-secondary text-foreground-secondary shadow-inner shrink-0">
           <Icon size={50} className={title?.includes("No Matches Yet") ? "fill-current animate-pulse" : ""} />
