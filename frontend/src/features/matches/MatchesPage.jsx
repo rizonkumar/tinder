@@ -52,9 +52,7 @@ export default function MatchesPage() {
                 }`}>
                   <Heart size={15} className={activeTab === "matches" ? "fill-current" : ""} />
                   <span className="font-outfit">Mutual Matches</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-normal transition-colors ${
-                    activeTab === "matches" ? "bg-accent text-accent-foreground" : "bg-background-secondary text-foreground-muted"
-                  }`}>
+                  <span className="text-xs font-semibold text-foreground-muted">
                     {matches?.length || 0}
                   </span>
                 </span>
@@ -76,9 +74,7 @@ export default function MatchesPage() {
                 }`}>
                   <Sparkles size={15} className={activeTab === "liked" ? "fill-current text-accent" : ""} />
                   <span className="font-outfit">People I Liked</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-normal transition-colors ${
-                    activeTab === "liked" ? "bg-accent text-accent-foreground" : "bg-background-secondary text-foreground-muted"
-                  }`}>
+                  <span className="text-xs font-semibold text-foreground-muted">
                     {likedUsers?.length || 0}
                   </span>
                 </span>

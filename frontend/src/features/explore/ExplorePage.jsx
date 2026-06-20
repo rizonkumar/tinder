@@ -34,40 +34,46 @@ export default function ExplorePage() {
   };
 
   return (
-    <AppLayout variant="center">
+    <AppLayout variant="scroll">
       {selectedCategory ? (
-        <div className="flex flex-col items-center w-full max-w-sm">
+        <div className="space-y-5">
           <button
             onClick={handleBack}
-            className="self-start mb-4 flex items-center space-x-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-bold text-foreground-secondary shadow-card transition-all hover:scale-105 active:scale-95 focus-ring"
+            className="flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-xs font-bold text-foreground-secondary shadow-card transition-colors hover:bg-surface-hover focus-ring"
           >
             <ArrowLeft size={14} className="stroke-[2.5]" />
             <span>Vibes Hub</span>
           </button>
 
-          <CardSwiper
-            userProfiles={userProfiles}
-            isLoadingUserProfiles={isLoadingUserProfiles}
-            onRefresh={() => getExploreProfiles(selectedCategory)}
-            onSwipeLeft={swipeLeft}
-            onSwipeRight={swipeRight}
-            onSwipeSuperLike={swipeSuperLike}
-            onRewind={rewind}
-          />
+          <div className="mx-auto w-full max-w-sm">
+            <CardSwiper
+              userProfiles={userProfiles}
+              isLoadingUserProfiles={isLoadingUserProfiles}
+              onRefresh={() => getExploreProfiles(selectedCategory)}
+              onSwipeLeft={swipeLeft}
+              onSwipeRight={swipeRight}
+              onSwipeSuperLike={swipeSuperLike}
+              onRewind={rewind}
+            />
+          </div>
         </div>
       ) : (
-        <div className="flex w-full max-w-2xl flex-col items-center text-center">
-          <div className="mb-4 rounded-full bg-background-secondary p-3.5 text-accent shadow-card">
-            <Compass size={32} className="animate-spin-slow" />
+        <div className="space-y-8">
+          <div className="flex items-center gap-3.5">
+            <div className="rounded-lg border border-border bg-background-secondary p-3 text-accent">
+              <Compass size={26} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold uppercase tracking-tight text-foreground font-outfit">
+                Vibe Explore Hub
+              </h1>
+              <p className="mt-0.5 text-sm font-medium text-foreground-secondary">
+                Find connections who match your exact interests and hobbies.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground font-outfit uppercase">
-            Vibe Explore Hub
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-foreground-secondary max-w-md font-medium leading-relaxed">
-            Find connections who match your exact interests and hobbies. Choose a vibe and start swiping!
-          </p>
 
-          <div className="mt-8 grid w-full grid-cols-2 gap-4 sm:grid-cols-4 select-none">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 select-none">
             {EXPLORE_CATEGORIES.map((cat, idx) => {
               const Icon = Icons[cat.iconName] || Icons.Compass;
               return (
@@ -76,19 +82,19 @@ export default function ExplorePage() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.04 }}
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleSelect(cat.id)}
-                  className="relative overflow-hidden rounded-3xl bg-background border border-border p-5 text-left text-foreground shadow-card hover:bg-surface-hover hover:border-border-strong transition-all h-32 flex flex-col justify-between focus-ring"
+                  className="flex h-32 flex-col justify-between overflow-hidden rounded-lg border border-border bg-background p-5 text-left text-foreground shadow-card transition-colors hover:border-border-strong hover:bg-surface-hover focus-ring"
                 >
-                  <div className={`p-2 rounded-xl w-fit ${cat.surface}`}>
+                  <div className={`w-fit rounded-md p-2 ${cat.surface}`}>
                     <Icon size={20} className="stroke-[2.5]" />
                   </div>
                   <div>
-                    <span className="text-base font-black tracking-wide block font-outfit uppercase">
+                    <span className="block text-base font-bold uppercase tracking-wide font-outfit">
                       {cat.name}
                     </span>
-                    <span className="mt-0.5 text-[9px] uppercase font-bold text-foreground-muted tracking-wider block">
+                    <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-wider text-foreground-muted">
                       Tap to Enter
                     </span>
                   </div>
