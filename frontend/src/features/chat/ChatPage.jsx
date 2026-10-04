@@ -20,6 +20,7 @@ import ChatInputBar from "./components/ChatInputBar";
 import AIAssistantPanel from "./components/AIAssistantPanel";
 import GifPickerPanel from "./components/GifPickerPanel";
 import NoChatSelected from "./components/NoChatSelected";
+import ConversationList from "./components/ConversationList";
 import DatePlannerPanel from "./components/DatePlannerPanel";
 import { AnimatePresence } from "framer-motion";
 
@@ -167,9 +168,18 @@ export default function ChatPage() {
 
   return (
     <AppLayout variant="flush">
+      <div className="flex h-full min-h-0 flex-1 overflow-hidden">
+        <ConversationList
+          matches={matches}
+          isLoading={isLoadingMyMatches}
+          onlineUsers={onlineUsers}
+          activeId={activeChatUser?._id}
+          className={`w-full shrink-0 border-r border-border md:w-80 lg:w-[22rem] ${activeChatUser ? "hidden md:flex" : "flex"}`}
+        />
+
         {activeChatUser ? (
-          <div className="flex flex-grow flex-row overflow-hidden bg-background border-t border-border lg:border-l lg:border-t-0 transition-colors duration-300">
-            <div className="flex flex-grow flex-col overflow-hidden">
+          <div className="flex min-w-0 flex-1 overflow-hidden bg-background">
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
               <ChatHeader
                 activeChatUser={activeChatUser}
                 isOnline={isOnline}
@@ -181,115 +191,110 @@ export default function ChatPage() {
                 onOpenDatePlanner={() => setIsDatePlannerOpen((prev) => !prev)}
               />
 
-            <MessageSearchBar
-              showSearchBar={showSearchBar}
-              searchQuery={searchQuery}
-              onSearch={handleSearch}
-              searchMatches={searchMatches}
-              currentMatchIndex={currentMatchIndex}
-              onPrev={prevSearchMatch}
-              onNext={nextSearchMatch}
-              onClose={toggleSearchBar}
-            />
-
-            <MessageList
-              messages={messages}
-              isLoadingMessages={isLoadingMessages}
-              activeChatUser={activeChatUser}
-              authUser={authUser}
-              isTypingUser={isTypingUser}
-              activeHighlightedMessageId={activeHighlightedMessageId}
-              reactions={reactions}
-              activeReactionPickerMessageId={activeReactionPickerMessageId}
-              onToggleReactionPicker={toggleReactionPicker}
-              onAddReaction={addReaction}
-              onOpenLightbox={setActiveLightboxImage}
-              onRespondToDate={respondToDateProposal}
-              onRespondToGame={respondToGameProposal}
-              onReply={setReplyingTo}
-              onForward={setForwardingMessage}
-              onTogglePin={togglePin}
-              onScrollToMessage={scrollToAndHighlight}
-              messagesEndRef={messagesEndRef}
-            />
-
-            <ChatInputBar
-              text={text}
-              onTextChange={handleTextChange}
-              onSend={handleCustomSend}
-              onImageUpload={handleImageUpload}
-              showGifPicker={showGifPicker}
-              onToggleGifPicker={handleToggleGifPicker}
-              showAIAssistant={showAIAssistant}
-              onToggleAIAssistant={handleToggleAIAssistant}
-              onOpenDateModal={() => {
-                setIsDateModalOpen(true);
-                setIsGameModalOpen(false);
-                setShowGifPicker(false);
-                setShowAIAssistant(false);
-              }}
-              onOpenGameModal={() => {
-                setIsGameModalOpen(true);
-                setIsDateModalOpen(false);
-                setShowGifPicker(false);
-                setShowAIAssistant(false);
-              }}
-            >
-              {showAIAssistant && (
-                <AIAssistantPanel
-                  aiTab={aiTab}
-                  onSetAiTab={handleSelectAiTab}
-                  smartReplies={smartReplies}
-                  isLoadingSmartReplies={isLoadingSmartReplies}
-                  icebreakers={icebreakers}
-                  isLoadingIcebreakers={isLoadingIcebreakers}
-                  onSelectReply={(starter) => {
-                    setText(starter);
-                    setShowAIAssistant(false);
-                  }}
-                  onRegenerateReplies={() => getSmartReplies(id)}
-                  onRegenerateIcebreakers={() => getIcebreakers(id)}
-                  chatId={id}
-                />
-              )}
-
-              {showGifPicker && (
-                <GifPickerPanel
-                  gifQuery={gifQuery}
-                  onGifQueryChange={setGifQuery}
-                  gifs={gifs}
-                  isLoadingGifs={isLoadingGifs}
-                  gifTab={gifTab}
-                  onSetGifTab={setGifTab}
-                  favorites={favorites}
-                  onToggleFavorite={toggleFavorite}
-                  isFavorite={isFavorite}
-                  onSelectGif={(gif) => {
-                    sendMessage("", "image", gif.url);
-                    setShowGifPicker(false);
-                  }}
-                  onClose={() => setShowGifPicker(false)}
-                />
-              )}
-            </ChatInputBar>
-          </div>
-          <AnimatePresence>
-            {isDatePlannerOpen && (
-              <DatePlannerPanel
-                isOpen={isDatePlannerOpen}
-                onClose={() => setIsDatePlannerOpen(false)}
-                matchUser={activeChatUser}
+              <MessageSearchBar
+                showSearchBar={showSearchBar}
+                searchQuery={searchQuery}
+                onSearch={handleSearch}
+                searchMatches={searchMatches}
+                currentMatchIndex={currentMatchIndex}
+                onPrev={prevSearchMatch}
+                onNext={nextSearchMatch}
+                onClose={toggleSearchBar}
               />
-            )}
-          </AnimatePresence>
-        </div>
+
+              <MessageList
+                messages={messages}
+                isLoadingMessages={isLoadingMessages}
+                activeChatUser={activeChatUser}
+                authUser={authUser}
+                isTypingUser={isTypingUser}
+                activeHighlightedMessageId={activeHighlightedMessageId}
+                reactions={reactions}
+                activeReactionPickerMessageId={activeReactionPickerMessageId}
+                onToggleReactionPicker={toggleReactionPicker}
+                onAddReaction={addReaction}
+                onOpenLightbox={setActiveLightboxImage}
+                onRespondToDate={respondToDateProposal}
+                onRespondToGame={respondToGameProposal}
+                onReply={setReplyingTo}
+                onForward={setForwardingMessage}
+                onTogglePin={togglePin}
+                onScrollToMessage={scrollToAndHighlight}
+                messagesEndRef={messagesEndRef}
+              />
+
+              <ChatInputBar
+                text={text}
+                onTextChange={handleTextChange}
+                onSend={handleCustomSend}
+                onImageUpload={handleImageUpload}
+                showGifPicker={showGifPicker}
+                onToggleGifPicker={handleToggleGifPicker}
+                showAIAssistant={showAIAssistant}
+                onToggleAIAssistant={handleToggleAIAssistant}
+                onOpenDateModal={() => {
+                  setIsDateModalOpen(true);
+                  setIsGameModalOpen(false);
+                  setShowGifPicker(false);
+                  setShowAIAssistant(false);
+                }}
+                onOpenGameModal={() => {
+                  setIsGameModalOpen(true);
+                  setIsDateModalOpen(false);
+                  setShowGifPicker(false);
+                  setShowAIAssistant(false);
+                }}
+              >
+                {showAIAssistant && (
+                  <AIAssistantPanel
+                    aiTab={aiTab}
+                    onSetAiTab={handleSelectAiTab}
+                    smartReplies={smartReplies}
+                    isLoadingSmartReplies={isLoadingSmartReplies}
+                    icebreakers={icebreakers}
+                    isLoadingIcebreakers={isLoadingIcebreakers}
+                    onSelectReply={(starter) => {
+                      setText(starter);
+                      setShowAIAssistant(false);
+                    }}
+                    onRegenerateReplies={() => getSmartReplies(id)}
+                    onRegenerateIcebreakers={() => getIcebreakers(id)}
+                  />
+                )}
+
+                {showGifPicker && (
+                  <GifPickerPanel
+                    gifQuery={gifQuery}
+                    onGifQueryChange={setGifQuery}
+                    gifs={gifs}
+                    isLoadingGifs={isLoadingGifs}
+                    gifTab={gifTab}
+                    onSetGifTab={setGifTab}
+                    favorites={favorites}
+                    onToggleFavorite={toggleFavorite}
+                    isFavorite={isFavorite}
+                    onSelectGif={(gif) => {
+                      sendMessage("", "image", gif.url);
+                      setShowGifPicker(false);
+                    }}
+                    onClose={() => setShowGifPicker(false)}
+                  />
+                )}
+              </ChatInputBar>
+            </div>
+            <AnimatePresence>
+              {isDatePlannerOpen && (
+                <DatePlannerPanel
+                  onClose={() => setIsDatePlannerOpen(false)}
+                  matchUser={activeChatUser}
+                />
+              )}
+            </AnimatePresence>
+          </div>
         ) : (
-          <NoChatSelected
-            matches={matches}
-            isLoadingMyMatches={isLoadingMyMatches}
-            onlineUsers={onlineUsers}
-          />
+          <NoChatSelected />
         )}
+      </div>
 
       <ProfileModal
         isOpen={isProfileModalOpen}

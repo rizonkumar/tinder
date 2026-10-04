@@ -1,11 +1,34 @@
 import { useState, useEffect } from "react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import * as Icons from "lucide-react";
 import AppLayout from "../../components/AppLayout";
 import CardSwiper from "../swipe/CardSwiper";
 import { useMatchStore } from "../../store/useMatchStore";
-import { ArrowLeft, Compass } from "lucide-react";
-import * as Icons from "lucide-react";
-import { motion } from "framer-motion";
 import { EXPLORE_CATEGORIES } from "../../constants";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { Button } from "../../components/ui/Button";
+
+function CategoryTile({ category, onSelect }) {
+  const Icon = Icons[category.iconName] || Icons.Compass;
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(category.id)}
+      className="group flex items-center gap-4 rounded-lg border border-border bg-surface p-4 text-left shadow-card transition-colors hover:border-border-strong hover:bg-surface-raised focus-ring sm:flex-col sm:items-start sm:gap-5 sm:p-5"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-background-secondary text-foreground">
+        <Icon size={18} aria-hidden="true" />
+      </span>
+      <span className="flex min-w-0 flex-1 items-center justify-between gap-2 sm:w-full">
+        <span className="min-w-0">
+          <span className="heading-16 block truncate text-foreground">{category.name}</span>
+          <span className="copy-13 block text-foreground-secondary">Into {category.id.toLowerCase()}</span>
+        </span>
+        <ChevronRight size={16} className="shrink-0 text-foreground-muted transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
 
 export default function ExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -20,36 +43,27 @@ export default function ExplorePage() {
   } = useMatchStore();
 
   useEffect(() => {
-    if (selectedCategory) {
-      getExploreProfiles(selectedCategory);
-    }
+    if (selectedCategory) getExploreProfiles(selectedCategory);
   }, [selectedCategory, getExploreProfiles]);
 
-  const handleSelect = (categoryId) => {
-    setSelectedCategory(categoryId);
-  };
+  const category = EXPLORE_CATEGORIES.find((item) => item.id === selectedCategory);
 
-  const handleBack = () => {
-    setSelectedCategory(null);
-  };
-
-  return (
-    <AppLayout variant="scroll">
-      {selectedCategory ? (
-        <div className="space-y-5">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-xs font-bold text-foreground-secondary shadow-card transition-colors hover:bg-surface-hover focus-ring"
-          >
-            <ArrowLeft size={14} className="stroke-[2.5]" />
-            <span>Vibes Hub</span>
-          </button>
-
-          <div className="mx-auto w-full max-w-sm">
+  if (category) {
+    return (
+      <AppLayout variant="scroll">
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between gap-4">
+            <Button variant="ghost" size="sm" onClick={() => setSelectedCategory(null)} className="-ml-2">
+              <ArrowLeft aria-hidden="true" />
+              All vibes
+            </Button>
+          </div>
+          <PageHeader title={category.name} description={`People who are into ${category.id.toLowerCase()}, in your preferences.`} />
+          <div className="flex justify-center pt-2">
             <CardSwiper
               userProfiles={userProfiles}
               isLoadingUserProfiles={isLoadingUserProfiles}
-              onRefresh={() => getExploreProfiles(selectedCategory)}
+              onRefresh={() => getExploreProfiles(category.id)}
               onSwipeLeft={swipeLeft}
               onSwipeRight={swipeRight}
               onSwipeSuperLike={swipeSuperLike}
@@ -57,53 +71,23 @@ export default function ExplorePage() {
             />
           </div>
         </div>
-      ) : (
-        <div className="space-y-8">
-          <div className="flex items-center gap-3.5">
-            <div className="rounded-lg border border-border bg-background-secondary p-3 text-accent">
-              <Compass size={26} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold uppercase tracking-tight text-foreground font-outfit">
-                Vibe Explore Hub
-              </h1>
-              <p className="mt-0.5 text-sm font-medium text-foreground-secondary">
-                Find connections who match your exact interests and hobbies.
-              </p>
-            </div>
-          </div>
+      </AppLayout>
+    );
+  }
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 select-none">
-            {EXPLORE_CATEGORIES.map((cat, idx) => {
-              const Icon = Icons[cat.iconName] || Icons.Compass;
-              return (
-                <motion.button
-                  key={cat.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleSelect(cat.id)}
-                  className="flex h-32 flex-col justify-between overflow-hidden rounded-lg border border-border bg-background p-5 text-left text-foreground shadow-card transition-colors hover:border-border-strong hover:bg-surface-hover focus-ring"
-                >
-                  <div className={`w-fit rounded-md p-2 ${cat.surface}`}>
-                    <Icon size={20} className="stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <span className="block text-base font-bold uppercase tracking-wide font-outfit">
-                      {cat.name}
-                    </span>
-                    <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-wider text-foreground-muted">
-                      Tap to Enter
-                    </span>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
+  return (
+    <AppLayout variant="scroll">
+      <div className="flex flex-col gap-8">
+        <PageHeader
+          title="Explore"
+          description="Pick a vibe and swipe only within people who share it."
+        />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {EXPLORE_CATEGORIES.map((item) => (
+            <CategoryTile key={item.id} category={item} onSelect={setSelectedCategory} />
+          ))}
         </div>
-      )}
+      </div>
     </AppLayout>
   );
 }

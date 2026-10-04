@@ -1,167 +1,96 @@
-import { Gamepad2, CheckCircle2, XCircle, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { Gamepad2, Check, X, CircleDashed } from "lucide-react";
 import confetti from "canvas-confetti";
+import { Badge } from "../../../components/ui/Badge";
+import ChatCard from "./ChatCard";
+import { cn } from "../../../utils/cn";
 
-export default function TwoTruthsLieCard({
-  message,
-  isSentByMe,
-  isHighlighted,
-  activeChatUserName,
-  onRespond,
-}) {
+const STATUS = {
+  pending: { tone: "neutral", label: "Open", icon: CircleDashed },
+  correct: { tone: "success", label: "Solved", icon: Check },
+  incorrect: { tone: "danger", label: "Missed", icon: X },
+};
+
+const CONFETTI_COLORS = ["#2f7d4a", "#a67c1a", "#c43d22"];
+
+function statementState({ index, isPending, isSentByMe, lieIndex, guessIndex }) {
+  if (index === lieIndex && (!isPending || isSentByMe)) return "lie";
+  if (!isPending && index === guessIndex) return "wrong-guess";
+  if (!isPending) return "dimmed";
+  return isSentByMe ? "static" : "choice";
+}
+
+const STATEMENT_STYLES = {
+  choice: "border-border bg-surface text-foreground hover:border-border-strong hover:bg-surface-raised cursor-pointer",
+  static: "border-border bg-surface text-foreground-secondary",
+  lie: "border-success/30 bg-success-surface text-foreground",
+  "wrong-guess": "border-danger/30 bg-danger-surface text-foreground",
+  dimmed: "border-border bg-surface text-foreground-muted",
+};
+
+export default function TwoTruthsLieCard({ message, isSentByMe, isHighlighted, activeChatUserName, onRespond }) {
   const info = message.gameInfo || {};
   const statements = info.statements || [];
-  const status = info.status || "pending";
-  const guessIndex = info.guessIndex;
-  const lieIndex = info.lieIndex;
+  const statusKey = info.status || "pending";
+  const isPending = statusKey === "pending";
+  const { guessIndex, lieIndex } = info;
 
-  const isPending = status === "pending";
-  const isCorrect = status === "correct";
-  const isIncorrect = status === "incorrect";
-
-  const handleGuess = async (idx) => {
+  const handleGuess = async (index) => {
     if (!isPending || isSentByMe) return;
-    
-    if (idx === lieIndex) {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ["#10b981", "#34d399", "#6ee7b7", "#ffffff"],
-      });
+    if (index === lieIndex) {
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.8 }, colors: CONFETTI_COLORS });
     }
-    
-    await onRespond(message._id, idx);
+    await onRespond(message._id, index);
   };
 
-  const getBorderColor = () => {
-    if (isCorrect) return "border-green-300 bg-green-100";
-    if (isIncorrect) return "border-red-300 bg-red-100";
-    return "border-border bg-gray-100";
-  };
+  const footerCopy = isPending
+    ? isSentByMe
+      ? `Waiting for ${activeChatUserName} to guess`
+      : "Tap the statement you think is the lie"
+    : statusKey === "correct"
+      ? isSentByMe
+        ? `${activeChatUserName} spotted the lie`
+        : "You spotted the lie"
+      : isSentByMe
+        ? `${activeChatUserName} guessed wrong`
+        : "Not quite. The lie is highlighted";
 
   return (
-    <div
-      id={`msg-${message._id}`}
-      className={`flex w-full ${isSentByMe ? "justify-end" : "justify-start"} my-4 transition-all duration-300 ${
-        isHighlighted ? "scale-[1.02]" : ""
-      }`}
+    <ChatCard
+      message={message}
+      isSentByMe={isSentByMe}
+      isHighlighted={isHighlighted}
+      icon={Gamepad2}
+      eyebrow="Two truths and a lie"
+      title={isSentByMe ? "Your challenge" : `${activeChatUserName}'s challenge`}
+      status={STATUS[statusKey]}
+      footer={<span className="text-xs text-foreground-secondary">{footerCopy}</span>}
     >
-      <div
-        className={`w-full max-w-[320px] rounded-[24px] p-5 shadow-card border relative overflow-hidden transition-all duration-200 ${getBorderColor()} ${
-          isHighlighted ? "ring-2 ring-ring" : ""
-        }`}
-      >
-        <div
-          className={`absolute top-0 left-0 right-0 h-[3px] ${
-            isCorrect ? "bg-green-700" : isIncorrect ? "bg-red-800" : "bg-accent"
-          }`}
-        />
-
-        <div className="flex items-center justify-between mb-4 mt-0.5 select-none font-outfit">
-          <span className="text-[9px] font-black uppercase tracking-widest text-foreground-muted">
-            Two Truths & A Lie
-          </span>
-          {isCorrect && (
-            <span className="flex items-center space-x-1 rounded-full bg-green-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-green-700">
-              <CheckCircle2 size={10} />
-              <span>Solved</span>
-            </span>
-          )}
-          {isIncorrect && (
-            <span className="flex items-center space-x-1 rounded-full bg-red-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-red-800">
-              <XCircle size={10} />
-              <span>Failed</span>
-            </span>
-          )}
-          {isPending && (
-            <span className="flex items-center space-x-1 rounded-full bg-amber-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-700">
-              <Clock size={10} />
-              <span>Active</span>
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center space-x-3 mb-4">
-          <div
-            className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 ${
-              isCorrect ? "bg-green-700" : isIncorrect ? "bg-red-800" : "bg-accent"
-            } text-white`}
-          >
-            <Gamepad2 size={18} className="stroke-[2.2]" />
-          </div>
-          <div>
-            <h4 className="text-xs font-black text-foreground font-outfit uppercase tracking-wide leading-none mb-1">
-              {isSentByMe ? "Your Challenge" : `${activeChatUserName}'s Challenge`}
-            </h4>
-            <p className="text-[9px] text-foreground-muted font-bold font-outfit uppercase tracking-wider">
-              {isPending ? "Find the statement that is a lie!" : "Game completed"}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-2 mb-3">
-          {statements.map((statement, idx) => {
-            let btnStyle = "border-border bg-background-secondary text-foreground-secondary hover:bg-surface-hover cursor-pointer";
-            let badge = "";
-
-            if (!isPending) {
-              if (idx === lieIndex) {
-                btnStyle = "border-green-300 bg-green-100 text-green-700 font-semibold cursor-default";
-                badge = "The Lie 🚫";
-              } else if (idx === guessIndex) {
-                btnStyle = "border-red-300 bg-red-100 text-red-800 cursor-default";
-                badge = isSentByMe ? `${activeChatUserName}'s Guess` : "Your Guess";
-              } else {
-                btnStyle = "border-border bg-background-secondary text-foreground-muted opacity-60 cursor-default";
-              }
-            } else {
-              if (isSentByMe && idx === lieIndex) {
-                btnStyle = "border-red-300 bg-red-100 text-red-800 cursor-default";
-                badge = "The Lie 🚫";
-              } else if (isSentByMe) {
-                btnStyle = "border-border bg-background-secondary text-foreground-secondary cursor-default";
-              }
-            }
-
-            return (
-              <motion.button
-                key={idx}
-                disabled={isSentByMe || !isPending}
-                whileHover={isSentByMe || !isPending ? {} : { scale: 1.01 }}
-                whileTap={isSentByMe || !isPending ? {} : { scale: 0.99 }}
-                onClick={() => handleGuess(idx)}
-                className={`w-full text-left p-3 rounded-xl border text-[11px] font-sans leading-relaxed transition-all flex flex-col justify-between items-start outline-none ${btnStyle}`}
-              >
-                <span>{statement}</span>
-                {badge && (
-                  <span className={`text-[8px] font-black uppercase font-outfit tracking-widest mt-1.5 px-2 py-0.5 rounded-full ${
-                    badge.includes("Lie")
-                      ? "bg-green-100 text-green-700 border border-green-300"
-                      : "bg-red-100 text-red-800 border border-red-300"
-                  }`}>
-                    {badge}
-                  </span>
+      <ol className="space-y-2">
+        {statements.map((statement, index) => {
+          const state = statementState({ index, isPending, isSentByMe, lieIndex, guessIndex });
+          const isChoice = state === "choice";
+          return (
+            <li key={index}>
+              <button
+                type="button"
+                disabled={!isChoice}
+                onClick={() => handleGuess(index)}
+                className={cn(
+                  "flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 text-left text-[0.8125rem] leading-5 transition-colors focus-ring disabled:cursor-default",
+                  STATEMENT_STYLES[state]
                 )}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {isPending && isSentByMe && (
-          <div className="flex items-center justify-center space-x-1.5 text-center text-[10px] text-foreground-muted bg-background-secondary rounded-xl py-2 font-outfit font-bold tracking-wide select-none">
-            <Clock size={11} />
-            <span>Awaiting {activeChatUserName}&apos;s guess</span>
-          </div>
-        )}
-
-        <span className="block text-[8px] mt-2.5 text-right font-medium text-foreground-muted font-sans select-none">
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </span>
-      </div>
-    </div>
+              >
+                <span className="tabular mt-px shrink-0 text-xs text-foreground-muted">{index + 1}</span>
+                <span className="min-w-0 flex-1">{statement}</span>
+                {state === "lie" && <Badge tone="success" className="h-5 px-2 text-[11px]">Lie</Badge>}
+                {state === "wrong-guess" && (
+                  <Badge tone="danger" className="h-5 px-2 text-[11px]">{isSentByMe ? "Their guess" : "Your guess"}</Badge>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </ChatCard>
   );
 }

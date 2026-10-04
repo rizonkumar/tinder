@@ -1,50 +1,33 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
-import LoadingState from "../../../components/common/LoadingState";
+import { Search, Star, X, ImageOff } from "lucide-react";
+import { SegmentedControl } from "../../../components/ui/SegmentedControl";
+import { Input } from "../../../components/ui/Field";
+import { IconButton } from "../../../components/ui/IconButton";
+import { Skeleton } from "../../../components/ui/Skeleton";
+import { EmptyState } from "../../../components/ui/EmptyState";
+
+const GIF_TABS = [
+  { value: "trending", label: "GIFs" },
+  { value: "favorites", label: "Favorites" },
+];
 
 function GifTile({ gif, onSelectGif, onToggleFavorite, favorited }) {
   return (
-    <div className="relative aspect-square rounded-md overflow-hidden border border-border hover:border-border-strong transition-all bg-background-secondary shrink-0 group">
-      <button
-        type="button"
-        onClick={() => onSelectGif(gif)}
-        className="block h-full w-full"
-      >
-        <img
-          src={gif.url}
-          alt={gif.title}
-          className="h-full w-full object-cover select-none group-hover:scale-[1.03] transition-transform"
-          loading="lazy"
-        />
+    <div className="group relative aspect-square overflow-hidden rounded-md bg-background-secondary">
+      <button type="button" onClick={() => onSelectGif(gif)} className="block size-full focus-ring" aria-label={`Send ${gif.title || "GIF"}`}>
+        <img src={gif.url} alt="" loading="lazy" className="size-full object-cover" />
       </button>
-      <button
-        type="button"
+      <IconButton
+        label={favorited ? "Remove from favorites" : "Add to favorites"}
+        variant="overlay"
+        size="sm"
         onClick={() => onToggleFavorite(gif)}
-        className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 backdrop-blur text-foreground-muted hover:text-amber-600 transition-colors focus:outline-none"
-        aria-label={favorited ? "Remove favorite" : "Add favorite"}
+        className="absolute right-1 top-1 size-7 rounded-full opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 data-[on=true]:opacity-100"
+        data-on={favorited}
       >
-        <Star
-          size={13}
-          className={favorited ? "fill-amber-500 text-amber-500" : ""}
-        />
-      </button>
+        <Star className={favorited ? "fill-current" : undefined} />
+      </IconButton>
     </div>
-  );
-}
-
-function TabButton({ active, onClick, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider font-outfit transition-colors ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "text-foreground-muted hover:text-foreground"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -64,68 +47,59 @@ export default function GifPickerPanel({
   const isFavoritesTab = gifTab === "favorites";
   const items = isFavoritesTab ? favorites : gifs;
 
+  const renderGrid = () => {
+    if (!isFavoritesTab && isLoadingGifs) {
+      return Array.from({ length: 8 }).map((_, index) => <Skeleton key={index} className="aspect-square" />);
+    }
+    if (items.length === 0) {
+      return (
+        <div className="col-span-full">
+          <EmptyState
+            compact
+            icon={isFavoritesTab ? Star : ImageOff}
+            title={isFavoritesTab ? "No favorites yet" : "No GIFs found"}
+            description={isFavoritesTab ? "Star a GIF to keep it here." : "Try a different word."}
+          />
+        </div>
+      );
+    }
+    return items.map((gif) => (
+      <GifTile key={gif.id} gif={gif} onSelectGif={onSelectGif} onToggleFavorite={onToggleFavorite} favorited={isFavorite(gif.id)} />
+    ));
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      className="absolute bottom-20 left-4 right-4 z-50 rounded-md bg-background border border-border shadow-popover p-4 flex flex-col h-[300px]"
+      exit={{ opacity: 0, y: 6 }}
+      transition={{ duration: 0.15 }}
+      role="dialog"
+      aria-label="GIF picker"
+      className="absolute inset-x-3 bottom-full z-40 mb-2 flex h-[22rem] flex-col rounded-xl border border-border bg-surface shadow-popover sm:left-4 sm:right-auto sm:w-[26rem]"
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1">
-          <TabButton
-            active={!isFavoritesTab}
-            onClick={() => onSetGifTab("trending")}
-          >
-            GIPHY
-          </TabButton>
-          <TabButton
-            active={isFavoritesTab}
-            onClick={() => onSetGifTab("favorites")}
-          >
-            Favorites
-          </TabButton>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-xs font-bold text-foreground-muted hover:text-foreground focus:outline-none"
-        >
-          Close
-        </button>
+      <div className="flex items-center justify-between gap-2 border-b border-border p-2.5">
+        <SegmentedControl size="sm" label="GIF source" className="w-auto" options={GIF_TABS} value={gifTab} onChange={onSetGifTab} />
+        <IconButton label="Close GIF picker" size="sm" onClick={onClose}>
+          <X />
+        </IconButton>
       </div>
-
       {!isFavoritesTab && (
-        <input
-          type="text"
-          value={gifQuery}
-          onChange={(e) => onGifQueryChange(e.target.value)}
-          placeholder="Type keyword e.g. wink, wave, cat..."
-          className="w-full text-xs rounded-md border border-border bg-background-secondary px-3.5 py-2 outline-none mb-3 focus-ring text-foreground"
-        />
+        <div className="px-2.5 pt-2.5">
+          <Input
+            icon={Search}
+            type="search"
+            value={gifQuery}
+            onChange={(event) => onGifQueryChange(event.target.value)}
+            placeholder="Search GIPHY"
+            aria-label="Search GIFs"
+            className="h-9"
+            autoFocus
+          />
+        </div>
       )}
-
-      <div className="flex-grow overflow-y-auto grid grid-cols-3 gap-2 pr-0.5 scrollbar-none">
-        {!isFavoritesTab && isLoadingGifs ? (
-          <div className="col-span-3 flex items-center justify-center h-full">
-            <LoadingState message="" type="inline" />
-          </div>
-        ) : items.length === 0 ? (
-          <div className="col-span-3 text-center text-xs text-foreground-muted italic py-8">
-            {isFavoritesTab ? "No favorite GIFs yet." : "No GIFs found."}
-          </div>
-        ) : (
-          items.map((gif) => (
-            <GifTile
-              key={gif.id}
-              gif={gif}
-              onSelectGif={onSelectGif}
-              onToggleFavorite={onToggleFavorite}
-              favorited={isFavorite(gif.id)}
-            />
-          ))
-        )}
-      </div>
+      <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-3 gap-1.5 overflow-y-auto p-2.5 sm:grid-cols-4">{renderGrid()}</div>
+      <p className="border-t border-border px-3 py-1.5 text-right text-[11px] text-foreground-muted">Powered by GIPHY</p>
     </motion.div>
   );
 }

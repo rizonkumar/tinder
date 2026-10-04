@@ -1,165 +1,118 @@
 import { useState } from "react";
 import { Gamepad2, AlertCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Modal } from "../../../../components/ui/Modal";
+import { Button } from "../../../../components/ui/Button";
+import { Input } from "../../../../components/ui/Field";
+import { cn } from "../../../../utils/cn";
 
-const SPRING_TRANSITION = { type: "spring", stiffness: 350, damping: 25 };
+const STATEMENT_COUNT = 3;
+const PLACEHOLDERS = [
+  "I once got lost in Tokyo for a whole day",
+  "I have a cat called Biscuit",
+  "I can speak four languages",
+];
+const FORM_ID = "two-truths-form";
 
-export default function TwoTruthsLieModal({
-  isOpen,
-  activeChatUser,
-  onClose,
-  onSendChallenge,
-}) {
-  const [statements, setStatements] = useState(["", "", ""]);
+export default function TwoTruthsLieModal({ isOpen, activeChatUser, onClose, onSendChallenge }) {
+  const [statements, setStatements] = useState(() => Array(STATEMENT_COUNT).fill(""));
   const [lieIndex, setLieIndex] = useState(null);
-  const [validationError, setValidationError] = useState("");
+  const [error, setError] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
-  const resetState = () => {
-    setStatements(["", "", ""]);
+  const reset = () => {
+    setStatements(Array(STATEMENT_COUNT).fill(""));
     setLieIndex(null);
-    setValidationError("");
-  };
-
-  const handleStatementChange = (index, value) => {
-    const updated = [...statements];
-    updated[index] = value;
-    setStatements(updated);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (statements.some((s) => !s.trim())) {
-      setValidationError("Please fill out all 3 statements.");
-      return;
-    }
-
-    if (lieIndex === null) {
-      setValidationError("Please select which statement is the Lie.");
-      return;
-    }
-
-    const payload = {
-      statements: statements.map((s) => s.trim()),
-      lieIndex: Number(lieIndex),
-    };
-
-    await onSendChallenge(
-      "Challenged you to Two Truths & a Lie! 🎮",
-      "game_ttal",
-      "",
-      null,
-      payload
-    );
-
-    resetState();
-    onClose();
+    setError("");
   };
 
   const handleClose = () => {
-    resetState();
+    reset();
     onClose();
   };
 
+  const updateStatement = (index, value) =>
+    setStatements((prev) => prev.map((item, current) => (current === index ? value : item)));
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (statements.some((item) => !item.trim())) {
+      setError("Write all three statements.");
+      return;
+    }
+    if (lieIndex === null) {
+      setError("Mark which statement is the lie.");
+      return;
+    }
+    setIsSending(true);
+    await onSendChallenge("Challenged you to two truths and a lie", "game_ttal", "", null, {
+      statements: statements.map((item) => item.trim()),
+      lieIndex,
+    });
+    setIsSending(false);
+    handleClose();
+  };
+
   return (
-    <AnimatePresence>
-      {isOpen && activeChatUser && (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/40 p-4">
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={SPRING_TRANSITION}
-            className="w-full max-w-md bg-background border border-border shadow-modal p-6 font-sans text-foreground rounded-lg relative overflow-visible"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold tracking-tight text-foreground font-outfit flex items-center gap-2 select-none">
-                <Gamepad2 size={18} className="text-accent" />
-                <span>Challenge {activeChatUser.name}</span>
-              </h3>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="text-xs font-bold text-foreground-muted hover:text-foreground-secondary focus:outline-none"
-              >
-                Cancel
-              </button>
-            </div>
-
-            <p className="text-xs text-foreground-muted mb-5 font-sans leading-relaxed select-none">
-              Create a challenge by writing three statements: two that are true, and one that is a lie. Select the statement that is the lie before sending!
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {statements.map((statement, idx) => (
-                <div key={idx} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-foreground-muted uppercase tracking-widest font-outfit select-none">
-                      Statement {idx + 1}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setLieIndex(idx)}
-                      className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all select-none ${
-                        lieIndex === idx
-                          ? "bg-red-800 text-white border-red-800 shadow-card"
-                          : "bg-background-secondary text-foreground-secondary border-border hover:bg-surface-hover"
-                      }`}
-                    >
-                      {lieIndex === idx ? "The Lie 🚫" : "Set as Lie"}
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    value={statement}
-                    onChange={(e) => handleStatementChange(idx, e.target.value)}
-                    required
-                    placeholder={`e.g. ${
-                      idx === 0
-                        ? "I once climbed Mt. Fuji during a storm."
-                        : idx === 1
-                          ? "I have a pet hedgehog named Pip."
-                          : "I can speak four languages fluently."
-                    }`}
-                    className="w-full text-xs rounded-md border border-border bg-background px-4 py-2.5 focus-ring text-foreground placeholder:text-foreground-muted"
-                  />
-                </div>
-              ))}
-
-              <AnimatePresence>
-                {validationError && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="flex items-center space-x-2 text-red-800 text-xs font-semibold py-1 select-none"
-                  >
-                    <AlertCircle size={14} className="shrink-0" />
-                    <span>{validationError}</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="pt-2 flex items-center space-x-3 w-full">
+    <Modal
+      open={isOpen && !!activeChatUser}
+      onClose={handleClose}
+      icon={Gamepad2}
+      title="Two truths and a lie"
+      description={activeChatUser ? `Write three statements and mark the lie. ${activeChatUser.name} gets one guess.` : undefined}
+      footer={
+        <>
+          <Button variant="ghost" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button type="submit" form={FORM_ID} loading={isSending}>
+            Send challenge
+          </Button>
+        </>
+      }
+    >
+      <form id={FORM_ID} onSubmit={handleSubmit} className="space-y-4 p-5" noValidate>
+        {statements.map((statement, index) => {
+          const isLie = lieIndex === index;
+          const inputId = `statement-${index}`;
+          return (
+            <div key={index} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor={inputId} className="label-13 text-foreground">
+                  Statement {index + 1}
+                </label>
                 <button
                   type="button"
-                  onClick={handleClose}
-                  className="flex-1 py-2.5 text-center text-xs font-bold text-foreground-secondary border border-border rounded-md hover:bg-surface-hover transition-all font-outfit focus:outline-none select-none"
+                  role="radio"
+                  aria-checked={isLie}
+                  onClick={() => setLieIndex(index)}
+                  className={cn(
+                    "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors focus-ring",
+                    isLie
+                      ? "border-danger/40 bg-danger-surface text-danger"
+                      : "border-border text-foreground-secondary hover:border-border-strong hover:text-foreground"
+                  )}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 text-center text-xs font-bold text-primary-foreground bg-primary hover:bg-primary-hover rounded-md transition-colors font-outfit focus:outline-none flex items-center justify-center space-x-2 select-none"
-                >
-                  <Gamepad2 size={14} />
-                  <span>Send Challenge</span>
+                  <span className={cn("size-2 rounded-full border", isLie ? "border-danger bg-danger" : "border-foreground-muted")} />
+                  {isLie ? "This is the lie" : "Mark as lie"}
                 </button>
               </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+              <Input
+                id={inputId}
+                value={statement}
+                onChange={(event) => updateStatement(index, event.target.value)}
+                placeholder={PLACEHOLDERS[index]}
+                className={isLie ? "border-danger/40" : undefined}
+              />
+            </div>
+          );
+        })}
+        {error && (
+          <p className="flex items-center gap-2 copy-13 text-danger" role="alert">
+            <AlertCircle size={14} aria-hidden="true" />
+            {error}
+          </p>
+        )}
+      </form>
+    </Modal>
   );
 }

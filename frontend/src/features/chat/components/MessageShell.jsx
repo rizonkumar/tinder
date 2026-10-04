@@ -1,150 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import {
-  Smile,
-  ChevronDown,
-  Reply,
-  Forward,
-  Copy,
-  Edit3,
-  Pin,
-  PinOff,
-  Trash,
-  Trash2,
-  CheckCheck,
-  Timer,
-  Image as ImageIcon,
-  Mic,
-  Calendar,
-  Gamepad2,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { EMOJI_REACTIONS } from "../../../constants";
-import { metaTextClass } from "../utils/chatBubbleStyles";
-
-const FORWARDABLE_TYPES = ["text", "image", "voice_note"];
-
-function formatReadTime(readAt) {
-  if (!readAt) return null;
-  return new Date(readAt).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-export function ReadReceipt({ read, readAt }) {
-  const readTime = read ? formatReadTime(readAt) : null;
-  return (
-    <CheckCheck
-      size={13}
-      title={readTime ? `Read ${readTime}` : "Sent"}
-      className={read ? "text-accent stroke-[2.5]" : "text-blue-1000/40 stroke-[1.8]"}
-    />
-  );
-}
-
-export function MessageMeta({ message, isSentByMe, showReceipt = true }) {
-  return (
-    <div className="flex items-center justify-end space-x-1 mt-1.5 pr-0.5 select-none">
-      {message.expiresAt && (
-        <Timer size={11} className={metaTextClass(isSentByMe)} title="Disappearing message" />
-      )}
-      <span className={`block text-[9px] font-medium font-sans ${metaTextClass(isSentByMe)}`}>
-        {new Date(message.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })}
-      </span>
-      {isSentByMe && showReceipt && (
-        <ReadReceipt read={message.read} readAt={message.readAt} />
-      )}
-    </div>
-  );
-}
-
-function ReactionTriggerButton({
-  messageId,
-  activeReactionPickerMessageId,
-  onToggleReactionPicker,
-  title,
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() =>
-        onToggleReactionPicker(
-          activeReactionPickerMessageId === messageId ? null : messageId
-        )
-      }
-      className="p-1 text-foreground-muted hover:text-accent rounded-full hover:bg-surface-hover transition-all focus:outline-none"
-      title={title}
-      aria-label={title}
-    >
-      <Smile size={14} />
-    </button>
-  );
-}
-
-function ReactionPicker({
-  messageId,
-  isSentByMe,
-  activeReactionPickerMessageId,
-  onAddReaction,
-}) {
-  const pickerRef = useRef(null);
-  const [renderDownwards, setRenderDownwards] = useState(false);
-
-  useEffect(() => {
-    if (pickerRef.current) {
-      const rect = pickerRef.current.getBoundingClientRect();
-      if (rect.top < 160) setRenderDownwards(true);
-    }
-  }, []);
-
-  return (
-    <AnimatePresence>
-      {activeReactionPickerMessageId === messageId && (
-        <motion.div
-          ref={pickerRef}
-          initial={{ opacity: 0, scale: 0.9, y: renderDownwards ? -10 : 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: renderDownwards ? -10 : 10 }}
-          className={`absolute ${renderDownwards ? "top-full mt-2.5" : "-top-11"} ${
-            isSentByMe ? "right-0" : "left-0"
-          } z-30 flex items-center space-x-1.5 bg-background px-2.5 py-1.5 rounded-full shadow-popover border border-border select-none`}
-        >
-          {EMOJI_REACTIONS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => onAddReaction(messageId, emoji)}
-              className="hover:scale-130 active:scale-95 transition-transform duration-200 text-sm leading-none"
-            >
-              {emoji}
-            </button>
-          ))}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function ReactionPill({ messageId, reaction, isSentByMe, onRemoveReaction }) {
-  if (!reaction) return null;
-
-  return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      onClick={() => onRemoveReaction(messageId)}
-      className={`absolute -bottom-2.5 ${
-        isSentByMe ? "left-3" : "right-3"
-      } bg-background border border-border rounded-full px-1.5 py-0.5 shadow-card text-[11px] leading-none flex items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-all`}
-      title="Click to remove reaction"
-    >
-      {reaction}
-    </motion.div>
-  );
-}
+import { Smile, MoreHorizontal, Forward, Image as ImageIcon, Mic, Calendar, Gamepad2 } from "lucide-react";
+import ReactionPicker from "./ReactionPicker";
+import ReactionPill from "./ReactionPill";
+import MessageActionsMenu from "./MessageActionsMenu";
+import { cn } from "../../../utils/cn";
 
 const REPLY_TYPE_LABEL = {
   image: "Photo",
@@ -152,7 +10,7 @@ const REPLY_TYPE_LABEL = {
   audio: "Call",
   video: "Video call",
   date_proposal: "Date proposal",
-  game_ttal: "Two Truths & a Lie",
+  game_ttal: "Two truths and a lie",
 };
 
 const REPLY_TYPE_ICON = {
@@ -162,43 +20,26 @@ const REPLY_TYPE_ICON = {
   game_ttal: Gamepad2,
 };
 
-export function QuotedReply({ replyTo, isSentByMe, onClick }) {
-  if (!replyTo) return null;
+const HOVER_REVEAL =
+  "opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100";
 
+function QuotedReply({ replyTo, currentUserId, onClick }) {
+  const author = replyTo.senderId && replyTo.senderId === currentUserId ? "You" : replyTo.senderName || "Message";
   const label = REPLY_TYPE_LABEL[replyTo.messageType] || replyTo.content;
   const Icon = REPLY_TYPE_ICON[replyTo.messageType];
-
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-stretch gap-2 mb-2 overflow-hidden rounded-md border-l-2 pl-2 pr-2 py-1 text-left transition-colors ${
-        isSentByMe
-          ? "border-blue-1000/40 bg-blue-1000/10 hover:bg-blue-1000/15"
-          : "border-accent bg-surface-hover hover:bg-surface-active"
-      }`}
+      className="mb-1.5 flex w-full items-stretch gap-2 overflow-hidden rounded-md border-l-2 border-accent bg-surface-hover py-1 pl-2 pr-2 text-left transition-colors hover:bg-surface-active focus-ring"
     >
       {replyTo.mediaUrl && replyTo.messageType === "image" && (
-        <img
-          src={replyTo.mediaUrl}
-          alt=""
-          className="h-8 w-8 shrink-0 rounded object-cover"
-        />
+        <img src={replyTo.mediaUrl} alt="" className="size-8 shrink-0 rounded object-cover" />
       )}
-      <span className="min-w-0 flex-grow">
-        <span
-          className={`block text-[10px] font-bold truncate font-outfit ${
-            isSentByMe ? "text-blue-1000" : "text-accent"
-          }`}
-        >
-          {replyTo.senderName || "Message"}
-        </span>
-        <span
-          className={`flex items-center gap-1 text-[11px] truncate ${
-            isSentByMe ? "text-blue-1000/75" : "text-foreground-secondary"
-          }`}
-        >
-          {Icon && <Icon size={11} className="shrink-0" />}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-xs font-medium text-accent">{author}</span>
+        <span className="flex items-center gap-1 truncate text-xs text-foreground-secondary">
+          {Icon && <Icon size={12} className="shrink-0" aria-hidden="true" />}
           <span className="truncate">{label}</span>
         </span>
       </span>
@@ -206,236 +47,56 @@ export function QuotedReply({ replyTo, isSentByMe, onClick }) {
   );
 }
 
-export function ForwardedTag({ isSentByMe }) {
+function ForwardedTag() {
   return (
-    <span
-      className={`flex items-center gap-1 text-[10px] italic font-medium mb-1 ${
-        isSentByMe ? "text-blue-1000/60" : "text-foreground-muted"
-      }`}
-    >
-      <Forward size={11} />
-      <span>Forwarded</span>
+    <span className="mb-1 flex items-center gap-1 text-xs text-foreground-muted">
+      <Forward size={12} aria-hidden="true" />
+      Forwarded
     </span>
   );
 }
 
-function MessageActionsMenu({
+function SideActions({
   message,
   isSentByMe,
-  onReply,
-  onForward,
-  onEdit,
-  onDelete,
-  onTogglePin,
-  onClose,
-  onToggleReactionPicker,
-}) {
-  const menuRef = useRef(null);
-  const [renderUpwards, setRenderUpwards] = useState(false);
-
-  useEffect(() => {
-    if (menuRef.current) {
-      const rect = menuRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      if (rect.bottom > viewportHeight - 120 || rect.top > viewportHeight * 0.6) {
-        setRenderUpwards(true);
-      }
-    }
-  }, []);
-
-  const itemClass =
-    "flex items-center w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-foreground hover:bg-surface-hover text-left transition-colors space-x-2";
-
-  const canForward =
-    onForward && !message.isDeleted && FORWARDABLE_TYPES.includes(message.messageType);
-
-  return (
-    <div
-      ref={menuRef}
-      className={`absolute z-50 bg-background border border-border rounded-md shadow-popover p-1.5 min-w-[160px] flex flex-col space-y-0.5 transition-all duration-200 ${
-        renderUpwards ? "bottom-full mb-2" : "top-full mt-2"
-      } ${isSentByMe ? "right-0" : "left-0"}`}
-    >
-      <button
-        type="button"
-        onClick={() => {
-          onReply(message);
-          onClose();
-        }}
-        className={itemClass}
-      >
-        <Reply size={13} className="text-foreground-muted" />
-        <span>Reply</span>
-      </button>
-
-      {canForward && (
-        <button
-          type="button"
-          onClick={() => {
-            onForward(message);
-            onClose();
-          }}
-          className={itemClass}
-        >
-          <Forward size={13} className="text-foreground-muted" />
-          <span>Forward</span>
-        </button>
-      )}
-
-      {onToggleReactionPicker && (
-        <button
-          type="button"
-          onClick={() => {
-            onToggleReactionPicker(message._id);
-            onClose();
-          }}
-          className={itemClass}
-        >
-          <Smile size={13} className="text-foreground-muted" />
-          <span>React</span>
-        </button>
-      )}
-
-      <button
-        type="button"
-        onClick={() => {
-          onTogglePin(message._id, !message.isPinned);
-          onClose();
-        }}
-        className={itemClass}
-      >
-        {message.isPinned ? (
-          <PinOff size={13} className="text-foreground-muted" />
-        ) : (
-          <Pin size={13} className="text-foreground-muted" />
-        )}
-        <span>{message.isPinned ? "Unpin" : "Pin"}</span>
-      </button>
-
-      {message.content && (
-        <button
-          type="button"
-          onClick={() => {
-            navigator.clipboard.writeText(message.content || "");
-            onClose();
-          }}
-          className={itemClass}
-        >
-          <Copy size={13} className="text-foreground-muted" />
-          <span>Copy Text</span>
-        </button>
-      )}
-
-      {isSentByMe && !message.isDeleted && onEdit && (
-        <>
-          <div className="border-t border-border my-0.5" />
-          <button
-            type="button"
-            onClick={() => {
-              onEdit(message._id, message.content);
-              onClose();
-            }}
-            className={itemClass}
-          >
-            <Edit3 size={13} className="text-foreground-muted" />
-            <span>Edit Message</span>
-          </button>
-        </>
-      )}
-
-      <div className="border-t border-border my-0.5" />
-
-      {isSentByMe && !message.isDeleted && (
-        <button
-          type="button"
-          onClick={() => {
-            onDelete(message._id, true);
-            onClose();
-          }}
-          className="flex items-center w-full text-xs font-semibold px-2.5 py-1.5 rounded-sm text-red-800 hover:bg-red-100 text-left transition-colors space-x-2"
-        >
-          <Trash2 size={13} className="text-red-800" />
-          <span>Delete for All</span>
-        </button>
-      )}
-
-      <button
-        type="button"
-        onClick={() => {
-          onDelete(message._id, false);
-          onClose();
-        }}
-        className={itemClass}
-      >
-        <Trash size={13} className="text-foreground-muted" />
-        <span>Delete for Me</span>
-      </button>
-    </div>
-  );
-}
-
-function MenuArea({
-  message,
-  isSentByMe,
-  activeMenuMessageId,
+  isMenuOpen,
   onToggleMenu,
-  onReply,
-  onForward,
-  onEdit,
-  onDelete,
-  onTogglePin,
   onToggleReactionPicker,
+  isReactionPickerOpen,
+  menuProps,
 }) {
   return (
-    <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+    <div className={cn("relative flex shrink-0 items-center gap-0.5 self-center", isSentByMe ? "mr-1.5" : "ml-1.5", !isMenuOpen && HOVER_REVEAL)}>
       <button
         type="button"
-        onClick={() =>
-          onToggleMenu(activeMenuMessageId === message._id ? null : message._id)
-        }
-        className={`p-0.5 rounded-full shadow-card transition-all focus:outline-none ${
-          isSentByMe
-            ? "bg-blue-300 text-blue-1000 hover:bg-blue-400"
-            : "bg-surface-hover text-foreground-muted hover:bg-surface-active hover:text-foreground-secondary"
-        }`}
-        aria-label="Message actions"
+        onClick={() => onToggleReactionPicker(isReactionPickerOpen ? null : message._id)}
+        aria-label="Add reaction"
+        className="flex size-7 items-center justify-center rounded-full text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-ring"
       >
-        <ChevronDown size={13} />
+        <Smile size={15} />
       </button>
-      {activeMenuMessageId === message._id && (
+      <button
+        type="button"
+        onClick={() => onToggleMenu(isMenuOpen ? null : message._id)}
+        aria-label="More actions"
+        aria-haspopup="menu"
+        aria-expanded={isMenuOpen}
+        className={cn(
+          "flex size-7 items-center justify-center rounded-full text-foreground-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-ring",
+          isMenuOpen && "bg-surface-active text-foreground"
+        )}
+      >
+        <MoreHorizontal size={15} />
+      </button>
+      {isMenuOpen && (
         <MessageActionsMenu
           message={message}
           isSentByMe={isSentByMe}
-          onReply={onReply}
-          onForward={onForward}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onTogglePin={onTogglePin}
           onClose={() => onToggleMenu(null)}
-          onToggleReactionPicker={onToggleReactionPicker}
+          onReact={onToggleReactionPicker}
+          {...menuProps}
         />
       )}
-    </div>
-  );
-}
-
-function SideTrigger({
-  className,
-  messageId,
-  activeReactionPickerMessageId,
-  onToggleReactionPicker,
-  triggerTitle,
-}) {
-  return (
-    <div
-      className={`${className} opacity-0 group-hover:opacity-100 transition-opacity duration-200 select-none shrink-0 flex items-center`}
-    >
-      <ReactionTriggerButton
-        messageId={messageId}
-        activeReactionPickerMessageId={activeReactionPickerMessageId}
-        onToggleReactionPicker={onToggleReactionPicker}
-        title={triggerTitle}
-      />
     </div>
   );
 }
@@ -446,8 +107,6 @@ export default function MessageShell({
   isHighlighted,
   reaction,
   bubbleClassName,
-  showTail = false,
-  triggerTitle = "React to message",
   activeReactionPickerMessageId,
   onToggleReactionPicker,
   onAddReaction,
@@ -459,90 +118,52 @@ export default function MessageShell({
   onDeleteMessage,
   onTogglePin,
   onScrollToMessage,
+  currentUserId,
   children,
 }) {
-  const showChrome = !message.isDeleted;
-  const tailClass = showTail
-    ? isSentByMe
-      ? "bubble-tail-sent"
-      : "bubble-tail-received"
-    : "";
+  const showActions = !message.isDeleted;
+  const isMenuOpen = activeMenuMessageId === message._id;
+  const isReactionPickerOpen = activeReactionPickerMessageId === message._id;
+
+  const actions = showActions && (
+    <SideActions
+      message={message}
+      isSentByMe={isSentByMe}
+      isMenuOpen={isMenuOpen}
+      onToggleMenu={onToggleMenu}
+      onToggleReactionPicker={onToggleReactionPicker}
+      isReactionPickerOpen={isReactionPickerOpen}
+      menuProps={{ onReply, onForward, onEdit: onStartEdit, onDelete: onDeleteMessage, onTogglePin }}
+    />
+  );
 
   return (
     <div
       id={`msg-${message._id}`}
-      className={`flex w-full ${
-        isSentByMe ? "justify-end" : "justify-start"
-      } relative group items-center`}
+      className={cn("group flex w-full items-end", isSentByMe ? "justify-end" : "justify-start", reaction && "pb-3")}
     >
-      {!isSentByMe && showChrome && (
-        <SideTrigger
-          className="order-2 ml-2"
-          messageId={message._id}
-          activeReactionPickerMessageId={activeReactionPickerMessageId}
-          onToggleReactionPicker={onToggleReactionPicker}
-          triggerTitle={triggerTitle}
-        />
-      )}
-
+      {isSentByMe && actions}
       <div
-        className={`order-1 relative transition-all duration-300 ${bubbleClassName} ${tailClass} ${
-          isHighlighted ? "ring-2 ring-ring shadow-card scale-[1.02]" : ""
-        }`}
+        className={cn(
+          "relative transition-shadow duration-300",
+          bubbleClassName,
+          isHighlighted && "ring-2 ring-ring ring-offset-2 ring-offset-background"
+        )}
       >
-        {showChrome && (
-          <MenuArea
-            message={message}
-            isSentByMe={isSentByMe}
-            activeMenuMessageId={activeMenuMessageId}
-            onToggleMenu={onToggleMenu}
-            onReply={onReply}
-            onForward={onForward}
-            onEdit={onStartEdit}
-            onDelete={onDeleteMessage}
-            onTogglePin={onTogglePin}
-            onToggleReactionPicker={onToggleReactionPicker}
-          />
-        )}
-
-        {message.isForwarded && !message.isDeleted && (
-          <ForwardedTag isSentByMe={isSentByMe} />
-        )}
-
+        {message.isForwarded && !message.isDeleted && <ForwardedTag />}
         {message.replyTo && (
-          <QuotedReply
-            replyTo={message.replyTo}
-            isSentByMe={isSentByMe}
-            onClick={() => onScrollToMessage?.(message.replyTo.id)}
-          />
+          <QuotedReply replyTo={message.replyTo} currentUserId={currentUserId} onClick={() => onScrollToMessage?.(message.replyTo.id)} />
         )}
-
         {children}
-
-        <ReactionPill
-          messageId={message._id}
-          reaction={reaction}
-          isSentByMe={isSentByMe}
-          onRemoveReaction={() => onAddReaction(message._id, null)}
-        />
-
+        <ReactionPill reaction={reaction} isSentByMe={isSentByMe} onRemove={() => onAddReaction(message._id, null)} />
         <ReactionPicker
           messageId={message._id}
           isSentByMe={isSentByMe}
-          activeReactionPickerMessageId={activeReactionPickerMessageId}
+          isOpen={isReactionPickerOpen}
           onAddReaction={onAddReaction}
         />
       </div>
-
-      {isSentByMe && showChrome && (
-        <SideTrigger
-          className="order-0 mr-2"
-          messageId={message._id}
-          activeReactionPickerMessageId={activeReactionPickerMessageId}
-          onToggleReactionPicker={onToggleReactionPicker}
-          triggerTitle={triggerTitle}
-        />
-      )}
+      {!isSentByMe && actions}
     </div>
   );
 }

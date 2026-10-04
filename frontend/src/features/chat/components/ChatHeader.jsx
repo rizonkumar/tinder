@@ -1,13 +1,9 @@
 import { Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  Search,
-  Phone,
-  Video,
-  ShieldCheck,
-  CalendarDays,
-} from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, Search, Phone, Video, ShieldCheck, CalendarDays } from "lucide-react";
+import { Avatar } from "../../../components/ui/Avatar";
+import { IconButton } from "../../../components/ui/IconButton";
+import { ROUTES } from "../../../constants/navigation";
+import { cn } from "../../../utils/cn";
 
 export default function ChatHeader({
   activeChatUser,
@@ -20,108 +16,51 @@ export default function ChatHeader({
   onOpenDatePlanner,
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-border p-4 shrink-0 bg-background z-10">
-      <div className="flex items-center space-x-3 flex-grow overflow-hidden">
+    <div className="flex h-header shrink-0 items-center justify-between gap-3 border-b border-border bg-surface px-3 sm:px-4">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <Link
-          to="/chat"
-          className="text-foreground-muted hover:text-accent lg:hidden transition-colors shrink-0"
+          to={ROUTES.chat}
+          className="flex size-9 shrink-0 items-center justify-center rounded-md text-foreground-secondary transition-colors hover:bg-surface-hover hover:text-foreground focus-ring md:hidden"
+          aria-label="Back to conversations"
         >
-          <ArrowLeft size={22} />
+          <ArrowLeft size={18} />
         </Link>
 
-        <div
+        <button
+          type="button"
           onClick={onOpenProfile}
-          className="flex items-center space-x-3 cursor-pointer select-none group flex-grow overflow-hidden"
+          className="flex min-w-0 items-center gap-3 rounded-md py-1 pr-2 text-left transition-colors hover:bg-surface-hover focus-ring"
         >
-          <div className="relative shrink-0">
-            <img
-              src={activeChatUser.image || "/avatar.png"}
-              alt={activeChatUser.name}
-              className="h-11 w-11 rounded-full border border-border object-cover shadow-card transition-transform duration-300 group-hover:scale-103"
-            />
-            <span
-              className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background ${
-                isOnline ? "bg-green-500" : "bg-gray-400"
-              }`}
-            />
-          </div>
-          <div className="overflow-hidden">
-            <div className="flex items-center space-x-1.5 overflow-hidden">
-              <h2 className="text-base font-bold text-foreground leading-tight font-outfit group-hover:text-accent transition-colors truncate">
-                {activeChatUser.name}
-              </h2>
+          <Avatar src={activeChatUser.image} alt={activeChatUser.name} size="md" online={isOnline} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="label-14 truncate text-foreground">{activeChatUser.name}</p>
               {isEncryptionVerified && (
-                <span
-                  className="text-green-600 shrink-0 select-none animate-pulse"
-                  title="E2E Encryption Verified"
-                >
-                  <ShieldCheck
-                    size={14}
-                    className="fill-green-600/10 stroke-[2.2]"
-                  />
-                </span>
+                <ShieldCheck size={14} className="shrink-0 text-success" aria-label="End-to-end encryption verified" />
               )}
             </div>
-            <div className="text-[11px] mt-0.5 font-medium truncate">
-              {isOnline ? (
-                <span className="text-green-600 font-semibold font-outfit">
-                  Active now
-                </span>
-              ) : (
-                <span className="text-foreground-muted font-outfit">
-                  Offline
-                </span>
-              )}
-            </div>
+            <p className={cn("copy-13 truncate", isOnline ? "text-success" : "text-foreground-muted")}>
+              {isOnline ? "Active now" : "Offline"}
+            </p>
           </div>
-        </div>
+        </button>
       </div>
 
-      <div className="flex items-center space-x-2 shrink-0">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onOpenDatePlanner}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background-secondary text-foreground-secondary hover:bg-surface-hover transition-all focus-ring"
-          title="Collaborative Date Planner"
-        >
-          <CalendarDays size={15} />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onToggleSearch}
-          className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all focus-ring ${
-            showSearchBar
-              ? "bg-primary border-primary text-primary-foreground shadow-card"
-              : "border-border bg-background-secondary text-foreground-secondary hover:bg-surface-hover"
-          }`}
-          title="Search Messages"
-        >
-          <Search size={15} />
-        </motion.button>
-
+      <div className="flex shrink-0 items-center gap-0.5">
+        <IconButton label="Plan a date" onClick={onOpenDatePlanner}>
+          <CalendarDays />
+        </IconButton>
+        <IconButton label="Search messages" onClick={onToggleSearch} active={showSearchBar}>
+          <Search />
+        </IconButton>
         {isOnline && (
           <>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onInitiateCall("voice")}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background-secondary text-foreground-secondary hover:bg-surface-hover transition-all focus-ring"
-              title="Voice Call"
-            >
-              <Phone size={15} />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => onInitiateCall("video")}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background-secondary text-foreground-secondary hover:bg-surface-hover transition-all focus-ring"
-              title="Video Call"
-            >
-              <Video size={15} />
-            </motion.button>
+            <IconButton label="Voice call" onClick={() => onInitiateCall("voice")}>
+              <Phone />
+            </IconButton>
+            <IconButton label="Video call" onClick={() => onInitiateCall("video")}>
+              <Video />
+            </IconButton>
           </>
         )}
       </div>

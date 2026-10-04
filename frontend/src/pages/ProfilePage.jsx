@@ -1,424 +1,239 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "react-hot-toast";
+import { Camera, Sparkles, RefreshCw } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 import { useAuthStore } from "../store/useAuthStore";
 import { useUserStore } from "../store/useUserStore";
-import { motion } from "framer-motion";
-import { toast } from "react-hot-toast";
-import {
-  User,
-  Camera,
-  Calendar,
-  Heart,
-  Users,
-  Edit3,
-  Loader,
-  ArrowLeft,
-  Sparkles,
-  RefreshCw,
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { INTEREST_OPTIONS } from "../constants";
+import { INTEREST_OPTIONS, GENDER_OPTIONS, PREFERENCE_OPTIONS } from "../constants";
+import { PageHeader } from "../components/ui/PageHeader";
+import { Card, CardHeader, CardBody } from "../components/ui/Card";
+import { Field, Input, Textarea } from "../components/ui/Field";
+import { SegmentedControl } from "../components/ui/SegmentedControl";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { Avatar } from "../components/ui/Avatar";
+import { ToggleChip } from "../components/ui/ToggleChip";
 
-export default function ProfilePage() {
-  const { authUser } = useAuthStore();
-  const [formData, setFormData] = useState({
-    name: authUser?.name || "",
-    bio: authUser?.bio || "",
-    age: authUser?.age || "",
-    gender: authUser?.gender || "",
-    genderPreference: authUser?.genderPreference || "",
-    image: authUser?.image || "",
-    interests: authUser?.interests || [],
-  });
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const TONES = ["witty", "deep", "bold"];
 
-  const fileInputRef = useRef(null);
-  const { loading, updateProfile, enhanceProfile } = useUserStore();
-  const [aiTone, setAiTone] = useState("witty");
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState([]);
+const toFormData = (user) => ({
+  name: user?.name || "",
+  bio: user?.bio || "",
+  age: user?.age || "",
+  gender: user?.gender || "",
+  genderPreference: user?.genderPreference || "",
+  image: user?.image || "",
+  interests: user?.interests || [],
+});
 
-  useEffect(() => {
-    if (authUser) {
-      setFormData({
-        name: authUser.name || "",
-        bio: authUser.bio || "",
-        age: authUser.age || "",
-        gender: authUser.gender || "",
-        genderPreference: authUser.genderPreference || "",
-        image: authUser.image || "",
-        interests: authUser.interests || [],
-      });
-    }
-  }, [authUser]);
+function BioAssistant({ disabled, onApply }) {
+  const { enhanceProfile } = useUserStore();
+  const [tone, setTone] = useState(TONES[0]);
+  const [generating, setGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleGenerateAiBio = async () => {
-    if (formData.interests.length === 0) {
-      toast.error(
-        "Please select at least one interest to help the AI personalize your bio!",
-      );
+  const generate = async () => {
+    if (disabled) {
+      toast.error("Pick at least one interest so the suggestions sound like you.");
       return;
     }
     try {
-      setIsGeneratingAi(true);
-      const suggestions = await enhanceProfile(aiTone);
-      setAiSuggestions(suggestions);
-      toast.success("AI bio suggestions generated!");
+      setGenerating(true);
+      setSuggestions(await enhanceProfile(tone));
     } catch {
-      toast.error("Failed to generate AI bio suggestions. Please try again.");
+      toast.error("Couldn’t generate suggestions. Try again in a moment.");
     } finally {
-      setIsGeneratingAi(false);
+      setGenerating(false);
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.age || !formData.gender) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-    await updateProfile(formData);
   };
 
   return (
-    <AppLayout variant="scroll">
-      <div className="space-y-6 select-none">
-        <Link
-          to="/"
-          className="inline-flex items-center space-x-2 text-sm font-bold text-foreground-muted hover:text-accent transition-colors font-outfit"
-        >
-          <ArrowLeft size={16} />
-          <span>Back to Feed</span>
-        </Link>
-
-        <div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="overflow-hidden rounded-3xl bg-background border border-border shadow-card transition-colors duration-300"
-          >
-            <div className="relative h-48 sm:h-56 bg-primary">
-              <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 transform">
-                <div className="relative">
-                  <motion.img
-                    whileHover={{ scale: 1.03 }}
-                    src={formData.image || "/avatar.png"}
-                    alt="Profile"
-                    className="h-32 w-32 sm:h-36 sm:w-36 rounded-full border-4 border-background object-cover shadow-card"
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-1 right-1 rounded-full bg-primary hover:bg-primary-hover text-primary-foreground p-2.5 shadow-card focus-ring"
-                    type="button"
-                  >
-                    <Camera size={18} />
-                  </motion.button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="px-4 sm:px-8 pb-8 pt-20">
-              <h1 className="mb-8 text-center text-2xl font-bold tracking-wide text-foreground font-outfit">
-                CUSTOMIZE YOUR PROFILE
-              </h1>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
-                      <User size={14} className="text-accent" />
-                      <span>Full Name</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full rounded-2xl border border-border bg-background-secondary px-4 py-3 text-sm text-foreground placeholder-foreground-muted outline-none transition-all hover:border-border-strong focus:border-accent focus-ring"
-                      placeholder="Enter your name"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
-                      <Calendar size={14} className="text-accent" />
-                      <span>Age</span>
-                    </label>
-                    <input
-                      type="number"
-                      name="age"
-                      value={formData.age}
-                      onChange={handleChange}
-                      min="18"
-                      max="120"
-                      className="w-full rounded-2xl border border-border bg-background-secondary px-4 py-3 text-sm text-foreground placeholder-foreground-muted outline-none transition-all hover:border-border-strong focus:border-accent focus-ring"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
-                      <Users size={14} className="text-accent" />
-                      <span>Your Gender</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      {["male", "female"].map((option) => (
-                        <label
-                          key={option}
-                          className={`flex cursor-pointer items-center justify-center space-x-2 rounded-2xl border p-3.5 text-xs font-bold transition-all shadow-card ${
-                            formData.gender === option
-                              ? "border-accent bg-background-secondary text-accent ring-2 ring-ring"
-                              : "border-border bg-background-secondary hover:bg-surface-hover text-foreground-secondary"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="gender"
-                            value={option}
-                            checked={formData.gender === option}
-                            onChange={handleChange}
-                            className="hidden"
-                          />
-                          <span className="capitalize">{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
-                      <Heart size={14} className="text-accent" />
-                      <span>Interested In</span>
-                    </label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {["male", "female", "both"].map((option) => (
-                        <label
-                          key={option}
-                          className={`flex cursor-pointer items-center justify-center space-x-1 rounded-2xl border py-3.5 text-[11px] font-bold transition-all shadow-card ${
-                            formData.genderPreference === option
-                              ? "border-accent bg-background-secondary text-accent ring-2 ring-ring"
-                              : "border-border bg-background-secondary hover:bg-surface-hover text-foreground-secondary"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="genderPreference"
-                            value={option}
-                            checked={formData.genderPreference === option}
-                            onChange={handleChange}
-                            className="hidden"
-                          />
-                          <span className="capitalize">{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
-                    <Heart
-                      size={14}
-                      className="text-accent fill-current animate-pulse"
-                    />
-                    <span>My Interests / Hobbies</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2 p-4 rounded-3xl border border-border bg-background-secondary">
-                    {INTEREST_OPTIONS.map((tag) => {
-                      const isSelected = formData.interests.includes(tag);
-                      return (
-                        <motion.button
-                          key={tag}
-                          type="button"
-                          whileHover={{ scale: 1.04 }}
-                          whileTap={{ scale: 0.96 }}
-                          onClick={() => {
-                            setFormData((prev) => {
-                              const newInterests = prev.interests.includes(tag)
-                                ? prev.interests.filter((t) => t !== tag)
-                                : [...prev.interests, tag];
-                              return { ...prev, interests: newInterests };
-                            });
-                          }}
-                          className={`px-4 py-2 rounded-full text-xs font-bold tracking-wide border transition-all duration-200 shadow-card ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground border-transparent"
-                              : "bg-background text-foreground-secondary border-border hover:bg-surface-hover hover:text-foreground"
-                          }`}
-                        >
-                          {tag}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center space-x-2 text-xs font-bold text-foreground-muted uppercase tracking-wider font-outfit">
-                    <Edit3 size={14} className="text-accent" />
-                    <span>Bio</span>
-                  </label>
-                  <textarea
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleChange}
-                    rows={4}
-                    className="w-full rounded-2xl border border-border bg-background-secondary px-4 py-3 text-sm text-foreground placeholder-foreground-muted outline-none transition-all hover:border-border-strong focus:border-accent focus-ring leading-relaxed font-sans"
-                    placeholder="Tell us about yourself..."
-                  />
-                </div>
-
-                <div className="space-y-4 rounded-3xl border border-border bg-background-secondary p-5 transition-colors duration-300">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Sparkles
-                        size={16}
-                        className="text-accent fill-current animate-pulse"
-                      />
-                      <span className="text-sm font-bold text-foreground font-outfit tracking-wide">
-                        AI BIO WINGMAN
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                      Gemini
-                    </span>
-                  </div>
-
-                  <p className="text-xs font-semibold leading-relaxed text-foreground-muted">
-                    Stuck on what to write? Choose a tone below and let our AI
-                    assistant draft some polished options matching your
-                    interests!
-                  </p>
-
-                  <div className="flex flex-wrap gap-2.5">
-                    {["witty", "deep", "bold"].map((tone) => (
-                      <button
-                        key={tone}
-                        type="button"
-                        onClick={() => setAiTone(tone)}
-                        className={`px-4 py-2 rounded-2xl text-xs font-bold capitalize transition-all border outline-none shadow-card ${
-                          aiTone === tone
-                            ? "border-accent bg-background text-accent"
-                            : "bg-background text-foreground-secondary border-border hover:bg-surface-hover"
-                        }`}
-                      >
-                        {tone}
-                      </button>
-                    ))}
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    type="button"
-                    onClick={handleGenerateAiBio}
-                    disabled={isGeneratingAi}
-                    className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-2xl bg-primary hover:bg-primary-hover font-bold text-primary-foreground text-xs tracking-wider focus-ring shadow-card disabled:opacity-70"
-                  >
-                    {isGeneratingAi ? (
-                      <>
-                        <RefreshCw size={14} className="animate-spin" />
-                        <span>Generating Bio Options...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles size={14} />
-                        <span>Generate 3 Tone Options</span>
-                      </>
-                    )}
-                  </motion.button>
-
-                  {aiSuggestions.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="space-y-3.5 mt-2"
-                    >
-                      <h4 className="text-[10px] font-extrabold uppercase tracking-wider text-foreground-muted">
-                        Generated Suggestions
-                      </h4>
-                      <div className="space-y-3">
-                        {aiSuggestions.map((suggestion, idx) => (
-                          <div
-                            key={idx}
-                            className="group relative flex flex-col p-4 rounded-2xl border border-border bg-background hover:border-border-strong shadow-card transition-all"
-                          >
-                            <p className="text-xs font-semibold leading-relaxed text-foreground-secondary pr-4">
-                              {suggestion}
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  bio: suggestion,
-                                }));
-                                toast.success(
-                                  `Applied option ${idx + 1}! Don't forget to Save Changes below.`,
-                                );
-                              }}
-                              className="mt-3.5 self-end px-3 py-1.5 rounded-xl border border-border hover:border-transparent bg-background-secondary hover:bg-primary text-foreground-secondary hover:text-primary-foreground text-[10px] font-black uppercase tracking-wider transition-all outline-none"
-                            >
-                              Apply Bio
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  disabled={loading}
-                  type="submit"
-                  className="group relative w-full overflow-hidden rounded-2xl bg-primary hover:bg-primary-hover px-8 py-4 font-bold text-primary-foreground shadow-card transition-all focus-ring disabled:opacity-70 font-outfit"
-                >
-                  <div className="relative flex items-center justify-center space-x-2">
-                    {loading ? (
-                      <>
-                        <Loader className="animate-spin" size={18} />
-                        <span>Updating Profile...</span>
-                      </>
-                    ) : (
-                      "Save Changes"
-                    )}
-                  </div>
-                </motion.button>
-              </form>
-            </div>
-          </motion.div>
+    <div className="rounded-lg border border-border bg-background-secondary p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-surface text-foreground-secondary">
+            <Sparkles size={15} aria-hidden="true" />
+          </span>
+          <div>
+            <p className="label-14 text-foreground">Need a hand with the bio?</p>
+            <p className="copy-13 text-foreground-secondary">Pick a tone and get three drafts based on your interests.</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 sm:shrink-0">
+          <SegmentedControl
+            size="sm"
+            label="Bio tone"
+            className="w-auto"
+            options={TONES.map((value) => ({ value, label: value }))}
+            value={tone}
+            onChange={setTone}
+          />
+          <Button size="sm" variant="secondary" onClick={generate} loading={generating}>
+            {!generating && <RefreshCw aria-hidden="true" />}
+            {suggestions.length ? "Regenerate" : "Generate"}
+          </Button>
         </div>
       </div>
+
+      {suggestions.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {suggestions.map((suggestion, index) => (
+            <li key={index} className="flex items-start justify-between gap-3 rounded-md border border-border bg-surface p-3">
+              <p className="copy-13 text-foreground">{suggestion}</p>
+              <Button size="sm" variant="ghost" onClick={() => onApply(suggestion)}>
+                Use this
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default function ProfilePage() {
+  const { authUser } = useAuthStore();
+  const { loading, updateProfile } = useUserStore();
+  const [formData, setFormData] = useState(() => toFormData(authUser));
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setFormData(toFormData(authUser));
+  }, [authUser]);
+
+  const isDirty = useMemo(() => JSON.stringify(formData) !== JSON.stringify(toFormData(authUser)), [formData, authUser]);
+
+  const update = (name, value) => setFormData((prev) => ({ ...prev, [name]: value }));
+
+  const toggleInterest = (tag) =>
+    setFormData((prev) => ({
+      ...prev,
+      interests: prev.interests.includes(tag) ? prev.interests.filter((item) => item !== tag) : [...prev.interests, tag],
+    }));
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error("Choose an image under 5 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => update("image", reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!formData.name.trim() || !formData.age || !formData.gender) {
+      toast.error("Name, age and gender are required.");
+      return;
+    }
+    await updateProfile({ ...formData, name: formData.name.trim(), age: Number(formData.age) });
+  };
+
+  const genderLabel = GENDER_OPTIONS.find((option) => option.value === formData.gender)?.label;
+  const preferenceLabel = PREFERENCE_OPTIONS.find((option) => option.value === formData.genderPreference)?.label;
+
+  return (
+    <AppLayout variant="scroll">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <PageHeader
+          title="Profile"
+          description="What people see when your card comes up."
+          actions={
+            <Button type="submit" loading={loading} disabled={!isDirty}>
+              {isDirty ? "Save changes" : "Saved"}
+            </Button>
+          }
+        />
+
+        <div className="grid gap-4 lg:grid-cols-12 lg:items-start">
+          <Card className="lg:sticky lg:top-0 lg:col-span-4">
+            <CardBody className="flex flex-col items-center gap-4 text-center">
+              <div className="relative">
+                <Avatar src={formData.image} alt={formData.name} size="3xl" gold={authUser?.isGold} />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 flex size-9 items-center justify-center rounded-full border-2 border-surface bg-primary text-primary-foreground transition-colors hover:bg-primary-hover focus-ring"
+                  aria-label="Change photo"
+                >
+                  <Camera size={15} aria-hidden="true" />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              </div>
+              <div>
+                <p className="heading-20 text-foreground">
+                  {formData.name || "Your name"}
+                  {formData.age && <span className="ml-1.5 font-normal text-foreground-secondary">{formData.age}</span>}
+                </p>
+                <p className="copy-13 mt-0.5 text-foreground-secondary">{authUser?.email}</p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {genderLabel && <Badge>{genderLabel}</Badge>}
+                {preferenceLabel && <Badge>Into {preferenceLabel.toLowerCase()}</Badge>}
+                <Badge>{formData.interests.length} interests</Badge>
+              </div>
+              <p className="copy-13 text-foreground-muted">JPG or PNG, up to 5 MB.</p>
+            </CardBody>
+          </Card>
+
+          <div className="flex flex-col gap-4 lg:col-span-8">
+            <Card>
+              <CardHeader title="Basics" description="Required so we can show you the right people." />
+              <CardBody className="grid gap-5 sm:grid-cols-2">
+                <Field label="Full name" required>
+                  {(id) => <Input id={id} value={formData.name} onChange={(e) => update("name", e.target.value)} placeholder="Your name" autoComplete="name" />}
+                </Field>
+                <Field label="Age" required>
+                  {(id) => <Input id={id} type="number" inputMode="numeric" min="18" max="120" value={formData.age} onChange={(e) => update("age", e.target.value)} />}
+                </Field>
+                <Field label="I am" required>
+                  <SegmentedControl label="Your gender" options={GENDER_OPTIONS} value={formData.gender} onChange={(value) => update("gender", value)} />
+                </Field>
+                <Field label="Interested in">
+                  <SegmentedControl label="Who you want to meet" options={PREFERENCE_OPTIONS} value={formData.genderPreference} onChange={(value) => update("genderPreference", value)} />
+                </Field>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardHeader
+                title="Interests"
+                description="Used for Explore and to show what you have in common."
+                action={<span className="label-12 tabular text-foreground-muted">{formData.interests.length} selected</span>}
+              />
+              <CardBody className="flex flex-wrap gap-2">
+                {INTEREST_OPTIONS.map((tag) => (
+                  <ToggleChip key={tag} selected={formData.interests.includes(tag)} onToggle={() => toggleInterest(tag)}>
+                    {tag}
+                  </ToggleChip>
+                ))}
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardHeader title="About you" description="A couple of honest lines beat a long list." />
+              <CardBody className="flex flex-col gap-4">
+                <Field label="Bio" hint={`${formData.bio.length} characters`}>
+                  {(id) => (
+                    <Textarea id={id} rows={4} value={formData.bio} onChange={(e) => update("bio", e.target.value)} placeholder="What are you into, and what kind of plans do you like?" />
+                  )}
+                </Field>
+                <BioAssistant disabled={formData.interests.length === 0} onApply={(bio) => update("bio", bio)} />
+              </CardBody>
+            </Card>
+
+            <div className="flex items-center justify-end gap-3 lg:hidden">
+              <Button type="submit" loading={loading} disabled={!isDirty} className="w-full sm:w-auto">
+                {isDirty ? "Save changes" : "Saved"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </form>
     </AppLayout>
   );
 }

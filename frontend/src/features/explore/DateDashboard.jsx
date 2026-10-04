@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CalendarDays, MapPin, Clock, Coffee, Utensils, Wine, Compass, Users } from "lucide-react";
+import AppLayout from "../../components/AppLayout";
 import { useDatePlanStore } from "../../store/useDatePlanStore";
 import { useAuthStore } from "../../store/useAuthStore";
-import AppLayout from "../../components/AppLayout";
 import { ACTIVITY_OPTIONS, DEFAULT_ACTIVITY } from "../../constants";
-import {
-  CalendarDays,
-  MapPin,
-  Clock,
-  Coffee,
-  Utensils,
-  Wine,
-  Compass,
-  Users,
-} from "lucide-react";
-import { motion } from "framer-motion";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { Tabs } from "../../components/ui/Tabs";
+import { Badge } from "../../components/ui/Badge";
+import { Avatar } from "../../components/ui/Avatar";
+import { EmptyState } from "../../components/ui/EmptyState";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { cn } from "../../utils/cn";
+
+const TAB = { social: "social", plans: "plans" };
+
+const PLAN_CATEGORY_ICONS = { Coffee, Dinner: Utensils, Drinks: Wine, Outdoor: Compass };
 
 function normalizeTime(time) {
   if (!time) return "00:00";
@@ -38,7 +40,16 @@ function computeTimeLeft(date, time) {
   };
 }
 
-function CountdownTimer({ date, time }) {
+function formatLongDate(date) {
+  if (!date) return "";
+  return new Date(`${date}T00:00`).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function Countdown({ date, time }) {
   const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(date, time));
 
   useEffect(() => {
@@ -47,139 +58,80 @@ function CountdownTimer({ date, time }) {
   }, [date, time]);
 
   if (!timeLeft) {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-green-700 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-        Happening Now
-      </span>
-    );
+    return <Badge tone="success">Happening now</Badge>;
   }
 
   const cells = [
-    { label: "Days", value: timeLeft.days },
-    { label: "Hours", value: timeLeft.hours },
-    { label: "Mins", value: timeLeft.minutes },
-    { label: "Secs", value: timeLeft.seconds },
+    { label: "days", value: timeLeft.days },
+    { label: "hrs", value: timeLeft.hours },
+    { label: "min", value: timeLeft.minutes },
+    { label: "sec", value: timeLeft.seconds },
   ];
 
   return (
-    <div className="grid max-w-[280px] grid-cols-4 gap-2 text-center">
+    <div className="flex items-baseline gap-3 tabular" aria-label="Time until the date">
       {cells.map((cell) => (
-        <div key={cell.label} className="rounded-md border border-border bg-background-secondary p-2">
-          <span className="block text-sm font-bold text-foreground">{cell.value}</span>
-          <span className="text-[8px] font-bold uppercase text-foreground-muted">{cell.label}</span>
-        </div>
+        <span key={cell.label} className="flex items-baseline gap-1">
+          <span className="heading-20 text-foreground">{String(cell.value).padStart(2, "0")}</span>
+          <span className="label-12 text-foreground-muted">{cell.label}</span>
+        </span>
       ))}
     </div>
   );
 }
 
-function formatLongDate(date) {
-  if (!date) return "";
-  return new Date(`${date}T00:00`).toLocaleDateString(undefined, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function DateCard({ partner, activityLabel, ActivityIcon, surface, date, time, venueTitle, venueLocation, badge }) {
+function DetailRow({ icon: Icon, primary, secondary }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col justify-between rounded-lg border border-border bg-background p-5 shadow-card transition-colors hover:bg-surface-hover"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <img
-            src={partner.image || "/avatar.png"}
-            alt={partner.name}
-            className="h-12 w-12 rounded-full border border-border object-cover"
-          />
-          <div>
-            <h3 className="text-sm font-bold text-foreground">{partner.name}</h3>
-            <span className={`mt-1 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase ${surface}`}>
-              <ActivityIcon size={10} />
-              <span>{activityLabel}</span>
-            </span>
-          </div>
-        </div>
-        {badge && (
-          <span className="rounded-full border border-border bg-background-secondary px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-foreground-muted">
-            {badge}
-          </span>
-        )}
+    <div className="flex items-start gap-2.5">
+      <Icon size={15} className="mt-0.5 shrink-0 text-foreground-muted" aria-hidden="true" />
+      <div className="min-w-0">
+        {primary && <p className="label-13 truncate text-foreground">{primary}</p>}
+        {secondary && <p className="copy-13 truncate text-foreground-secondary">{secondary}</p>}
       </div>
-
-      <div className="my-4 space-y-2 border-t border-border pt-4">
-        <div className="flex items-start gap-2.5">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-foreground-muted" />
-          <div>
-            {venueTitle && <p className="text-xs font-bold text-foreground-secondary">{venueTitle}</p>}
-            <p className="text-[10px] text-foreground-muted">{venueLocation}</p>
-          </div>
-        </div>
-        <div className="flex items-start gap-2.5">
-          <Clock size={14} className="mt-0.5 shrink-0 text-foreground-muted" />
-          <div>
-            <p className="text-xs font-bold text-foreground-secondary">{formatLongDate(date)}</p>
-            <p className="text-[10px] text-foreground-muted">at {time}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 border-t border-border pt-4">
-        <span className="text-[8px] font-bold uppercase tracking-wider text-foreground-muted">Countdown</span>
-        <CountdownTimer date={date} time={time} />
-      </div>
-    </motion.div>
-  );
-}
-
-function EmptyState({ icon: Icon, title, description }) {
-  return (
-    <div className="flex h-64 flex-col items-center justify-center rounded-lg border border-border bg-background p-8 text-center">
-      <div className="mb-3 rounded-full bg-background-secondary p-3 text-foreground-muted">
-        <Icon size={24} />
-      </div>
-      <h3 className="text-sm font-bold text-foreground">{title}</h3>
-      <p className="mt-1 max-w-[260px] text-[11px] text-foreground-muted">{description}</p>
     </div>
   );
 }
 
-function Spinner() {
+function DateCard({ partner, activityLabel, ActivityIcon, date, time, venueTitle, venueLocation, badge }) {
   return (
-    <div className="flex h-64 items-center justify-center">
-      <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1 }}
-        className="h-10 w-10 rounded-full border-2 border-accent border-t-transparent"
-      />
-    </div>
+    <article className="flex flex-col rounded-lg border border-border bg-surface shadow-card">
+      <div className="flex items-start justify-between gap-3 p-5 pb-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar src={partner.image} alt={partner.name} size="lg" />
+          <div className="min-w-0">
+            <p className="heading-16 truncate text-foreground">{partner.name}</p>
+            <Badge icon={ActivityIcon} className="mt-1">{activityLabel}</Badge>
+          </div>
+        </div>
+        {badge && <Badge tone="outline">{badge}</Badge>}
+      </div>
+      <div className="grid gap-3 border-t border-border px-5 py-4 sm:grid-cols-2">
+        <DetailRow icon={MapPin} primary={venueTitle || venueLocation} secondary={venueTitle ? venueLocation : undefined} />
+        <DetailRow icon={Clock} primary={formatLongDate(date)} secondary={time ? `at ${time}` : undefined} />
+      </div>
+      <div className="flex items-center justify-between gap-3 border-t border-border bg-background-secondary px-5 py-3.5">
+        <span className="label-12 text-foreground-muted">Starts in</span>
+        <Countdown date={date} time={time} />
+      </div>
+    </article>
   );
 }
 
-const PLAN_CATEGORY_ICONS = {
-  Coffee,
-  Dinner: Utensils,
-  Drinks: Wine,
-  Outdoor: Compass,
-};
+function CardsSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {[0, 1].map((item) => (
+        <Skeleton key={item} className="h-56" />
+      ))}
+    </div>
+  );
+}
 
 export default function DateDashboard() {
   const { authUser } = useAuthStore();
-  const {
-    upcomingDates,
-    getUpcomingDates,
-    isLoadingUpcoming,
-    socialDates,
-    getConfirmedSocialDates,
-    isLoadingSocialDates,
-  } = useDatePlanStore();
-
-  const [activeTab, setActiveTab] = useState("social");
+  const { upcomingDates, getUpcomingDates, isLoadingUpcoming, socialDates, getConfirmedSocialDates, isLoadingSocialDates } =
+    useDatePlanStore();
+  const [activeTab, setActiveTab] = useState(TAB.social);
 
   useEffect(() => {
     getConfirmedSocialDates();
@@ -187,106 +139,96 @@ export default function DateDashboard() {
   }, [getConfirmedSocialDates, getUpcomingDates]);
 
   const tabs = [
-    { id: "social", label: "Social Dates", count: socialDates.length },
-    { id: "plans", label: "Collaborative Plans", count: upcomingDates.length },
+    { value: TAB.social, label: "Confirmed dates", count: socialDates.length },
+    { value: TAB.plans, label: "Planned together", count: upcomingDates.length },
   ];
+
+  const renderSocial = () => {
+    if (isLoadingSocialDates) return <CardsSkeleton />;
+    if (socialDates.length === 0) {
+      return (
+        <div className="rounded-lg border border-border bg-surface">
+          <EmptyState
+            icon={CalendarDays}
+            title="No confirmed dates yet"
+            description="Propose a date from any chat. Once your match accepts, it shows up here with a countdown."
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {socialDates.map((item) => {
+          const activity = ACTIVITY_OPTIONS[item.activity] || DEFAULT_ACTIVITY;
+          return (
+            <DateCard
+              key={item.id}
+              partner={item.partner}
+              activityLabel={activity.label}
+              ActivityIcon={activity.icon}
+              date={item.date}
+              time={item.time}
+              venueLocation={item.location}
+              badge={item.proposedByMe ? "You proposed" : "They proposed"}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderPlans = () => {
+    if (isLoadingUpcoming) return <CardsSkeleton />;
+    if (upcomingDates.length === 0) {
+      return (
+        <div className="rounded-lg border border-border bg-surface">
+          <EmptyState
+            icon={Users}
+            title="No plans finalised yet"
+            description="Open the date planner inside a chat to vote on a venue and time together. Finalised plans land here."
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        {upcomingDates.map((plan) => {
+          const partner = plan.userA.id === authUser._id ? plan.userB : plan.userA;
+          const category =
+            plan.categoryVotes.find((vote) => vote.userId === authUser._id)?.category || plan.categoryVotes[0]?.category;
+          return (
+            <DateCard
+              key={plan.id}
+              partner={partner}
+              activityLabel={category || "Date"}
+              ActivityIcon={PLAN_CATEGORY_ICONS[category] || CalendarDays}
+              date={plan.finalDateTime?.date}
+              time={plan.finalDateTime?.time}
+              venueTitle={plan.finalVenue?.title}
+              venueLocation={plan.finalVenue?.location}
+            />
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <AppLayout variant="scroll">
-      <div className="space-y-6">
-        <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold uppercase tracking-tight text-foreground">
-            <CalendarDays size={28} className="text-accent" />
-            <span>Date Dashboard</span>
-          </h1>
-          <p className="mt-1.5 text-xs font-medium text-foreground-secondary sm:text-sm">
-            Your confirmed social dates and finalized collaborative plans, all in one place.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-6 border-b border-border">
-          {tabs.map((tab) => {
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`-mb-px flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
-                  active
-                    ? "border-accent text-accent"
-                    : "border-transparent text-foreground-secondary hover:text-foreground"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span className="text-xs font-semibold text-foreground-muted">{tab.count}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {activeTab === "social" &&
-          (isLoadingSocialDates ? (
-            <Spinner />
-          ) : socialDates.length === 0 ? (
-            <EmptyState
-              icon={CalendarDays}
-              title="No Social Dates Yet"
-              description="Open a chat and use “Plan a Social Date” to propose one. Confirmed dates show up here."
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {socialDates.map((d) => {
-                const activity = ACTIVITY_OPTIONS[d.activity] || DEFAULT_ACTIVITY;
-                return (
-                  <DateCard
-                    key={d.id}
-                    partner={d.partner}
-                    activityLabel={activity.label}
-                    ActivityIcon={activity.icon}
-                    surface={activity.surface}
-                    date={d.date}
-                    time={d.time}
-                    venueLocation={d.location}
-                    badge={d.proposedByMe ? "Proposed by you" : "Proposed to you"}
-                  />
-                );
-              })}
-            </div>
-          ))}
-
-        {activeTab === "plans" &&
-          (isLoadingUpcoming ? (
-            <Spinner />
-          ) : upcomingDates.length === 0 ? (
-            <EmptyState
-              icon={Users}
-              title="No Collaborative Plans Yet"
-              description="Use the Date Planner inside any chat room to vote on a venue and time, then finalize it together."
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {upcomingDates.map((d) => {
-                const matchPartner = d.userA.id === authUser._id ? d.userB : d.userA;
-                const category =
-                  d.categoryVotes.find((v) => v.userId === authUser._id)?.category ||
-                  d.categoryVotes[0]?.category;
-                const CategoryIcon = PLAN_CATEGORY_ICONS[category] || CalendarDays;
-                return (
-                  <DateCard
-                    key={d.id}
-                    partner={matchPartner}
-                    activityLabel={category || "Date"}
-                    ActivityIcon={CategoryIcon}
-                    surface="bg-background-secondary text-foreground"
-                    date={d.finalDateTime?.date}
-                    time={d.finalDateTime?.time}
-                    venueTitle={d.finalVenue?.title}
-                    venueLocation={d.finalVenue?.location}
-                  />
-                );
-              })}
-            </div>
-          ))}
+      <div className={cn("flex flex-col gap-6")}>
+        <PageHeader title="Dates" description="Everything you have agreed to, with the time left until you meet." />
+        <Tabs tabs={tabs} value={activeTab} onChange={setActiveTab} layoutId="dates-tabs" />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+          >
+            {activeTab === TAB.social ? renderSocial() : renderPlans()}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </AppLayout>
   );

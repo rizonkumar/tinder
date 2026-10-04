@@ -1,3 +1,5 @@
 frontend/.prettierrc
 frontend/.env
 frontend/.vite/deps/_metadata.json
+
+.playwright-mcp/

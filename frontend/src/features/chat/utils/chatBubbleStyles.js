@@ -1,30 +1,28 @@
-const SENT_SURFACE = "bg-blue-200 text-blue-1000 border border-blue-300";
-const RECEIVED_SURFACE = "bg-gray-100 text-foreground border border-border";
+import { cn } from "../../../utils/cn";
 
-function cornerClass(isSentByMe, isFirstOfGroup) {
-  if (!isFirstOfGroup) return "";
-  return isSentByMe ? "rounded-tr-none" : "rounded-tl-none";
-}
+const SURFACE = {
+  sent: "border border-bubble-sent-border bg-bubble-sent text-foreground",
+  received: "border border-border bg-bubble-received text-foreground",
+};
+
+const SHAPE = {
+  text: "max-w-[85%] rounded-2xl px-3.5 py-2 copy-14 sm:max-w-[70%]",
+  image: "max-w-[75%] rounded-2xl p-1 sm:max-w-[60%]",
+  voice_note: "max-w-[90%] rounded-2xl px-3 py-2.5 sm:max-w-[75%]",
+};
+
+export const BUBBLE_META_CLASS = "text-foreground-muted";
+export const BUBBLE_LINK_CLASS =
+  "underline decoration-foreground-muted underline-offset-2 hover:decoration-foreground";
 
 export function getBubbleClass(type, isSentByMe, isFirstOfGroup) {
-  const surface = isSentByMe ? SENT_SURFACE : RECEIVED_SURFACE;
-  const corner = cornerClass(isSentByMe, isFirstOfGroup);
-
-  if (type === "image") {
-    return `max-w-[65%] rounded-md shadow-card p-1 ${surface} ${corner}`;
-  }
-  if (type === "voice_note") {
-    return `max-w-[75%] rounded-md p-3 shadow-card ${surface} ${corner}`;
-  }
-  return `max-w-[70%] rounded-md px-4 py-2.5 text-sm shadow-card leading-relaxed font-sans ${surface} ${corner}`;
+  return cn(
+    SHAPE[type] || SHAPE.text,
+    isSentByMe ? SURFACE.sent : SURFACE.received,
+    isFirstOfGroup && (isSentByMe ? "rounded-tr-md" : "rounded-tl-md")
+  );
 }
 
-export function metaTextClass(isSentByMe) {
-  return isSentByMe ? "text-blue-1000/70" : "text-foreground-muted";
-}
-
-export function linkTextClass(isSentByMe) {
-  return isSentByMe
-    ? "underline underline-offset-2 text-blue-1000 font-semibold"
-    : "underline underline-offset-2 text-accent";
+export function formatClockTime(value) {
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }

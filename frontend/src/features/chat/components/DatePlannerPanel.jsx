@@ -1,26 +1,124 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { X, CalendarHeart, MapPin, Check, Plus, Clock, Coffee, Utensils, Wine, Compass, Info } from "lucide-react";
 import { useDatePlanStore } from "../../../store/useDatePlanStore";
 import { useAuthStore } from "../../../store/useAuthStore";
-import { motion } from "framer-motion";
-import {
-  X,
-  CalendarDays,
-  MapPin,
-  Check,
-  Plus,
-  Clock,
-  Coffee,
-  Utensils,
-  Wine,
-  Compass,
-  AlertCircle,
-  Heart,
-} from "lucide-react";
+import { IconButton } from "../../../components/ui/IconButton";
+import { Button } from "../../../components/ui/Button";
+import { Badge } from "../../../components/ui/Badge";
+import { Avatar } from "../../../components/ui/Avatar";
+import { FIELD_CLASS } from "../../../components/ui/Field";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { Spinner } from "../../../components/ui/Skeleton";
+import { cn } from "../../../utils/cn";
 
-export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
+const CATEGORIES = [
+  { name: "Coffee", icon: Coffee },
+  { name: "Dinner", icon: Utensils },
+  { name: "Drinks", icon: Wine },
+  { name: "Outdoor", icon: Compass },
+];
+
+const PLAN_STATUS = { planning: "planning", finalized: "finalized" };
+
+const userRefId = (ref) => (typeof ref === "string" ? ref : ref?.id);
+
+function formatPlanDate(date, options) {
+  return new Date(date).toLocaleDateString(undefined, options);
+}
+
+function VoterAvatars({ me, partner, hasMyVote, hasPartnerVote }) {
+  if (!hasMyVote && !hasPartnerVote) return null;
+  return (
+    <span className="flex -space-x-1.5" aria-label={`${[hasMyVote && "You", hasPartnerVote && partner.name].filter(Boolean).join(" and ")} voted`}>
+      {hasMyVote && <Avatar src={me.image} alt="You" size="xs" className="ring-2 ring-surface" />}
+      {hasPartnerVote && <Avatar src={partner.image} alt={partner.name} size="xs" className="ring-2 ring-surface" />}
+    </span>
+  );
+}
+
+function PlannerSection({ step, title, description, children }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-start gap-2.5">
+        <span className="tabular flex size-5 shrink-0 items-center justify-center rounded-full border border-border text-[11px] text-foreground-secondary">
+          {step}
+        </span>
+        <div>
+          <h4 className="heading-14 text-foreground">{title}</h4>
+          <p className="copy-13 text-foreground-secondary">{description}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function VoteRow({ primary, secondary, proposedBy, hasMyVote, hasPartnerVote, me, partner, onVote }) {
+  const isMutual = hasMyVote && hasPartnerVote;
+  return (
+    <li
+      className={cn(
+        "flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors",
+        isMutual ? "border-success/40 bg-success-surface" : "border-border bg-surface"
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <p className="label-13 truncate text-foreground">{primary}</p>
+        <p className="truncate text-xs text-foreground-secondary">{secondary}</p>
+        <p className="mt-0.5 text-[11px] text-foreground-muted">Suggested by {proposedBy}</p>
+      </div>
+      <VoterAvatars me={me} partner={partner} hasMyVote={hasMyVote} hasPartnerVote={hasPartnerVote} />
+      <IconButton
+        label={hasMyVote ? "Remove your vote" : "Vote for this"}
+        size="sm"
+        variant={hasMyVote ? "primary" : "outline"}
+        onClick={onVote}
+      >
+        <Check />
+      </IconButton>
+    </li>
+  );
+}
+
+function FinalizedPlan({ plan, me, partner }) {
+  return (
+    <div className="space-y-5 rounded-xl border border-border bg-background-secondary p-5 text-center">
+      <div className="flex items-center justify-center -space-x-3">
+        <Avatar src={me.image} alt="You" size="lg" className="ring-4 ring-background-secondary" />
+        <Avatar src={partner.image} alt={partner.name} size="lg" className="ring-4 ring-background-secondary" />
+      </div>
+      <div>
+        <p className="heading-16 text-foreground">It’s a date</p>
+        <p className="copy-13 text-foreground-secondary">Plan locked in with {partner.name}.</p>
+      </div>
+      <ul className="space-y-2.5 rounded-lg border border-border bg-surface p-3.5 text-left">
+        <li className="flex items-start gap-2.5">
+          <MapPin size={15} className="mt-0.5 shrink-0 text-foreground-muted" aria-hidden="true" />
+          <div className="min-w-0">
+            <p className="label-13 text-foreground">{plan.finalVenue?.title}</p>
+            <p className="text-xs text-foreground-secondary">{plan.finalVenue?.location}</p>
+          </div>
+        </li>
+        <li className="flex items-start gap-2.5">
+          <Clock size={15} className="mt-0.5 shrink-0 text-foreground-muted" aria-hidden="true" />
+          <div>
+            <p className="label-13 text-foreground">
+              {formatPlanDate(plan.finalDateTime?.date, { weekday: "long", month: "long", day: "numeric" })}
+            </p>
+            <p className="text-xs text-foreground-secondary">at {plan.finalDateTime?.time}</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+export default function DatePlannerPanel({ onClose, matchUser }) {
   const { authUser, socket } = useAuthStore();
   const {
     activeDatePlan,
+    isLoadingPlan,
     getActivePlan,
     voteCategory,
     proposeVenue,
@@ -34,8 +132,8 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
 
   const [venueTitle, setVenueTitle] = useState("");
   const [venueLocation, setVenueLocation] = useState("");
-  const [dateVal, setDateVal] = useState("");
-  const [timeVal, setTimeVal] = useState("");
+  const [dateValue, setDateValue] = useState("");
+  const [timeValue, setTimeValue] = useState("");
   const [isFinalizing, setIsFinalizing] = useState(false);
 
   useEffect(() => {
@@ -49,480 +147,227 @@ export default function DatePlannerPanel({ isOpen, onClose, matchUser }) {
       });
     }
     return () => {
-      if (subscribedId && socket) {
-        unsubscribeFromDatePlan(socket);
-      }
+      if (subscribedId && socket) unsubscribeFromDatePlan(socket);
     };
-  }, [
-    matchUser?._id,
-    socket,
-    getActivePlan,
-    subscribeToDatePlan,
-    unsubscribeFromDatePlan,
-  ]);
+  }, [matchUser?._id, socket, getActivePlan, subscribeToDatePlan, unsubscribeFromDatePlan]);
 
-  if (!isOpen || !activeDatePlan) return null;
+  const belongsToMatch = [activeDatePlan?.userA, activeDatePlan?.userB].map(userRefId).includes(matchUser?._id);
+  const plan = belongsToMatch ? activeDatePlan : null;
+  const voteState = (votes) => ({
+    hasMyVote: votes.includes(authUser._id),
+    hasPartnerVote: votes.includes(matchUser._id),
+  });
+  const proposerName = (id) => (id === authUser._id ? "you" : matchUser.name);
 
-  const myCategoryVote = activeDatePlan.categoryVotes.find(
-    (v) => v.userId === authUser._id,
-  )?.category;
-  const partnerCategoryVote = activeDatePlan.categoryVotes.find(
-    (v) => v.userId === matchUser._id,
-  )?.category;
+  const myCategory = plan?.categoryVotes.find((vote) => vote.userId === authUser._id)?.category;
+  const partnerCategory = plan?.categoryVotes.find((vote) => vote.userId === matchUser._id)?.category;
+  const mutualVenue = plan?.venueProposals.find((item) => item.votes.includes(authUser._id) && item.votes.includes(matchUser._id));
+  const mutualDateTime = plan?.dateTimeProposals.find((item) => item.votes.includes(authUser._id) && item.votes.includes(matchUser._id));
+  const canFinalize = !!(mutualVenue && mutualDateTime && plan?.status === PLAN_STATUS.planning);
+  const isFinalized = plan?.status === PLAN_STATUS.finalized;
 
-  const categories = [
-    {
-      name: "Coffee",
-      icon: Coffee,
-      bg: "bg-background-secondary",
-      border: "border-border",
-      text: "text-foreground-secondary",
-    },
-    {
-      name: "Dinner",
-      icon: Utensils,
-      bg: "bg-background-secondary",
-      border: "border-border",
-      text: "text-foreground-secondary",
-    },
-    {
-      name: "Drinks",
-      icon: Wine,
-      bg: "bg-background-secondary",
-      border: "border-border",
-      text: "text-foreground-secondary",
-    },
-    {
-      name: "Outdoor",
-      icon: Compass,
-      bg: "bg-background-secondary",
-      border: "border-border",
-      text: "text-foreground-secondary",
-    },
-  ];
-
-  const mutualVenue = activeDatePlan.venueProposals.find(
-    (v) => v.votes.includes(authUser._id) && v.votes.includes(matchUser._id),
-  );
-
-  const mutualDateTime = activeDatePlan.dateTimeProposals.find(
-    (t) => t.votes.includes(authUser._id) && t.votes.includes(matchUser._id),
-  );
-
-  const canFinalize =
-    mutualVenue && mutualDateTime && activeDatePlan.status === "planning";
-
-  const handleVenueSubmit = (e) => {
-    e.preventDefault();
+  const handleVenueSubmit = (event) => {
+    event.preventDefault();
     if (!venueTitle.trim() || !venueLocation.trim()) return;
-    proposeVenue(activeDatePlan.id, venueTitle.trim(), venueLocation.trim());
+    proposeVenue(plan.id, venueTitle.trim(), venueLocation.trim());
     setVenueTitle("");
     setVenueLocation("");
   };
 
-  const handleDateTimeSubmit = (e) => {
-    e.preventDefault();
-    if (!dateVal || !timeVal) return;
-    proposeDateTime(activeDatePlan.id, dateVal, timeVal);
-    setDateVal("");
-    setTimeVal("");
+  const handleDateTimeSubmit = (event) => {
+    event.preventDefault();
+    if (!dateValue || !timeValue) return;
+    proposeDateTime(plan.id, dateValue, timeValue);
+    setDateValue("");
+    setTimeValue("");
   };
 
   const handleFinalize = async () => {
     if (!canFinalize || isFinalizing) return;
     setIsFinalizing(true);
-    await finalizePlan(activeDatePlan.id, mutualVenue.id, mutualDateTime.id);
+    await finalizePlan(plan.id, mutualVenue.id, mutualDateTime.id);
     setIsFinalizing(false);
   };
 
-  return (
-    <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ type: "tween", duration: 0.3 }}
-      className="w-full md:w-[400px] border-l border-border bg-background flex flex-col h-full z-40 shadow-card overflow-hidden font-outfit"
-    >
-      <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
-        <div>
-          <h3 className="font-bold text-foreground flex items-center gap-2">
-            <CalendarDays size={18} className="text-accent" />
-            <span>Date Planner</span>
-          </h3>
-          <p className="text-[11px] text-foreground-muted font-medium">
-            Plan your special day with {matchUser?.name}
-          </p>
+  const renderPlanning = () => (
+    <>
+      <PlannerSection step={1} title="Pick a vibe" description="You both vote. A shared pick is highlighted.">
+        <div className="grid grid-cols-2 gap-2">
+          {CATEGORIES.map(({ name, icon: Icon }) => {
+            const mine = myCategory === name;
+            const theirs = partnerCategory === name;
+            return (
+              <button
+                key={name}
+                type="button"
+                aria-pressed={mine}
+                onClick={() => voteCategory(plan.id, name)}
+                className={cn(
+                  "flex h-[4.5rem] flex-col justify-between rounded-lg border p-3 text-left transition-colors focus-ring",
+                  mine && theirs
+                    ? "border-success/40 bg-success-surface"
+                    : mine
+                      ? "border-primary bg-surface"
+                      : "border-border bg-surface hover:border-border-strong"
+                )}
+              >
+                <span className="flex w-full items-start justify-between">
+                  <Icon size={17} className="text-foreground-secondary" aria-hidden="true" />
+                  <VoterAvatars me={authUser} partner={matchUser} hasMyVote={mine} hasPartnerVote={theirs} />
+                </span>
+                <span className="label-13 text-foreground">{name}</span>
+              </button>
+            );
+          })}
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-full hover:bg-surface-hover text-foreground-muted transition-colors"
-        >
-          <X size={18} />
-        </button>
-      </div>
+      </PlannerSection>
 
-      <div className="flex-grow overflow-y-auto p-4 space-y-6 scrollbar-thin">
-        {activeDatePlan.status === "finalized" ? (
-          <div className="space-y-6">
-            <div className="bg-background-secondary border border-border rounded-2xl p-6 text-center space-y-4">
-              <div className="flex justify-center items-center gap-3">
-                <img
-                  src={authUser?.image || "/avatar.png"}
-                  alt={authUser?.name}
-                  className="w-12 h-12 rounded-full border-2 border-background object-cover shadow-card"
-                />
-                <Heart
-                  size={24}
-                  className="text-accent fill-accent animate-pulse"
-                />
-                <img
-                  src={matchUser?.image || "/avatar.png"}
-                  alt={matchUser?.name}
-                  className="w-12 h-12 rounded-full border-2 border-background object-cover shadow-card"
-                />
-              </div>
+      <PlannerSection step={2} title="Where" description="Suggest places and vote on each other’s ideas.">
+        <form onSubmit={handleVenueSubmit} className="space-y-2">
+          <input
+            type="text"
+            placeholder="Place name"
+            aria-label="Place name"
+            value={venueTitle}
+            onChange={(event) => setVenueTitle(event.target.value)}
+            className={cn(FIELD_CLASS, "h-9")}
+          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Area or address"
+              aria-label="Area or address"
+              value={venueLocation}
+              onChange={(event) => setVenueLocation(event.target.value)}
+              className={cn(FIELD_CLASS, "h-9 min-w-0 flex-1")}
+            />
+            <IconButton label="Add place" type="submit" variant="primary" disabled={!venueTitle.trim() || !venueLocation.trim()}>
+              <Plus />
+            </IconButton>
+          </div>
+        </form>
+        {plan.venueProposals.length > 0 && (
+          <ul className="space-y-2">
+            {plan.venueProposals.map((venue) => (
+              <VoteRow
+                key={venue.id}
+                primary={venue.title}
+                secondary={venue.location}
+                proposedBy={proposerName(venue.proposedBy)}
+                me={authUser}
+                partner={matchUser}
+                onVote={() => voteVenue(plan.id, venue.id)}
+                {...voteState(venue.votes)}
+              />
+            ))}
+          </ul>
+        )}
+      </PlannerSection>
 
-              <div>
-                <h4 className="font-bold text-foreground text-lg">
-                  It's a Date!
-                </h4>
-                <p className="text-xs text-accent font-semibold uppercase tracking-wider mt-1">
-                  Plan Locked In
-                </p>
-              </div>
+      <PlannerSection step={3} title="When" description="Add a few options that work for you.">
+        <form onSubmit={handleDateTimeSubmit} className="flex gap-2">
+          <input
+            type="date"
+            aria-label="Date"
+            value={dateValue}
+            onChange={(event) => setDateValue(event.target.value)}
+            className={cn(FIELD_CLASS, "h-9 min-w-0 flex-1")}
+          />
+          <input
+            type="time"
+            aria-label="Time"
+            value={timeValue}
+            onChange={(event) => setTimeValue(event.target.value)}
+            className={cn(FIELD_CLASS, "h-9 w-28")}
+          />
+          <IconButton label="Add time" type="submit" variant="primary" disabled={!dateValue || !timeValue}>
+            <Plus />
+          </IconButton>
+        </form>
+        {plan.dateTimeProposals.length > 0 && (
+          <ul className="space-y-2">
+            {plan.dateTimeProposals.map((slot) => (
+              <VoteRow
+                key={slot.id}
+                primary={slot.time}
+                secondary={formatPlanDate(slot.date, { weekday: "short", month: "short", day: "numeric" })}
+                proposedBy={proposerName(slot.proposedBy)}
+                me={authUser}
+                partner={matchUser}
+                onVote={() => voteDateTime(plan.id, slot.id)}
+                {...voteState(slot.votes)}
+              />
+            ))}
+          </ul>
+        )}
+      </PlannerSection>
+    </>
+  );
 
-              <div className="border-t border-border pt-4 space-y-3 text-left">
-                <div className="flex items-start gap-2.5">
-                  <MapPin
-                    size={15}
-                    className="text-foreground-muted shrink-0 mt-0.5"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-foreground-secondary">
-                      {activeDatePlan.finalVenue?.title}
-                    </p>
-                    <p className="text-[10px] text-foreground-muted">
-                      {activeDatePlan.finalVenue?.location}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5">
-                  <Clock
-                    size={15}
-                    className="text-foreground-muted shrink-0 mt-0.5"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-foreground-secondary">
-                      {new Date(
-                        activeDatePlan.finalDateTime?.date,
-                      ).toLocaleDateString(undefined, {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <p className="text-[10px] text-foreground-muted">
-                      at {activeDatePlan.finalDateTime?.time}
-                    </p>
-                  </div>
-                </div>
-              </div>
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-[60] bg-overlay lg:hidden"
+        aria-hidden="true"
+      />
+      <motion.aside
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "tween", duration: 0.22, ease: [0.175, 0.885, 0.32, 1.1] }}
+        aria-label="Date planner"
+        className="fixed inset-y-0 right-0 z-[70] flex w-full flex-col border-l border-border bg-surface shadow-modal sm:w-[24rem] lg:static lg:z-auto lg:w-[22rem] lg:shrink-0 lg:shadow-none"
+      >
+        <div className="flex h-header shrink-0 items-center justify-between gap-3 border-b border-border px-4">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <CalendarHeart size={18} className="shrink-0 text-foreground-secondary" aria-hidden="true" />
+            <div className="min-w-0">
+              <h3 className="heading-14 text-foreground">Date planner</h3>
+              <p className="truncate text-xs text-foreground-secondary">Planning with {matchUser?.name}</p>
             </div>
           </div>
-        ) : (
-          <>
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
-                1. Choose a Vibe
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map((c) => {
-                  const Icon = c.icon;
-                  const isSelectedByMe = myCategoryVote === c.name;
-                  const isSelectedByPartner = partnerCategoryVote === c.name;
-                  const isMutual = isSelectedByMe && isSelectedByPartner;
+          <div className="flex items-center gap-1">
+            {plan && <Badge tone={isFinalized ? "success" : "neutral"}>{isFinalized ? "Locked in" : "Planning"}</Badge>}
+            <IconButton label="Close planner" size="sm" onClick={onClose}>
+              <X />
+            </IconButton>
+          </div>
+        </div>
 
-                  return (
-                    <button
-                      key={c.name}
-                      onClick={() => voteCategory(activeDatePlan.id, c.name)}
-                      className={`p-3 rounded-xl border text-left transition-all relative flex flex-col justify-between h-20 ${c.bg} ${
-                        isMutual
-                          ? "border-border-strong shadow-card ring-1 ring-ring"
-                          : isSelectedByMe
-                            ? "border-border-strong shadow-card"
-                            : "border-border hover:bg-surface-hover"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start w-full">
-                        <Icon size={18} className={c.text} />
-                        <div className="flex gap-0.5">
-                          {isSelectedByMe && (
-                            <img
-                              src={authUser?.image || "/avatar.png"}
-                              alt="Me"
-                              className="w-4 h-4 rounded-full border border-background object-cover"
-                            />
-                          )}
-                          {isSelectedByPartner && (
-                            <img
-                              src={matchUser?.image || "/avatar.png"}
-                              alt={matchUser?.name}
-                              className="w-4 h-4 rounded-full border border-background object-cover"
-                            />
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mt-2">
-                        <span className="text-xs font-bold text-foreground">
-                          {c.name}
-                        </span>
-                        {isMutual && (
-                          <span className="block text-[8px] font-bold text-accent uppercase tracking-wide">
-                            Mutual match!
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+        <div className="min-h-0 flex-1 space-y-7 overflow-y-auto p-4">
+          {!plan && isLoadingPlan ? (
+            <div className="flex h-40 items-center justify-center">
+              <Spinner label="Loading plan" />
             </div>
-
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
-                2. Venues
-              </h4>
-
-              <form
-                onSubmit={handleVenueSubmit}
-                className="flex flex-col gap-2 bg-background-secondary p-3 rounded-xl border border-border"
-              >
-                <input
-                  type="text"
-                  placeholder="Venue name (e.g. Starbucks)"
-                  value={venueTitle}
-                  onChange={(e) => setVenueTitle(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
-                />
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Location/Street"
-                    value={venueLocation}
-                    onChange={(e) => setVenueLocation(e.target.value)}
-                    className="flex-grow px-2.5 py-1.5 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
-                  />
-                  <button
-                    type="submit"
-                    className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-              </form>
-
-              <div className="space-y-2">
-                {activeDatePlan.venueProposals.map((v) => {
-                  const hasMyVote = v.votes.includes(authUser._id);
-                  const hasPartnerVote = v.votes.includes(matchUser._id);
-                  const isMutual = hasMyVote && hasPartnerVote;
-                  const isCreatorMe = v.proposedBy === authUser._id;
-
-                  return (
-                    <div
-                      key={v.id}
-                      className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
-                        isMutual
-                          ? "border-border-strong bg-background-secondary shadow-card ring-1 ring-ring"
-                          : hasMyVote
-                            ? "border-border-strong bg-background"
-                            : "border-border bg-background"
-                      }`}
-                    >
-                      <div className="flex-grow mr-2 overflow-hidden">
-                        <h5 className="text-xs font-bold text-foreground truncate">
-                          {v.title}
-                        </h5>
-                        <p className="text-[10px] text-foreground-muted truncate flex items-center gap-1">
-                          <MapPin size={10} />
-                          <span>{v.location}</span>
-                        </p>
-                        <span className="block text-[8px] text-foreground-muted font-medium mt-1">
-                          Proposed by {isCreatorMe ? "You" : matchUser.name}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex gap-0.5">
-                          {hasMyVote && (
-                            <img
-                              src={authUser?.image || "/avatar.png"}
-                              alt="Me"
-                              className="w-4 h-4 rounded-full border border-background object-cover"
-                            />
-                          )}
-                          {hasPartnerVote && (
-                            <img
-                              src={matchUser?.image || "/avatar.png"}
-                              alt={matchUser?.name}
-                              className="w-4 h-4 rounded-full border border-background object-cover"
-                            />
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() => voteVenue(activeDatePlan.id, v.id)}
-                          className={`h-7 w-7 rounded-lg flex items-center justify-center border transition-all ${
-                            hasMyVote
-                              ? "bg-accent border-accent text-accent-foreground shadow-card"
-                              : "border-border text-foreground-muted hover:border-border-strong hover:text-accent"
-                          }`}
-                        >
-                          <Check size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-foreground-muted uppercase tracking-wider">
-                3. Date & Time
-              </h4>
-
-              <form
-                onSubmit={handleDateTimeSubmit}
-                className="flex gap-2 bg-background-secondary p-3 rounded-xl border border-border"
-              >
-                <input
-                  type="date"
-                  value={dateVal}
-                  onChange={(e) => setDateVal(e.target.value)}
-                  className="flex-grow px-2 py-1 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
-                />
-                <input
-                  type="time"
-                  value={timeVal}
-                  onChange={(e) => setTimeVal(e.target.value)}
-                  className="px-2 py-1 text-xs rounded-lg border border-border bg-background text-foreground focus-ring transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
-                >
-                  <Plus size={14} />
-                </button>
-              </form>
-
-              <div className="space-y-2">
-                {activeDatePlan.dateTimeProposals.map((t) => {
-                  const hasMyVote = t.votes.includes(authUser._id);
-                  const hasPartnerVote = t.votes.includes(matchUser._id);
-                  const isMutual = hasMyVote && hasPartnerVote;
-                  const isCreatorMe = t.proposedBy === authUser._id;
-
-                  return (
-                    <div
-                      key={t.id}
-                      className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
-                        isMutual
-                          ? "border-border-strong bg-background-secondary shadow-card ring-1 ring-ring"
-                          : hasMyVote
-                            ? "border-border-strong bg-background"
-                            : "border-border bg-background"
-                      }`}
-                    >
-                      <div className="flex-grow mr-2 overflow-hidden">
-                        <h5 className="text-xs font-bold text-foreground truncate flex items-center gap-1">
-                          <Clock
-                            size={12}
-                            className="text-foreground-muted"
-                          />
-                          <span>{t.time}</span>
-                        </h5>
-                        <p className="text-[10px] text-foreground-muted truncate mt-0.5">
-                          {new Date(t.date).toLocaleDateString(undefined, {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                        <span className="block text-[8px] text-foreground-muted font-medium mt-1">
-                          Proposed by {isCreatorMe ? "You" : matchUser.name}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex gap-0.5">
-                          {hasMyVote && (
-                            <img
-                              src={authUser?.image || "/avatar.png"}
-                              alt="Me"
-                              className="w-4 h-4 rounded-full border border-background object-cover"
-                            />
-                          )}
-                          {hasPartnerVote && (
-                            <img
-                              src={matchUser?.image || "/avatar.png"}
-                              alt={matchUser?.name}
-                              className="w-4 h-4 rounded-full border border-background object-cover"
-                            />
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() => voteDateTime(activeDatePlan.id, t.id)}
-                          className={`h-7 w-7 rounded-lg flex items-center justify-center border transition-all ${
-                            hasMyVote
-                              ? "bg-accent border-accent text-accent-foreground shadow-card"
-                              : "border-border text-foreground-muted hover:border-border-strong hover:text-accent"
-                          }`}
-                        >
-                          <Check size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {activeDatePlan.status !== "finalized" && (
-        <div className="p-4 border-t border-border bg-background-secondary shrink-0">
-          {canFinalize ? (
-            <button
-              onClick={handleFinalize}
-              disabled={isFinalizing}
-              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-bold text-xs shadow-card transition-all flex items-center justify-center gap-2"
-            >
-              <Heart size={14} className="fill-current" />
-              <span>
-                {isFinalizing ? "Locking in plan..." : "Lock in Date! ✨"}
-              </span>
-            </button>
+          ) : !plan ? (
+            <EmptyState compact icon={CalendarHeart} title="Couldn’t load the plan" description="Close the planner and open it again to retry." />
+          ) : isFinalized ? (
+            <FinalizedPlan plan={plan} me={authUser} partner={matchUser} />
           ) : (
-            <div className="flex gap-2 p-2.5 rounded-xl bg-gray-100 text-[10px] text-foreground-secondary font-semibold border border-border">
-              <AlertCircle
-                size={14}
-                className="text-foreground-muted shrink-0 mt-0.5"
-              />
-              <span>
-                To lock in plans, both you and {matchUser?.name} must vote for
-                the same venue and date-time proposal.
-              </span>
-            </div>
+            renderPlanning()
           )}
         </div>
-      )}
-    </motion.div>
+
+        {plan && !isFinalized && (
+          <div className="safe-bottom shrink-0 border-t border-border bg-background-secondary p-4">
+            {canFinalize ? (
+              <Button className="w-full" onClick={handleFinalize} loading={isFinalizing}>
+                <CalendarHeart aria-hidden="true" />
+                Lock in the date
+              </Button>
+            ) : (
+              <p className="flex gap-2 text-xs leading-5 text-foreground-secondary">
+                <Info size={14} className="mt-0.5 shrink-0 text-foreground-muted" aria-hidden="true" />
+                You can lock in the plan once you and {matchUser?.name} vote for the same place and time.
+              </p>
+            )}
+          </div>
+        )}
+      </motion.aside>
+    </>
   );
 }
