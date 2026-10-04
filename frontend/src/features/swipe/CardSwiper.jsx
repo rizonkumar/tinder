@@ -1,25 +1,99 @@
 import { useState } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useTransform,
-} from "framer-motion";
-import {
-  Frown,
-  X,
-  Heart,
-  RotateCcw,
-  Info,
-  ChevronDown,
-  RefreshCw,
-  Star,
-} from "lucide-react";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { X, Heart, RotateCcw, Info, ChevronDown, RefreshCw, Star, Inbox } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useAuthStore } from "../../store/useAuthStore";
 import CompatibilityRadar from "../explore/CompatibilityRadar";
 import LoadingState from "../../components/common/LoadingState";
-import FallbackState from "../../components/common/FallbackState";
+import { EmptyState } from "../../components/ui/EmptyState";
+import { IconButton } from "../../components/ui/IconButton";
+import { Badge } from "../../components/ui/Badge";
+import { cn } from "../../utils/cn";
+
+const SWIPE_THRESHOLD = 130;
+const CONFETTI_COLORS = ["#c43d22", "#a67c1a", "#2f7d4a", "#1c1917"];
+
+function SwipeStamp({ label, tone, style, className }) {
+  return (
+    <motion.div
+      style={style}
+      className={cn(
+        "pointer-events-none absolute top-6 z-30 rounded-md border-[3px] bg-surface/90 px-3 py-1 text-lg font-bold uppercase tracking-[0.12em]",
+        tone === "like" ? "left-5 -rotate-12 border-success text-success" : "right-5 rotate-12 border-danger text-danger",
+        className
+      )}
+    >
+      {label}
+    </motion.div>
+  );
+}
+
+function ProfileCaption({ profile, onExpand }) {
+  return (
+    <div className="absolute inset-x-0 bottom-0 z-20 border-t border-border bg-surface px-4 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="heading-20 truncate text-foreground">
+            {profile.name}
+            <span className="ml-1.5 font-normal text-foreground-secondary">{profile.age}</span>
+          </p>
+          <p className="copy-13 mt-0.5 line-clamp-2 text-foreground-secondary">{profile.bio || "No bio yet."}</p>
+        </div>
+        <IconButton label="View full profile" variant="outline" size="sm" onClick={onExpand} className="pointer-events-auto mt-0.5">
+          <Info />
+        </IconButton>
+      </div>
+    </div>
+  );
+}
+
+function ProfileDetails({ profile, sharedInterests, onClose }) {
+  return (
+    <motion.div
+      initial={{ y: "100%" }}
+      animate={{ y: 0 }}
+      exit={{ y: "100%" }}
+      transition={{ type: "spring", damping: 32, stiffness: 300 }}
+      className="absolute inset-x-0 bottom-0 z-40 flex h-[72%] flex-col rounded-t-xl border-t border-border bg-surface text-foreground shadow-modal"
+    >
+      <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-4">
+        <div>
+          <p className="heading-20">
+            {profile.name}
+            <span className="ml-1.5 font-normal text-foreground-secondary">{profile.age}</span>
+          </p>
+          <p className="copy-13 mt-0.5 capitalize text-foreground-secondary">
+            {profile.gender} · interested in {profile.genderPreference}
+          </p>
+        </div>
+        <IconButton label="Collapse details" size="sm" onClick={onClose}>
+          <ChevronDown />
+        </IconButton>
+      </div>
+      <div className="flex-1 space-y-5 overflow-y-auto px-5 pb-5 scrollbar-none">
+        <section>
+          <p className="eyebrow">About</p>
+          <p className="copy-14 mt-1.5 text-foreground-secondary">{profile.bio || "No bio yet."}</p>
+        </section>
+        <CompatibilityRadar profile={profile} />
+        <section>
+          <p className="eyebrow">Interests</p>
+          {profile.interests?.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {profile.interests.map((interest) => (
+                <Badge key={interest} tone={sharedInterests.includes(interest) ? "success" : "neutral"}>
+                  {interest}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="copy-13 mt-1.5 text-foreground-muted">No interests listed yet.</p>
+          )}
+        </section>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function CardSwiper({
   userProfiles,
@@ -34,59 +108,38 @@ export default function CardSwiper({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const opacity = useTransform(
-    x,
-    [-200, -150, 0, 150, 200],
-    [0.6, 1, 1, 1, 0.6],
-  );
+  const rotate = useTransform(x, [-200, 200], [-18, 18]);
+  const likeOpacity = useTransform(x, [20, 110], [0, 1]);
+  const nopeOpacity = useTransform(x, [-110, -20], [1, 0]);
 
-  const likeOpacity = useTransform(x, [0, 100], [0, 1]);
-  const nopeOpacity = useTransform(x, [-100, 0], [1, 0]);
+  const celebrate = (scalar) => {
+    confetti({ particleCount: 90, spread: 65, origin: { y: 0.75 }, colors: CONFETTI_COLORS, scalar });
+  };
 
   const handleSwipe = async (direction, user) => {
     setIsExpanded(false);
     if (direction === "right") {
       const data = await onSwipeRight(user);
-      if (data && data.isMatch) {
-        triggerConfetti(0.25, 0.5);
-      }
+      if (data?.isMatch) celebrate(1);
     } else if (direction === "left") {
       await onSwipeLeft(user);
     } else if (direction === "super") {
       const data = await onSwipeSuperLike(user);
-      triggerConfetti(0.5, 0.9);
-      if (data && data.isMatch) {
-        triggerConfetti(0.25, 0.5);
-      }
+      celebrate(0.8);
+      if (data?.isMatch) celebrate(1);
     }
     x.set(0);
   };
 
-  const handleBtnSwipe = async (direction) => {
+  const handleButtonSwipe = (direction) => {
     if (userProfiles.length === 0) return;
-    const user = userProfiles[0];
-    await handleSwipe(direction, user);
+    handleSwipe(direction, userProfiles[0]);
   };
 
-  const handleRewindBtn = async () => {
+  const handleRewind = async () => {
     setIsExpanded(false);
     await onRewind();
   };
-
-  const triggerConfetti = (scalar, durationMultiplier) => {
-    confetti({
-      particleCount: 80,
-      spread: 60,
-      origin: { y: 0.8 },
-      colors: ["#171717", "#28a948", "#006bff"],
-      scalar,
-      duration: 3000 * durationMultiplier,
-    });
-  };
-
-  const activeProfile = userProfiles[0];
-  const nextProfile = userProfiles[1];
 
   if (isLoadingUserProfiles) {
     return <LoadingState type="card" />;
@@ -94,214 +147,88 @@ export default function CardSwiper({
 
   if (userProfiles.length === 0) {
     return (
-      <FallbackState
-        icon={Frown}
-        title="Speedy fingers!"
-        description="You've swiped through all available profiles in your preferences. Maybe it's time to take a break and touch some grass!"
-        actions={[
-          {
-            label: "Undo Last Swipe",
-            onClick: handleRewindBtn,
-            variant: "secondary",
-            icon: RotateCcw,
-          },
-          {
-            label: "Load Profiles",
-            onClick: onRefresh,
-            variant: "primary",
-            icon: RefreshCw,
-          },
-        ]}
-      />
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface">
+        <EmptyState
+          icon={Inbox}
+          title="You’re all caught up"
+          description="You have seen everyone who matches your preferences right now. Check back later or widen your preferences."
+          actions={[
+            { label: "Undo last swipe", onClick: handleRewind, variant: "secondary", icon: RotateCcw },
+            { label: "Refresh", onClick: onRefresh, variant: "primary", icon: RefreshCw },
+          ]}
+        />
+      </div>
     );
   }
 
-  return (
-    <div className="relative flex h-[32rem] w-full max-w-sm flex-col items-center justify-between select-none">
-      <div className="relative h-[27rem] w-full">
-        <AnimatePresence>
-          {nextProfile && (
-            <div
-              key={nextProfile._id}
-              className="absolute inset-0 z-0 origin-bottom scale-95 transform overflow-hidden rounded-lg border border-border bg-background shadow-card pointer-events-none opacity-80 transition-all duration-300"
-            >
-              <img
-                src={nextProfile.image || "/avatar.png"}
-                alt={nextProfile.name}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/40" />
-              <div className="absolute bottom-6 left-6 right-6 text-white">
-                <h3 className="text-2xl font-bold font-outfit">
-                  {nextProfile.name},{" "}
-                  <span className="font-semibold">{nextProfile.age}</span>
-                </h3>
-              </div>
-            </div>
-          )}
+  const activeProfile = userProfiles[0];
+  const nextProfile = userProfiles[1];
+  const sharedInterests = authUser?.interests || [];
 
+  return (
+    <div className="flex w-full max-w-sm flex-col items-center gap-5 select-none">
+      <div className="relative aspect-[4/5] w-full max-h-[calc(100dvh-13rem)]">
+        {nextProfile && (
+          <div
+            key={nextProfile._id}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0 origin-bottom scale-[0.96] translate-y-2 overflow-hidden rounded-xl border border-border bg-surface opacity-70"
+          >
+            <img src={nextProfile.image || "/avatar.png"} alt="" className="size-full object-cover" />
+          </div>
+        )}
+
+        <AnimatePresence>
           {activeProfile && (
             <motion.div
               key={activeProfile._id}
               drag={isExpanded ? false : "x"}
               dragConstraints={{ left: 0, right: 0 }}
-              style={{ x, rotate, opacity }}
-              whileDrag={{ scale: 1.02 }}
-              onDragEnd={async (e, info) => {
+              dragElastic={0.9}
+              style={{ x, rotate }}
+              onDragEnd={async (event, info) => {
                 if (isExpanded) return;
-                const swipeThreshold = 130;
-                if (info.offset.x > swipeThreshold) {
-                  await handleSwipe("right", activeProfile);
-                } else if (info.offset.x < -swipeThreshold) {
-                  await handleSwipe("left", activeProfile);
-                }
+                if (info.offset.x > SWIPE_THRESHOLD) await handleSwipe("right", activeProfile);
+                else if (info.offset.x < -SWIPE_THRESHOLD) await handleSwipe("left", activeProfile);
               }}
-              className={`absolute inset-0 z-10 cursor-grab active:cursor-grabbing overflow-hidden rounded-lg bg-background shadow-card transition-transform duration-75 border-4 ${
-                activeProfile.isSuperLikedByTarget
-                  ? "border-blue-700"
-                  : "border-border"
-              }`}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.15 }}
+              className={cn(
+                "absolute inset-0 z-10 cursor-grab overflow-hidden rounded-xl border bg-surface shadow-modal active:cursor-grabbing",
+                activeProfile.isSuperLikedByTarget ? "border-blue-600" : "border-border"
+              )}
             >
               {!isExpanded && (
                 <>
-                  <motion.div
-                    style={{ opacity: likeOpacity }}
-                    className="absolute left-6 top-8 z-30 -rotate-12 rounded-md border-4 border-green-700 bg-background px-4 py-1.5 text-2xl font-black tracking-widest text-green-700 font-outfit"
-                  >
-                    LIKE
-                  </motion.div>
-                  <motion.div
-                    style={{ opacity: nopeOpacity }}
-                    className="absolute right-6 top-8 z-30 rotate-12 rounded-md border-4 border-red-800 bg-background px-4 py-1.5 text-2xl font-black tracking-widest text-red-800 font-outfit"
-                  >
-                    NOPE
-                  </motion.div>
+                  <SwipeStamp label="Like" tone="like" style={{ opacity: likeOpacity }} />
+                  <SwipeStamp label="Nope" tone="nope" style={{ opacity: nopeOpacity }} />
                 </>
               )}
 
               <img
                 src={activeProfile.image || "/avatar.png"}
                 alt={activeProfile.name}
-                className="h-full w-full object-cover select-none pointer-events-none"
+                className="pointer-events-none size-full object-cover"
+                draggable={false}
               />
 
-              <div className="absolute inset-x-0 bottom-0 h-2/5 bg-black/40 pointer-events-none" />
-
               {activeProfile.isSuperLikedByTarget && (
-                <div className="absolute top-6 left-6 z-20 flex items-center space-x-1.5 rounded-full bg-blue-700 px-4 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-card">
-                  <Star size={12} className="fill-current animate-spin" />
-                  <span>Super Liked You!</span>
+                <div className="absolute left-4 top-4 z-20">
+                  <Badge tone="accent" icon={Star} className="bg-surface text-blue-700">
+                    Super liked you
+                  </Badge>
                 </div>
               )}
 
-              <div className="absolute bottom-6 left-6 right-6 text-white flex flex-col z-20">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-baseline space-x-2">
-                    <h2 className="text-3xl font-black tracking-wide font-outfit">
-                      {activeProfile.name}
-                    </h2>
-                    <span className="text-2xl font-semibold opacity-90 font-outfit">
-                      {activeProfile.age}
-                    </span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(true);
-                    }}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white transition-all pointer-events-auto"
-                    aria-label="View full details"
-                  >
-                    <Info size={18} className="stroke-[2.5]" />
-                  </button>
-                </div>
-                <p className="mt-2 text-sm text-white line-clamp-2 leading-relaxed font-medium">
-                  {activeProfile.bio || "No bio available."}
-                </p>
-              </div>
+              <ProfileCaption profile={activeProfile} onExpand={() => setIsExpanded(true)} />
 
               <AnimatePresence>
                 {isExpanded && (
-                  <motion.div
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{
-                      type: "spring",
-                      damping: 30,
-                      stiffness: 250,
-                    }}
-                    className="absolute inset-x-0 bottom-0 z-40 h-[68%] rounded-t-lg bg-background p-5 border-t border-border shadow-modal flex flex-col justify-between text-foreground"
-                  >
-                    <div className="flex items-start justify-between select-none shrink-0 pb-1.5">
-                      <div>
-                        <h3 className="text-2xl font-black text-foreground font-outfit">
-                          {activeProfile.name},{" "}
-                          <span className="font-semibold">
-                            {activeProfile.age}
-                          </span>
-                        </h3>
-                        <p className="text-xs text-accent font-bold capitalize mt-0.5">
-                          {activeProfile.gender} • interested in{" "}
-                          {activeProfile.genderPreference}
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsExpanded(false);
-                        }}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-active hover:bg-surface-hover text-foreground-secondary transition-colors"
-                      >
-                        <ChevronDown size={20} />
-                      </button>
-                    </div>
-
-                    {/* Scrolling strictly bound internally with hidden bar */}
-                    <div className="flex-grow overflow-y-auto my-3 space-y-4 pr-1 text-left select-none scrollbar-none">
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
-                          About Me
-                        </h4>
-                        <p className="mt-1.5 text-sm text-foreground-secondary leading-relaxed font-medium">
-                          {activeProfile.bio || "No bio available."}
-                        </p>
-                      </div>
-
-                      <CompatibilityRadar profile={activeProfile} />
-
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground-muted mb-2.5">
-                          Interests
-                        </h4>
-                        {activeProfile.interests &&
-                        activeProfile.interests.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {activeProfile.interests.map((interest) => {
-                              const isShared =
-                                authUser?.interests?.includes(interest);
-                              return (
-                                <span
-                                  key={interest}
-                                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide border transition-all ${
-                                    isShared
-                                      ? "bg-green-100 border-green-200 text-green-700 shadow-card"
-                                      : "bg-background-secondary border-border text-foreground-secondary"
-                                  }`}
-                                >
-                                  {interest} {isShared && "✨"}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="text-xs text-foreground-muted italic font-medium">
-                            No interests listed yet.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+                  <ProfileDetails
+                    profile={activeProfile}
+                    sharedInterests={sharedInterests}
+                    onClose={() => setIsExpanded(false)}
+                  />
                 )}
               </AnimatePresence>
             </motion.div>
@@ -309,46 +236,19 @@ export default function CardSwiper({
         </AnimatePresence>
       </div>
 
-      <div className="flex w-full justify-center items-center space-x-3.5 pb-2 z-20 shrink-0">
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => handleBtnSwipe("left")}
-          className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background text-red-800 shadow-card hover:bg-surface-hover focus-ring transition-colors"
-          aria-label="Swipe Left (Dislike)"
-        >
-          <X size={26} className="stroke-[3]" />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={handleRewindBtn}
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-card hover:bg-surface-hover focus-ring transition-colors"
-          aria-label="Rewind last swipe"
-        >
-          <RotateCcw size={20} className="stroke-[2.5]" />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => handleBtnSwipe("super")}
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background text-blue-700 shadow-card hover:bg-surface-hover focus-ring transition-colors"
-          aria-label="Super Like"
-        >
-          <Star size={20} className="fill-current stroke-[2.5]" />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.12 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => handleBtnSwipe("right")}
-          className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background text-green-700 shadow-card hover:bg-surface-hover focus-ring transition-colors"
-          aria-label="Swipe Right (Like)"
-        >
-          <Heart size={26} className="fill-current stroke-[2]" />
-        </motion.button>
+      <div className="flex items-center justify-center gap-3">
+        <IconButton label="Pass" variant="outline" size="xl" className="rounded-full text-danger hover:bg-danger-surface" onClick={() => handleButtonSwipe("left")}>
+          <X strokeWidth={2.5} />
+        </IconButton>
+        <IconButton label="Undo last swipe" variant="outline" size="lg" className="rounded-full" onClick={handleRewind}>
+          <RotateCcw />
+        </IconButton>
+        <IconButton label="Super like" variant="outline" size="lg" className="rounded-full text-blue-700 hover:bg-blue-100" onClick={() => handleButtonSwipe("super")}>
+          <Star className="fill-current" />
+        </IconButton>
+        <IconButton label="Like" variant="outline" size="xl" className="rounded-full text-success hover:bg-success-surface" onClick={() => handleButtonSwipe("right")}>
+          <Heart className="fill-current" strokeWidth={2} />
+        </IconButton>
       </div>
     </div>
   );

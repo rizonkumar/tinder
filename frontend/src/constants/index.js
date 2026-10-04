@@ -1,5 +1,16 @@
 import { Coffee, Utensils, Martini, Film, Footprints, Calendar } from "lucide-react";
 
+export const GENDER_OPTIONS = [
+  { value: "male", label: "Man" },
+  { value: "female", label: "Woman" },
+];
+
+export const PREFERENCE_OPTIONS = [
+  { value: "male", label: "Men" },
+  { value: "female", label: "Women" },
+  { value: "both", label: "Everyone" },
+];
+
 export const INTEREST_OPTIONS = [
   "Travel",
   "Music",
@@ -46,8 +57,6 @@ export const MOCK_LIKES = [
   },
 ];
 
-// `surface` is a solid Geist surface class (no gradients). Consumers apply it
-// directly instead of wrapping with `bg-gradient-to-*`.
 export const EXPLORE_CATEGORIES = [
   {
     id: "Gaming",
@@ -108,8 +117,6 @@ export const fallbackGifs = [
   { id: "6", title: "Heart Pop", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWp3ZnRnbXpxNm9nd2Jyd2NtdHA2cXR2ZzJ5djE5MTRxMXAxdGpxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/l41JWd1xzcx437nmw/giphy.gif" }
 ];
 
-// `surface` is a solid Geist surface class (no gradients). Consumers apply it
-// directly instead of wrapping with `bg-gradient-to-*`.
 export const ACTIVITY_OPTIONS = {
   Coffee: {
     surface: "bg-gray-100 text-foreground",

@@ -23,7 +23,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed:demo": "node seeds/demo.js"
   },
   "author": "Rizon Kumar Rahi",
   "license": "ISC",

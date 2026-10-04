@@ -1,160 +1,87 @@
 import { useState } from "react";
+import { Mail, User, Calendar } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
-import { motion } from "framer-motion";
-import { User, Mail, Lock, Calendar, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Field, Input } from "../../components/ui/Field";
+import { Button } from "../../components/ui/Button";
+import { SegmentedControl } from "../../components/ui/SegmentedControl";
+import { GENDER_OPTIONS, PREFERENCE_OPTIONS } from "../../constants";
+import { PasswordInput } from "./PasswordInput";
 
-export default function SignUpForm() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    gender: "",
-    age: "",
-    genderPreference: "",
-  });
+const INITIAL = { name: "", email: "", password: "", gender: "", age: "", genderPreference: "" };
 
+function validate(values) {
+  const errors = {};
+  if (!values.name.trim()) errors.name = "Enter your name.";
+  if (!/^\S+@\S+\.\S+$/.test(values.email)) errors.email = "Enter a valid email address.";
+  if (values.password.length < 6) errors.password = "Use at least 6 characters.";
+  const age = Number(values.age);
+  if (!age || age < 18 || age > 120) errors.age = "You must be 18 or older.";
+  if (!values.gender) errors.gender = "Pick one.";
+  if (!values.genderPreference) errors.genderPreference = "Pick one.";
+  return errors;
+}
+
+export default function SignupForm() {
+  const [values, setValues] = useState(INITIAL);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState(false);
   const { signup, loading } = useAuthStore();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const update = (name, value) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    if (touched) setErrors(validate({ ...values, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const nextErrors = validate(values);
+    setErrors(nextErrors);
+    setTouched(true);
+    if (Object.keys(nextErrors).length > 0) return;
+    await signup({ ...values, name: values.name.trim(), email: values.email.trim(), age: Number(values.age) });
   };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        signup(formData);
-      }}
-      className="space-y-5"
-    >
-      <div className="space-y-4">
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={18} />
-          <input
-            type="text"
-            name="name"
-            required
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full rounded-md border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-foreground-muted transition-all focus-ring"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <Field label="Full name" required error={errors.name}>
+        {(id) => (
+          <Input id={id} icon={User} name="name" autoComplete="name" placeholder="Your name" value={values.name} invalid={!!errors.name} onChange={(e) => update("name", e.target.value)} />
+        )}
+      </Field>
 
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={18} />
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="Email Address"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full rounded-md border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-foreground-muted transition-all focus-ring"
-          />
-        </div>
+      <Field label="Email" required error={errors.email}>
+        {(id) => (
+          <Input id={id} icon={Mail} type="email" name="email" autoComplete="email" placeholder="you@example.com" value={values.email} invalid={!!errors.email} onChange={(e) => update("email", e.target.value)} />
+        )}
+      </Field>
 
-        <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={18} />
-          <input
-            type="password"
-            name="password"
-            required
-            placeholder="Create Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full rounded-md border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-foreground-muted transition-all focus-ring"
-          />
-        </div>
-
-        <div className="relative">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" size={18} />
-          <input
-            type="number"
-            name="age"
-            required
-            placeholder="Age"
-            min="18"
-            max="120"
-            value={formData.age}
-            onChange={handleChange}
-            className="w-full rounded-md border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground placeholder-foreground-muted transition-all focus-ring"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-xs font-bold text-foreground-secondary uppercase tracking-wider">
-            I am a
-          </label>
-          <div className="flex gap-6">
-            {["male", "female"].map((gender) => (
-              <label key={gender} className="flex items-center cursor-pointer select-none">
-                <input
-                  type="radio"
-                  name="gender"
-                  value={gender}
-                  checked={formData.gender === gender}
-                  onChange={handleChange}
-                  className="h-4 w-4 border-border text-accent focus-ring bg-background"
-                />
-                <span className="ml-2 text-sm capitalize text-foreground-secondary font-medium">
-                  {gender}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-xs font-bold text-foreground-secondary uppercase tracking-wider">
-            Interested in
-          </label>
-          <div className="flex flex-wrap gap-5">
-            {["male", "female", "both"].map((pref) => (
-              <label key={pref} className="flex items-center cursor-pointer select-none">
-                <input
-                  type="radio"
-                  name="genderPreference"
-                  value={pref}
-                  checked={formData.genderPreference === pref}
-                  onChange={handleChange}
-                  className="h-4 w-4 border-border text-accent focus-ring bg-background"
-                />
-                <span className="ml-2 text-sm capitalize text-foreground-secondary font-medium">
-                  {pref}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+      <div className="grid gap-5 sm:grid-cols-[1fr_7rem]">
+        <Field label="Password" required error={errors.password} hint={!errors.password ? "At least 6 characters." : undefined}>
+          {(id) => (
+            <PasswordInput id={id} name="password" autoComplete="new-password" placeholder="Create a password" value={values.password} invalid={!!errors.password} onChange={(e) => update("password", e.target.value)} />
+          )}
+        </Field>
+        <Field label="Age" required error={errors.age}>
+          {(id) => (
+            <Input id={id} icon={Calendar} type="number" inputMode="numeric" name="age" min="18" max="120" placeholder="18+" value={values.age} invalid={!!errors.age} onChange={(e) => update("age", e.target.value)} />
+          )}
+        </Field>
       </div>
 
-      <motion.button
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
-        disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-card transition-all hover:bg-primary-hover disabled:opacity-70 focus-ring"
-      >
-        {loading ? (
-          "Creating Account..."
-        ) : (
-          <>
-            <Heart size={18} className="fill-current" />
-            Start Finding Love
-          </>
-        )}
-      </motion.button>
+      <Field label="I am" required error={errors.gender}>
+        <SegmentedControl label="Your gender" options={GENDER_OPTIONS} value={values.gender} onChange={(value) => update("gender", value)} />
+      </Field>
 
-      <p className="mt-4 text-center text-[10px] text-foreground-muted leading-relaxed">
-        By signing up, you agree to our{" "}
-        <Link to="/terms" className="text-accent hover:underline">
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link to="/privacy" className="text-accent hover:underline">
-          Privacy Policy
-        </Link>
+      <Field label="Interested in" required error={errors.genderPreference}>
+        <SegmentedControl label="Who you want to meet" options={PREFERENCE_OPTIONS} value={values.genderPreference} onChange={(value) => update("genderPreference", value)} />
+      </Field>
+
+      <Button type="submit" size="lg" className="w-full" loading={loading}>
+        {loading ? "Creating account" : "Create account"}
+      </Button>
+
+      <p className="copy-13 text-center text-foreground-muted">
+        By continuing you agree to our Terms of Service and Privacy Policy.
       </p>
     </form>
   );

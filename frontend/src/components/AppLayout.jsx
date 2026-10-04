@@ -1,33 +1,27 @@
-import Sidebar from "./Sidebar";
-import { Header } from "./Header";
+import { Header } from "./layout/Header";
+import { MobileTabBar } from "./layout/MobileTabBar";
+import { cn } from "../utils/cn";
 
-export default function AppLayout({ children, variant = "scroll" }) {
+const VARIANTS = {
+  scroll: "overflow-y-auto px-4 py-6 pb-[calc(var(--tabbar-h)+1.5rem)] sm:px-6 md:pb-8 lg:px-8 lg:py-8",
+  fixed: "flex items-center justify-center overflow-hidden p-4 pb-[calc(var(--tabbar-h)+1rem)] md:pb-4",
+  flush: "flex flex-col overflow-hidden pb-tabbar md:pb-0",
+};
+
+export default function AppLayout({ children, variant = "scroll", width = "page" }) {
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
       <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        {variant === "flush" && (
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
-        )}
-        {variant === "fixed" && (
-          <main className="flex min-w-0 flex-1 items-center justify-center overflow-hidden p-4">
+      <main className={cn("min-w-0 flex-1 [scrollbar-gutter:stable]", VARIANTS[variant])}>
+        {variant === "scroll" ? (
+          <div className={cn("mx-auto w-full", width === "narrow" ? "max-w-narrow" : "max-w-page")}>
             {children}
-          </main>
+          </div>
+        ) : (
+          children
         )}
-        {variant === "center" && (
-          <main className="min-w-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
-            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
-              {children}
-            </div>
-          </main>
-        )}
-        {variant === "scroll" && (
-          <main className="min-w-0 flex-1 overflow-y-auto flex flex-col bg-background-secondary px-4 py-6 [scrollbar-gutter:stable] sm:px-6 lg:px-8">
-            <div className="w-full max-w-5xl mx-auto flex-1">{children}</div>
-          </main>
-        )}
-      </div>
+      </main>
+      <MobileTabBar />
     </div>
   );
 }

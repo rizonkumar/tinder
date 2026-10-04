@@ -1,8 +1,15 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAuthStore } from "./store/useAuthStore";
+import { useCallStore } from "./store/useCallStore";
+import { useThemeStore } from "./store/useThemeStore";
+import { ROUTES } from "./constants/navigation";
+import { ProtectedRoute, GuestRoute } from "./components/layout/ProtectedRoute";
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import { Spinner } from "./components/ui/Skeleton";
+import LandingPage from "./features/landing/LandingPage";
 import AuthPage from "./features/auth/AuthPage";
 import HomePage from "./features/swipe/HomePage";
 import ProfilePage from "./pages/ProfilePage";
@@ -14,12 +21,74 @@ import DateDashboard from "./features/explore/DateDashboard";
 import NotFoundPage from "./features/error/NotFoundPage";
 import MatchCelebrationOverlay from "./features/matches/MatchCelebrationOverlay";
 import CallInterface from "./features/chat/CallInterface";
-import { useCallStore } from "./store/useCallStore";
-import ErrorBoundary from "./components/common/ErrorBoundary";
-import { useThemeStore } from "./store/useThemeStore";
+
+const PROTECTED_ROUTES = [
+  { path: ROUTES.swipe, element: <HomePage /> },
+  { path: ROUTES.profile, element: <ProfilePage /> },
+  { path: ROUTES.chat, element: <ChatPage /> },
+  { path: `${ROUTES.chat}/:id`, element: <ChatPage /> },
+  { path: ROUTES.explore, element: <ExplorePage /> },
+  { path: ROUTES.matches, element: <MatchesPage /> },
+  { path: ROUTES.gold, element: <GoldHubPage /> },
+  { path: ROUTES.dates, element: <DateDashboard /> },
+];
+
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18 }}
+      className="h-full"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AppRoutes() {
+  const location = useLocation();
+  const authUser = useAuthStore((state) => state.authUser);
+  const transitionKey = location.pathname.startsWith(ROUTES.chat) ? ROUTES.chat : location.pathname;
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <Routes location={location} key={transitionKey}>
+        <Route
+          path={ROUTES.landing}
+          element={authUser ? <Navigate to={ROUTES.swipe} replace /> : <PageTransition><LandingPage /></PageTransition>}
+        />
+        <Route
+          path={ROUTES.auth}
+          element={
+            <GuestRoute>
+              <PageTransition><AuthPage /></PageTransition>
+            </GuestRoute>
+          }
+        />
+        {PROTECTED_ROUTES.map(({ path, element }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ProtectedRoute>
+                <PageTransition>{element}</PageTransition>
+              </ProtectedRoute>
+            }
+          />
+        ))}
+        <Route path="/messages" element={<Navigate to={ROUTES.chat} replace />} />
+        <Route path="/settings" element={<Navigate to={ROUTES.profile} replace />} />
+        <Route path="/home" element={<Navigate to={ROUTES.swipe} replace />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 export default function App() {
-  const { checkAuth, authUser, checkingAuth } = useAuthStore();
+  const { checkAuth, checkingAuth } = useAuthStore();
   const socket = useAuthStore((state) => state.socket);
   const setupCallListeners = useCallStore((state) => state.setupCallListeners);
   const initTheme = useThemeStore((state) => state.initTheme);
@@ -40,173 +109,34 @@ export default function App() {
 
   if (checkingAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="h-10 w-10 rounded-full border-2 border-border-strong border-t-foreground"
-        />
+      <div className="flex h-dvh items-center justify-center bg-background">
+        <Spinner size={24} label="Loading Swipe" />
       </div>
     );
   }
 
   return (
     <ErrorBoundary>
-      <div className="h-screen w-screen overflow-hidden bg-background text-foreground font-sans flex flex-col">
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <HomePage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-
-            <Route
-              path="/auth"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {!authUser ? <AuthPage /> : <Navigate to="/" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <ProfilePage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/chat/:id"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <ChatPage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/chat"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <ChatPage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/explore"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <ExplorePage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/matches"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <MatchesPage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/gold"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <GoldHubPage /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route
-              path="/dates"
-              element={
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {authUser ? <DateDashboard /> : <Navigate to="/auth" />}
-                </motion.div>
-              }
-            />
-            <Route path="/messages" element={<Navigate to="/chat" />} />
-            <Route path="/settings" element={<Navigate to="/profile" />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </AnimatePresence>
+      <div className="flex h-dvh w-full flex-col overflow-hidden bg-background font-sans text-foreground">
+        <AppRoutes />
         <MatchCelebrationOverlay />
         <CallInterface />
         <Toaster
           position="bottom-right"
           toastOptions={{
             style: {
-              background: "var(--background)",
+              background: "var(--surface)",
               color: "var(--foreground)",
-              borderRadius: "12px",
+              borderRadius: "10px",
               border: "1px solid var(--border-strong)",
-              padding: "12px 16px",
+              padding: "10px 14px",
               fontWeight: "500",
               fontSize: "14px",
-              boxShadow:
-                "0 1px 1px rgba(0,0,0,0.02), 0 8px 16px -4px rgba(0,0,0,0.04), 0 24px 32px -8px rgba(0,0,0,0.06)",
+              boxShadow: "var(--shadow-popover)",
               fontFamily: "Geist, Inter, sans-serif",
             },
-            success: {
-              iconTheme: {
-                primary: "var(--green-700)",
-                secondary: "var(--background)",
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: "var(--red-800)",
-                secondary: "var(--background)",
-              },
-            },
+            success: { iconTheme: { primary: "var(--success)", secondary: "var(--surface)" } },
+            error: { iconTheme: { primary: "var(--danger)", secondary: "var(--surface)" } },
           }}
         />
       </div>

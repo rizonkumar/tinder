@@ -1,10 +1,29 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Sparkles, Send, X } from "lucide-react";
+import { Heart, Send, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import confetti from "canvas-confetti";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useMessageStore } from "../../store/useMessageStore";
-import confetti from "canvas-confetti";
+import { ROUTES } from "../../constants/navigation";
+import { IconButton } from "../../components/ui/IconButton";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Field";
+
+const CONFETTI_COLORS = ["#c43d22", "#a67c1a", "#2f7d4a", "#ece8e3"];
+
+function MatchPhoto({ src, alt, rotate, x }) {
+  return (
+    <motion.div
+      initial={{ rotate: rotate * 2, x, opacity: 0 }}
+      animate={{ rotate, x: 0, opacity: 1 }}
+      transition={{ delay: 0.15, type: "spring", damping: 22, stiffness: 220 }}
+      className="size-32 overflow-hidden rounded-xl border-4 border-surface bg-background-secondary shadow-modal sm:size-36"
+    >
+      <img src={src || "/avatar.png"} alt={alt} className="size-full object-cover" />
+    </motion.div>
+  );
+}
 
 export default function MatchCelebrationOverlay() {
   const socket = useAuthStore((state) => state.socket);
@@ -14,40 +33,28 @@ export default function MatchCelebrationOverlay() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!socket) return;
-
+    if (!socket) return undefined;
     const handleMatch = (data) => {
       setMatchData(data);
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ["#171717", "#28a948", "#006bff"],
-      });
+      confetti({ particleCount: 140, spread: 80, origin: { y: 0.6 }, colors: CONFETTI_COLORS });
     };
-
     socket.on("matchCelebration", handleMatch);
-    return () => {
-      socket.off("matchCelebration", handleMatch);
-    };
+    return () => socket.off("matchCelebration", handleMatch);
   }, [socket]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!text.trim() || !matchData) return;
-
-    setActiveChatUser(matchData.matchedUser);
-    await sendMessage(text.trim());
-
-    const targetId = matchData.matchedUser._id;
+  const reset = () => {
     setMatchData(null);
     setText("");
-    navigate(`/chat/${targetId}`);
   };
 
-  const handleClose = () => {
-    setMatchData(null);
-    setText("");
+  const handleSend = async (event) => {
+    event.preventDefault();
+    if (!text.trim() || !matchData) return;
+    setActiveChatUser(matchData.matchedUser);
+    await sendMessage(text.trim());
+    const targetId = matchData.matchedUser._id;
+    reset();
+    navigate(`${ROUTES.chat}/${targetId}`);
   };
 
   return (
@@ -57,132 +64,57 @@ export default function MatchCelebrationOverlay() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 select-none"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="It's a match"
         >
-          <button
-            onClick={handleClose}
-            className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
-          >
-            <X size={30} />
-          </button>
-
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(12)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{
-                  y: "100vh",
-                  x: `${Math.random() * 100}vw`,
-                  scale: Math.random() * 0.5 + 0.5,
-                  opacity: Math.random() * 0.7 + 0.3,
-                }}
-                animate={{
-                  y: "-10vh",
-                  x: `calc(${Math.random() * 100}vw + ${Math.random() * 100 - 50}px)`,
-                }}
-                transition={{
-                  duration: Math.random() * 5 + 5,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                className="absolute text-white/20"
-              >
-                <Heart size={40} className="fill-current" />
-              </motion.div>
-            ))}
-          </div>
-
           <motion.div
-            initial={{ scale: 0.7, y: 100, opacity: 0 }}
+            initial={{ scale: 0.96, y: 24, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.7, y: 100, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="relative flex w-full max-w-lg flex-col items-center text-center text-white px-4"
+            exit={{ scale: 0.96, y: 24, opacity: 0 }}
+            transition={{ type: "spring", damping: 26, stiffness: 240 }}
+            className="relative w-full max-w-md rounded-xl border border-border bg-surface p-6 text-center text-foreground shadow-modal sm:p-8"
           >
-            <div className="absolute top-[-55px] animate-pulse">
-              <Sparkles
-                size={84}
-                className="text-white opacity-70 fill-current"
-              />
-            </div>
+            <IconButton label="Close" size="sm" onClick={reset} className="absolute right-3 top-3">
+              <X />
+            </IconButton>
 
-            <h1 className="text-6xl font-extrabold tracking-wider text-white font-serif">
-              It's a Match!
-            </h1>
-            <p className="mt-4 text-xl font-light tracking-wide text-gray-300">
-              You and{" "}
-              <span className="font-semibold text-white">
-                {matchData.matchedUser.name}
-              </span>{" "}
-              liked each other!
+            <p className="eyebrow">Mutual like</p>
+            <h1 className="heading-32 mt-2">It’s a match</h1>
+            <p className="copy-14 mt-2 text-foreground-secondary">
+              You and <span className="font-medium text-foreground">{matchData.matchedUser.name}</span> liked each other.
             </p>
 
-            <div className="my-12 flex items-center justify-center -space-x-8">
-              <motion.div
-                initial={{ rotate: -15, x: -40, opacity: 0 }}
-                animate={{ rotate: -8, x: 0, opacity: 1 }}
-                transition={{ delay: 0.2, type: "spring" }}
-                className="h-36 w-36 overflow-hidden rounded-lg border-4 border-white shadow-modal"
-              >
-                <img
-                  src={matchData.currentUser.image || "/avatar.png"}
-                  alt="Your avatar"
-                  className="h-full w-full object-cover"
-                />
-              </motion.div>
-
-              <motion.div
+            <div className="my-8 flex items-center justify-center -space-x-6">
+              <MatchPhoto src={matchData.currentUser.image} alt="You" rotate={-6} x={-30} />
+              <motion.span
                 initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.4, 1] }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="z-10 flex h-16 w-16 items-center justify-center rounded-full bg-green-700 text-white shadow-modal border-4 border-white"
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.35, type: "spring", damping: 14, stiffness: 260 }}
+                className="z-10 flex size-12 items-center justify-center rounded-full border-4 border-surface bg-accent text-accent-foreground shadow-modal"
               >
-                <Heart size={28} className="fill-current animate-bounce" />
-              </motion.div>
-
-              <motion.div
-                initial={{ rotate: 15, x: 40, opacity: 0 }}
-                animate={{ rotate: 8, x: 0, opacity: 1 }}
-                transition={{ delay: 0.2, type: "spring" }}
-                className="h-36 w-36 overflow-hidden rounded-lg border-4 border-white shadow-modal"
-              >
-                <img
-                  src={matchData.matchedUser.image || "/avatar.png"}
-                  alt={matchData.matchedUser.name}
-                  className="h-full w-full object-cover"
-                />
-              </motion.div>
+                <Heart size={20} className="fill-current" aria-hidden="true" />
+              </motion.span>
+              <MatchPhoto src={matchData.matchedUser.image} alt={matchData.matchedUser.name} rotate={6} x={30} />
             </div>
 
-            <form
-              onSubmit={handleSend}
-              className="w-full max-w-md space-y-4 px-4 pointer-events-auto"
-            >
-              <div className="flex items-center space-x-3 rounded-md border border-border bg-background px-5 py-3.5 focus-within:ring-ring">
-                <input
-                  type="text"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={`Say something nice to ${matchData.matchedUser.name}...`}
-                  className="flex-grow bg-transparent text-sm text-foreground placeholder-foreground-muted outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={!text.trim()}
-                  className="text-accent hover:text-accent-hover disabled:opacity-50 disabled:hover:text-accent"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-              <div className="flex flex-col space-y-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="w-full rounded-md bg-primary py-3.5 font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
-                >
-                  Keep Swiping
-                </button>
-              </div>
+            <form onSubmit={handleSend} className="space-y-3">
+              <Input
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                placeholder={`Say hi to ${matchData.matchedUser.name}`}
+                aria-label="First message"
+                autoFocus
+                trailing={
+                  <IconButton label="Send" size="sm" type="submit" variant="primary" disabled={!text.trim()}>
+                    <Send />
+                  </IconButton>
+                }
+              />
+              <Button variant="secondary" className="w-full" onClick={reset}>
+                Keep swiping
+              </Button>
             </form>
           </motion.div>
         </motion.div>
@@ -190,5 +122,3 @@ export default function MatchCelebrationOverlay() {
     </AnimatePresence>
   );
 }
-
-
