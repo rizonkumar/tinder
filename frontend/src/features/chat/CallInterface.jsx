@@ -2,6 +2,42 @@ import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff } from "lucide-react";
 import { useCallStore } from "../../store/useCallStore";
+import { useMessageStore } from "../../store/useMessageStore";
+import { CALL_STATES, CALL_REACTIONS } from "../../constants";
+import { cn } from "../../utils/cn";
+
+const CALL_SURFACE = "bg-[#141210]";
+
+function RoundControl({ label, onClick, tone = "neutral", size = "md", children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full text-white transition-colors focus-ring",
+        size === "lg" ? "size-14" : "size-11",
+        tone === "danger" && "bg-[#c0392b] hover:bg-[#a12f23]",
+        tone === "success" && "bg-[#2f7d4a] hover:bg-[#26663c]",
+        tone === "neutral" && "bg-white/10 hover:bg-white/20",
+        tone === "off" && "bg-white text-[#141210] hover:bg-white/90"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CallerIdentity({ name, image, status }) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <img src={image || "/avatar.png"} alt={name || ""} className="size-28 rounded-full object-cover ring-1 ring-white/15 sm:size-32" />
+      <h2 className="heading-24 mt-6 text-white">{name || "Your match"}</h2>
+      <p className="copy-14 mt-1 text-white/60">{status}</p>
+    </div>
+  );
+}
 
 export default function CallInterface() {
   const {
@@ -21,254 +57,139 @@ export default function CallInterface() {
     sendCallReaction,
   } = useCallStore();
 
+  const activeChatUser = useMessageStore((state) => state.activeChatUser);
+  const peer = callerInfo || activeChatUser;
+
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
-    }
-  }, [localStream]);
+    if (localVideoRef.current && localStream) localVideoRef.current.srcObject = localStream;
+  }, [localStream, callState]);
 
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
+    if (remoteVideoRef.current && remoteStream) remoteVideoRef.current.srcObject = remoteStream;
+  }, [remoteStream, callState]);
 
-  if (callState === "idle") return null;
+  const isVideo = callType === "video";
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/90 p-2 sm:p-4 select-none text-white"
-      >
-        {callState === "ringing" && (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex flex-col items-center text-center max-w-sm px-4"
-          >
-            <div className="relative mb-8">
-              <img
-                src={callerInfo?.image || "/avatar.png"}
-                alt={callerInfo?.name}
-                className="relative h-28 w-28 sm:h-32 sm:w-32 rounded-full border-4 border-white/20 object-cover shadow-modal"
-              />
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wide">
-              {callerInfo?.name}
-            </h2>
-            <p className="mt-2 text-xs sm:text-sm text-gray-300 font-medium uppercase tracking-wider animate-pulse">
-              Incoming {callType} call...
-            </p>
-
-            <div className="mt-12 flex items-center space-x-6 sm:space-x-8">
-              <motion.button
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={rejectIncomingCall}
-                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-red-800 text-white shadow-card hover:bg-red-900 focus:outline-none"
-              >
-                <PhoneOff size={24} />
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={acceptIncomingCall}
-                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-green-700 text-white shadow-card hover:bg-green-800 focus:outline-none"
-              >
-                <Phone size={24} />
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-
-        {callState === "calling" && (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex flex-col items-center text-center max-w-sm px-4"
-          >
-            <div className="relative mb-8">
-              <div className="h-28 w-28 sm:h-32 sm:w-32 overflow-hidden rounded-full border-4 border-white/20 shadow-modal flex items-center justify-center bg-gray-800">
-                <Phone size={36} className="text-gray-300 animate-bounce" />
-              </div>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl font-bold tracking-wide">
-              Calling...
-            </h2>
-            <p className="mt-2 text-xs sm:text-sm text-gray-300 font-medium uppercase tracking-wider animate-pulse">
-              Waiting for match to answer...
-            </p>
-
-            <div className="mt-12">
-              <motion.button
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={endCall}
-                className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-red-800 text-white shadow-card hover:bg-red-900 focus:outline-none"
-              >
-                <PhoneOff size={24} />
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-
-        {callState === "connected" && (
-          <div
-            ref={containerRef}
-            className="relative h-[85vh] sm:h-full w-full max-w-4xl overflow-hidden rounded-lg bg-black shadow-modal border border-white/10"
-          >
-            {callType === "video" ? (
-              <div className="h-full w-full relative">
-                {remoteStream ? (
-                  <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="h-full w-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-gray-900 text-sm tracking-widest text-gray-400">
-                    CONNECTING MEDIA FEED...
-                  </div>
-                )}
-
-                {localStream && (
-                  <motion.div
-                    drag
-                    dragConstraints={containerRef}
-                    className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 h-28 w-20 sm:h-40 sm:w-28 overflow-hidden rounded-2xl border-2 border-white shadow-2xl cursor-grab active:cursor-grabbing shrink-0"
-                  >
-                    <video
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="h-full w-full object-cover"
-                    />
-                  </motion.div>
-                )}
-              </div>
-            ) : (
-              <div className="h-full w-full flex flex-col items-center justify-center space-y-6 bg-gray-900 rounded-lg px-4">
-                <div className="relative">
-                  <img
-                    src={callerInfo?.image || "/avatar.png"}
-                    alt={callerInfo?.name}
-                    className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-white/20 object-cover shadow-modal"
-                  />
+      {callState !== CALL_STATES.IDLE && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${isVideo ? "Video" : "Voice"} call`}
+          className={cn("fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 text-white", CALL_SURFACE)}
+        >
+          {callState === CALL_STATES.RINGING && (
+            <div className="flex flex-col items-center gap-12">
+              <CallerIdentity name={peer?.name} image={peer?.image} status={`Incoming ${isVideo ? "video" : "voice"} call`} />
+              <div className="flex items-center gap-10">
+                <div className="flex flex-col items-center gap-2">
+                  <RoundControl label="Decline" tone="danger" size="lg" onClick={rejectIncomingCall}>
+                    <PhoneOff size={22} />
+                  </RoundControl>
+                  <span className="text-xs text-white/60">Decline</span>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold tracking-wide">
-                  Active Voice Call
-                </h3>
-                <p className="text-[10px] sm:text-xs text-gray-300 font-semibold tracking-widest uppercase">
-                  Connected
-                </p>
-                {localStream && (
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="hidden"
-                  />
-                )}
-                {remoteStream && (
-                  <video
-                    ref={remoteVideoRef}
-                    autoPlay
-                    playsInline
-                    className="hidden"
-                  />
-                )}
+                <div className="flex flex-col items-center gap-2">
+                  <RoundControl label="Accept" tone="success" size="lg" onClick={acceptIncomingCall}>
+                    {isVideo ? <Video size={22} /> : <Phone size={22} />}
+                  </RoundControl>
+                  <span className="text-xs text-white/60">Accept</span>
+                </div>
               </div>
-            )}
-
-            {/* Floating Call Reactions Overlay */}
-            <div className="absolute inset-0 pointer-events-none z-[45] overflow-hidden">
-              <AnimatePresence>
-                {activeReactions.map((r) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ y: "100%", x: "50%", scale: 0.5, opacity: 0 }}
-                    animate={{
-                      y: ["100%", "-20%"],
-                      x: ["50%", Math.random() > 0.5 ? "25%" : "75%"],
-                      scale: [0.8, 2.2, 1.4],
-                      opacity: [0, 1, 1, 0],
-                    }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: 3.5,
-                      ease: "easeOut",
-                    }}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 text-5xl"
-                  >
-                    {r.reaction}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
             </div>
+          )}
 
-            {/* call reaction emoji panel */}
-            <div className="absolute bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-3.5 rounded-lg bg-gray-900 border border-white/10 px-4.5 py-2 shadow-modal">
-              {["💖", "🎉", "😂", "🔥", "😮"].map((emoji) => (
-                <motion.button
-                  key={emoji}
-                  whileHover={{ scale: 1.3, rotate: 6 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => sendCallReaction(emoji)}
-                  className="text-2xl cursor-pointer transition-all select-none"
-                >
-                  {emoji}
-                </motion.button>
-              ))}
+          {callState === CALL_STATES.CALLING && (
+            <div className="flex flex-col items-center gap-12">
+              <CallerIdentity name={peer?.name} image={peer?.image} status="Calling…" />
+              <RoundControl label="Cancel call" tone="danger" size="lg" onClick={endCall}>
+                <PhoneOff size={22} />
+              </RoundControl>
             </div>
+          )}
 
-            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-4 sm:space-x-6 rounded-full border border-white/10 bg-gray-900 px-5 sm:px-8 py-2.5 sm:py-3.5 shadow-modal">
-              <button
-                onClick={toggleMic}
-                className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-colors ${
-                  micActive
-                    ? "bg-white/10 text-white hover:bg-white/20"
-                    : "bg-red-800 text-white hover:bg-red-900"
-                }`}
-              >
-                {micActive ? <Mic size={18} /> : <MicOff size={18} />}
-              </button>
-
-              {callType === "video" && (
-                <button
-                  onClick={toggleCamera}
-                  className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-colors ${
-                    cameraActive
-                      ? "bg-white/10 text-white hover:bg-white/20"
-                      : "bg-red-800 text-white hover:bg-red-900"
-                  }`}
-                >
-                  {cameraActive ? <Video size={18} /> : <VideoOff size={18} />}
-                </button>
+          {callState === CALL_STATES.CONNECTED && (
+            <div ref={containerRef} className="relative h-full w-full max-w-5xl overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+              {isVideo ? (
+                remoteStream ? (
+                  <video ref={remoteVideoRef} autoPlay playsInline className="size-full object-cover" />
+                ) : (
+                  <div className="flex size-full items-center justify-center text-sm text-white/60">Connecting video…</div>
+                )
+              ) : (
+                <div className="flex size-full items-center justify-center">
+                  <CallerIdentity name={peer?.name} image={peer?.image} status="Connected" />
+                  {remoteStream && <audio ref={remoteVideoRef} autoPlay className="hidden" />}
+                </div>
               )}
 
-              <button
-                onClick={endCall}
-                className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-red-800 text-white shadow-card hover:bg-red-900"
-              >
-                <PhoneOff size={20} />
-              </button>
+              {isVideo && localStream && (
+                <motion.div
+                  drag
+                  dragConstraints={containerRef}
+                  dragMomentum={false}
+                  className="absolute right-4 top-4 z-30 h-36 w-24 cursor-grab overflow-hidden rounded-lg ring-2 ring-white/80 active:cursor-grabbing sm:h-44 sm:w-32"
+                >
+                  <video ref={localVideoRef} autoPlay playsInline muted className="size-full object-cover" />
+                </motion.div>
+              )}
+
+              <div className="pointer-events-none absolute inset-0 z-[45] overflow-hidden" aria-hidden="true">
+                <AnimatePresence>
+                  {activeReactions.map((reaction) => (
+                    <motion.span
+                      key={reaction.id}
+                      initial={{ y: 0, opacity: 0, scale: 0.8 }}
+                      animate={{ y: -280, opacity: [0, 1, 1, 0], scale: 1.6 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 2.6, ease: "easeOut" }}
+                      className="absolute bottom-28 left-1/2 -translate-x-1/2 text-4xl"
+                    >
+                      {reaction.reaction}
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              <div className="absolute inset-x-0 bottom-0 z-40 flex flex-col items-center gap-3 p-4 sm:p-6">
+                <div className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 ring-1 ring-white/10">
+                  {CALL_REACTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => sendCallReaction(emoji)}
+                      aria-label={`Send ${emoji}`}
+                      className="flex size-9 items-center justify-center rounded-full text-xl transition-colors hover:bg-white/10 focus-ring"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-3 rounded-full bg-black/60 px-3 py-2 ring-1 ring-white/10">
+                  <RoundControl label={micActive ? "Mute microphone" : "Unmute microphone"} tone={micActive ? "neutral" : "off"} onClick={toggleMic}>
+                    {micActive ? <Mic size={18} /> : <MicOff size={18} />}
+                  </RoundControl>
+                  {isVideo && (
+                    <RoundControl label={cameraActive ? "Turn camera off" : "Turn camera on"} tone={cameraActive ? "neutral" : "off"} onClick={toggleCamera}>
+                      {cameraActive ? <Video size={18} /> : <VideoOff size={18} />}
+                    </RoundControl>
+                  )}
+                  <RoundControl label="End call" tone="danger" onClick={endCall}>
+                    <PhoneOff size={18} />
+                  </RoundControl>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </motion.div>
+          )}
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }

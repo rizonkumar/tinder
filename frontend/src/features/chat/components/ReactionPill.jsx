@@ -1,24 +1,19 @@
-import { motion } from "framer-motion";
+import { cn } from "../../../utils/cn";
 
-export default function ReactionPill({
-  emoji,
-  isSentByMe,
-  onRemove,
-  bottomOffset = "-bottom-2.5",
-}) {
-  if (!emoji) return null;
-
+export default function ReactionPill({ reaction, isSentByMe, onRemove }) {
+  if (!reaction) return null;
   return (
-    <motion.div
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
+    <button
+      type="button"
       onClick={onRemove}
-      className={`absolute ${bottomOffset} ${
-        isSentByMe ? "left-3" : "right-3"
-      } bg-gray-100 text-foreground border border-border rounded-full px-1.5 py-0.5 shadow-card text-[11px] leading-none flex items-center select-none cursor-pointer hover:scale-110 active:scale-95 transition-all`}
-      title="Click to remove reaction"
+      aria-label={`Remove reaction ${reaction}`}
+      title="Remove reaction"
+      className={cn(
+        "absolute -bottom-3 flex h-6 items-center rounded-full border border-border bg-surface px-1.5 text-[13px] leading-none shadow-card transition-colors hover:bg-surface-raised focus-ring",
+        isSentByMe ? "left-2" : "right-2"
+      )}
     >
-      {emoji}
-    </motion.div>
+      {reaction}
+    </button>
   );
 }

@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 import { X, Heart, RotateCcw, Info, ChevronDown, RefreshCw, Star, Inbox } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useAuthStore } from "../../store/useAuthStore";
-import CompatibilityRadar from "../explore/CompatibilityRadar";
+import CompatibilityBreakdown from "../explore/CompatibilityBreakdown";
 import LoadingState from "../../components/common/LoadingState";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { IconButton } from "../../components/ui/IconButton";
@@ -75,7 +75,7 @@ function ProfileDetails({ profile, sharedInterests, onClose }) {
           <p className="eyebrow">About</p>
           <p className="copy-14 mt-1.5 text-foreground-secondary">{profile.bio || "No bio yet."}</p>
         </section>
-        <CompatibilityRadar profile={profile} />
+        <CompatibilityBreakdown profile={profile} />
         <section>
           <p className="eyebrow">Interests</p>
           {profile.interests?.length > 0 ? (

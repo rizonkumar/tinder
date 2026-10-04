@@ -4,25 +4,19 @@ const DOT_DELAYS = [0, 0.15, 0.3];
 
 export default function TypingIndicator({ userName }) {
   return (
-    <div className="flex justify-start my-2 animate-pulse">
-      <div className="bg-background text-foreground border border-border rounded-2xl rounded-tl-none px-4 py-2.5 shadow-card text-xs flex items-center space-x-1.5 font-outfit">
-        <span className="text-[10px] font-semibold text-foreground-muted uppercase tracking-wider font-outfit pr-0.5">
-          {userName} is typing
-        </span>
-        <div className="flex items-center space-x-1 h-3">
+    <div className="mt-3 flex justify-start" role="status" aria-label={`${userName} is typing`}>
+      <div className="flex items-center gap-2 rounded-2xl rounded-tl-md border border-border bg-bubble-received px-3.5 py-2.5">
+        <span className="flex h-3 items-center gap-1" aria-hidden="true">
           {DOT_DELAYS.map((delay) => (
-            <motion.div
+            <motion.span
               key={delay}
-              animate={{ y: [0, -3, 0] }}
-              transition={{
-                repeat: Infinity,
-                duration: 0.6,
-                delay,
-              }}
-              className="w-1.5 h-1.5 rounded-full bg-accent"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ repeat: Infinity, duration: 1.1, delay }}
+              className="size-1.5 rounded-full bg-foreground-muted"
             />
           ))}
-        </div>
+        </span>
+        <span className="copy-13 text-foreground-muted">{userName} is typing</span>
       </div>
     </div>
   );

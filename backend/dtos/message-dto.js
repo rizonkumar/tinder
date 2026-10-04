@@ -72,10 +72,12 @@ class MessageDto {
   _mapReplyTo(ref) {
     if (!ref || typeof ref !== "object" || !ref._id) return null;
     const isDeleted = !!ref.isDeleted;
-    const senderName =
-      ref.sender && typeof ref.sender === "object" ? ref.sender.name : null;
+    const isPopulatedSender = ref.sender && typeof ref.sender === "object" && ref.sender._id;
+    const senderName = isPopulatedSender ? ref.sender.name : null;
+    const senderId = ref.sender ? (isPopulatedSender ? ref.sender._id : ref.sender).toString() : null;
     return {
       id: ref._id.toString(),
+      senderId,
       content: isDeleted ? "This message was deleted" : ref.content,
       messageType: ref.messageType,
       mediaUrl: isDeleted ? "" : ref.mediaUrl || "",

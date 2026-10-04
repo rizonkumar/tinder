@@ -20,16 +20,7 @@ export const PRIMARY_NAV = [
   { label: "Chat", to: ROUTES.chat, icon: MessageCircle, match: (path) => path.startsWith(ROUTES.chat) },
 ];
 
-export const MOBILE_TABS = [
-  PRIMARY_NAV[0],
-  PRIMARY_NAV[1],
-  PRIMARY_NAV[2],
-  PRIMARY_NAV[4],
-  { label: "Profile", to: ROUTES.profile, icon: User, match: (path) => path === ROUTES.profile },
-];
-
 export const ACCOUNT_MENU = [
   { label: "Profile", to: ROUTES.profile, icon: User },
   { label: "Swipe Gold", to: ROUTES.gold, icon: Crown },
-  { label: "My dates", to: ROUTES.dates, icon: CalendarDays },
 ];

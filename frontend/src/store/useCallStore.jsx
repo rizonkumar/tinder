@@ -4,10 +4,10 @@ import { useMessageStore } from "./useMessageStore";
 import showToast from "../components/common/Toast";
 import webrtcService from "../services/webrtc";
 import socketService from "../services/socket";
-import { CALL_STATUSES } from "../constants";
+import { CALL_STATES, CALL_STATUSES } from "../constants";
 
 export const useCallStore = create((set, get) => ({
-  callState: "idle",
+  callState: CALL_STATES.IDLE,
   callType: null,
   targetId: null,
   callerInfo: null,
@@ -40,7 +40,7 @@ export const useCallStore = create((set, get) => ({
   initiateCall: async (targetId, callType) => {
     try {
       set({
-        callState: "calling",
+        callState: CALL_STATES.CALLING,
         callType,
         targetId,
         micActive: true,
@@ -85,7 +85,7 @@ export const useCallStore = create((set, get) => ({
   acceptIncomingCall: async () => {
     try {
       const { callType, targetId, offer } = get();
-      set({ callState: "connected", callStartTime: Date.now() });
+      set({ callState: CALL_STATES.CONNECTED, callStartTime: Date.now() });
 
       const constraints = {
         audio: true,
@@ -129,7 +129,7 @@ export const useCallStore = create((set, get) => ({
     }
 
     set({
-      callState: "idle",
+      callState: CALL_STATES.IDLE,
       callType: null,
       targetId: null,
       callerInfo: null,
@@ -173,7 +173,7 @@ export const useCallStore = create((set, get) => ({
     }
 
     set({
-      callState: "idle",
+      callState: CALL_STATES.IDLE,
       callType: null,
       targetId: null,
       callerInfo: null,
@@ -209,7 +209,7 @@ export const useCallStore = create((set, get) => ({
 
     socket.on("incomingCall", ({ callerId, offer, callType, callerInfo }) => {
       set({
-        callState: "ringing",
+        callState: CALL_STATES.RINGING,
         callType,
         targetId: callerId,
         callerInfo,
@@ -219,7 +219,7 @@ export const useCallStore = create((set, get) => ({
     });
 
     socket.on("callAccepted", async ({ answer }) => {
-      set({ callState: "connected", callStartTime: Date.now() });
+      set({ callState: CALL_STATES.CONNECTED, callStartTime: Date.now() });
       await webrtcService.setRemoteDescription(answer);
     });
 
@@ -246,7 +246,7 @@ export const useCallStore = create((set, get) => ({
       }
       webrtcService.closeConnection();
       set({
-        callState: "idle",
+        callState: CALL_STATES.IDLE,
         callType: null,
         targetId: null,
         callerInfo: null,

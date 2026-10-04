@@ -47,6 +47,10 @@
 
   --overlay: rgba(28, 25, 23, 0.55);
 
+  --bubble-sent: #f8e2d9;
+  --bubble-sent-border: rgba(196, 61, 34, 0.16);
+  --bubble-received: #ffffff;
+
   --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.05);
   --shadow-popover:
     0 1px 1px rgba(28, 25, 23, 0.03), 0 6px 16px -6px rgba(28, 25, 23, 0.12);
@@ -148,6 +152,10 @@
   --danger-surface: #3a1c19;
 
   --overlay: rgba(0, 0, 0, 0.65);
+
+  --bubble-sent: #3a241d;
+  --bubble-sent-border: rgba(239, 106, 76, 0.2);
+  --bubble-received: #24211d;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-popover:
@@ -324,28 +332,6 @@
 
 .dark .chat-wallpaper {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='8' cy='8' r='1.2' fill='rgba(236,232,227,0.05)'/%3E%3Ccircle cx='24' cy='24' r='1.2' fill='rgba(236,232,227,0.05)'/%3E%3C/svg%3E");
-}
-
-.bubble-tail-sent::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: -6px;
-  width: 0;
-  height: 0;
-  border-top: 8px solid var(--blue-200);
-  border-right: 7px solid transparent;
-}
-
-.bubble-tail-received::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -6px;
-  width: 0;
-  height: 0;
-  border-top: 8px solid var(--gray-100);
-  border-left: 7px solid transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

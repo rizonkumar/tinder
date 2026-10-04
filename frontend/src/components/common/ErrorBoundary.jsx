@@ -1,6 +1,6 @@
 import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import FallbackState from "./FallbackState";
+import { EmptyState } from "../ui/EmptyState";
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -25,14 +25,14 @@ export default class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-background p-4">
-          <div className="w-full max-w-md rounded-lg bg-background p-8 shadow-modal border border-border text-center">
-            <FallbackState
+          <div className="w-full max-w-md rounded-xl border border-border bg-surface p-2 shadow-card">
+            <EmptyState
               icon={AlertTriangle}
-              title="Oops! Something went wrong"
-              description="A critical error occurred while rendering this view. Please try reloading the application."
+              title="Something went wrong"
+              description="This screen failed to load. Reloading usually fixes it."
               actions={[
                 {
-                  label: "Reload Application",
+                  label: "Reload",
                   onClick: this.handleReset,
                   variant: "primary",
                   icon: RefreshCw,
@@ -40,11 +40,9 @@ export default class ErrorBoundary extends React.Component {
               ]}
             />
             {import.meta.env.DEV && this.state.error && (
-              <details className="mt-6 text-left bg-background-secondary p-4 rounded-md border border-border max-h-48 overflow-y-auto">
-                <summary className="text-xs font-black uppercase tracking-wider text-red-800 cursor-pointer select-none">
-                  Error Details (Dev Only)
-                </summary>
-                <pre className="mt-2 text-[10px] text-foreground-secondary font-mono whitespace-pre-wrap leading-relaxed select-text">
+              <details className="m-3 max-h-48 overflow-y-auto rounded-md border border-border bg-background-secondary p-3 text-left">
+                <summary className="cursor-pointer text-xs font-medium text-danger">Error details</summary>
+                <pre className="mt-2 whitespace-pre-wrap font-mono text-xs leading-5 text-foreground-secondary">
                   {this.state.error.toString()}
                 </pre>
               </details>

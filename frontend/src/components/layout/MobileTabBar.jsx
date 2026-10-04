@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { MOBILE_TABS } from "../../constants/navigation";
+import { PRIMARY_NAV } from "../../constants/navigation";
 import { cn } from "../../utils/cn";
 
 export function MobileTabBar() {
@@ -10,7 +10,7 @@ export function MobileTabBar() {
       className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface md:hidden"
     >
       <ul className="grid h-tabbar grid-cols-5">
-        {MOBILE_TABS.map(({ label, to, icon: Icon, match }) => {
+        {PRIMARY_NAV.map(({ label, to, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <li key={to}>

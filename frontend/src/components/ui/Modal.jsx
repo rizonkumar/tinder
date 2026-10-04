@@ -4,7 +4,13 @@ import { X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { IconButton } from "./IconButton";
 
-export function Modal({ open, onClose, title, children, className, size = "md" }) {
+const SIZES = {
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-2xl",
+};
+
+export function Modal({ open, onClose, title, description, icon: Icon, footer, children, className, bodyClassName, size = "md" }) {
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (event) => {
@@ -35,22 +41,35 @@ export function Modal({ open, onClose, title, children, className, size = "md" }
             transition={{ duration: 0.2, ease: [0.175, 0.885, 0.32, 1.1] }}
             onClick={(event) => event.stopPropagation()}
             className={cn(
-              "relative w-full overflow-hidden rounded-t-xl border border-border bg-surface text-foreground shadow-modal sm:rounded-xl",
-              size === "sm" && "sm:max-w-sm",
-              size === "md" && "sm:max-w-md",
-              size === "lg" && "sm:max-w-2xl",
+              "relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-xl border border-border bg-surface text-foreground shadow-modal sm:max-h-[88dvh] sm:rounded-xl",
+              SIZES[size],
               className
             )}
           >
             {title && (
-              <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                <h2 className="heading-16">{title}</h2>
-                <IconButton label="Close" size="sm" onClick={onClose}>
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border px-5 py-4">
+                <div className="flex min-w-0 items-start gap-3">
+                  {Icon && (
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-background-secondary text-foreground-secondary">
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="heading-16 text-foreground">{title}</h2>
+                    {description && <p className="copy-13 mt-0.5 text-foreground-secondary">{description}</p>}
+                  </div>
+                </div>
+                <IconButton label="Close" size="sm" onClick={onClose} className="-mr-1.5 -mt-1">
                   <X />
                 </IconButton>
               </div>
             )}
-            {children}
+            <div className={cn("min-h-0 flex-1 overflow-y-auto", bodyClassName)}>{children}</div>
+            {footer && (
+              <div className="safe-bottom flex shrink-0 items-center justify-end gap-2 border-t border-border bg-background-secondary px-5 py-3">
+                {footer}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

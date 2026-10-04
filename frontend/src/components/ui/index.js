@@ -13,3 +13,4 @@ export { Skeleton, Spinner, LoadingBlock, CardGridSkeleton } from "./Skeleton";
 export { StatTile } from "./StatTile";
 export { SettingsRow } from "./SettingsRow";
 export { Modal } from "./Modal";
+export { ToggleChip } from "./ToggleChip";

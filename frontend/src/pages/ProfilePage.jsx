@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { Camera, Sparkles, RefreshCw, Check } from "lucide-react";
+import { Camera, Sparkles, RefreshCw } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 import { useAuthStore } from "../store/useAuthStore";
 import { useUserStore } from "../store/useUserStore";
@@ -12,7 +12,7 @@ import { SegmentedControl } from "../components/ui/SegmentedControl";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Avatar } from "../components/ui/Avatar";
-import { cn } from "../utils/cn";
+import { ToggleChip } from "../components/ui/ToggleChip";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const TONES = ["witty", "deep", "bold"];
@@ -26,25 +26,6 @@ const toFormData = (user) => ({
   image: user?.image || "",
   interests: user?.interests || [],
 });
-
-function InterestToggle({ label, selected, onToggle }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onToggle}
-      className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[0.8125rem] font-medium transition-colors focus-ring",
-        selected
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-surface text-foreground-secondary hover:border-border-strong hover:text-foreground"
-      )}
-    >
-      {selected && <Check size={13} aria-hidden="true" />}
-      {label}
-    </button>
-  );
-}
 
 function BioAssistant({ disabled, onApply }) {
   const { enhanceProfile } = useUserStore();
@@ -226,7 +207,9 @@ export default function ProfilePage() {
               />
               <CardBody className="flex flex-wrap gap-2">
                 {INTEREST_OPTIONS.map((tag) => (
-                  <InterestToggle key={tag} label={tag} selected={formData.interests.includes(tag)} onToggle={() => toggleInterest(tag)} />
+                  <ToggleChip key={tag} selected={formData.interests.includes(tag)} onToggle={() => toggleInterest(tag)}>
+                    {tag}
+                  </ToggleChip>
                 ))}
               </CardBody>
             </Card>

@@ -259,7 +259,6 @@ export default function ChatPage() {
                     }}
                     onRegenerateReplies={() => getSmartReplies(id)}
                     onRegenerateIcebreakers={() => getIcebreakers(id)}
-                    chatId={id}
                   />
                 )}
 
@@ -286,7 +285,6 @@ export default function ChatPage() {
             <AnimatePresence>
               {isDatePlannerOpen && (
                 <DatePlannerPanel
-                  isOpen={isDatePlannerOpen}
                   onClose={() => setIsDatePlannerOpen(false)}
                   matchUser={activeChatUser}
                 />

@@ -3,149 +3,78 @@ import { Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { parseTime } from "../../utils/dateUtils";
 import useClickOutside from "../../hooks/useClickOutside";
+import { Button } from "../ui/Button";
+import { cn } from "../../utils/cn";
+import PickerTrigger from "./PickerTrigger";
 
-export default function CustomTimePicker({
-  value,
-  onChange,
-  placeholder = "Select Time",
-  inline = false,
-}) {
+const HOURS = Array.from({ length: 12 }, (_, index) => String(index + 1).padStart(2, "0"));
+const MINUTES = Array.from({ length: 12 }, (_, index) => String(index * 5).padStart(2, "0"));
+const PERIODS = ["AM", "PM"];
+
+function TimeColumn({ label, options, selected, onSelect }) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col">
+      <span className="pb-1.5 text-center text-xs text-foreground-muted">{label}</span>
+      <div className="max-h-44 space-y-0.5 overflow-y-auto scrollbar-none" role="listbox" aria-label={label}>
+        {options.map((option) => (
+          <button
+            key={option}
+            type="button"
+            role="option"
+            aria-selected={option === selected}
+            onClick={() => onSelect(option)}
+            className={cn(
+              "tabular h-8 w-full rounded-md text-[0.8125rem] transition-colors focus-ring",
+              option === selected ? "bg-primary font-medium text-primary-foreground" : "text-foreground hover:bg-surface-hover"
+            )}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function CustomTimePicker({ value, onChange, placeholder = "Pick a time", inline = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
-
-  const { hour, minute, period } = parseTime(value);
-
   useClickOutside(containerRef, () => setIsOpen(false));
 
-  const handleSelect = (newHour, newMinute, newPeriod) => {
-    const formatted = `${newHour}:${newMinute} ${newPeriod}`;
-    onChange(formatted);
+  const { hour, minute, period } = parseTime(value);
+  const update = (next) => {
+    const merged = { hour, minute, period, ...next };
+    onChange(`${merged.hour}:${merged.minute} ${merged.period}`);
   };
 
-  const hours = Array.from({ length: 12 }, (_, i) =>
-    String(i + 1).padStart(2, "0"),
-  );
-  const minutes = Array.from({ length: 60 }, (_, i) =>
-    String(i).padStart(2, "0"),
-  );
-  const periods = ["AM", "PM"];
-
   return (
-    <div ref={containerRef} className="relative w-full select-none">
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full text-xs rounded-md border px-3.5 py-3 cursor-pointer transition-all duration-200 font-sans ${
-          isOpen
-            ? "border-accent bg-background shadow-card ring-1 ring-ring"
-            : "border-border bg-background text-foreground hover:border-border-strong"
-        }`}
-      >
-        <span
-          className={
-            value
-              ? "text-foreground font-semibold"
-              : "text-foreground-muted font-medium"
-          }
-        >
-          {value || placeholder}
-        </span>
-        <Clock
-          size={14}
-          className={`transition-colors duration-200 ${isOpen ? "text-accent" : "text-foreground-muted"}`}
-        />
-      </div>
+    <div ref={containerRef} className="relative w-full">
+      <PickerTrigger icon={Clock} value={value} placeholder={placeholder} isOpen={isOpen} onClick={() => setIsOpen((open) => !open)} />
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className={`${
-              inline
-                ? "relative mt-2 w-full"
-                : "absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[280px] z-[260]"
-            } bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans h-[240px]`}
+            transition={{ duration: 0.12 }}
+            className={cn(
+              "mt-2 rounded-lg border border-border bg-surface p-3 shadow-popover",
+              inline ? "relative w-full" : "absolute left-0 top-full z-[90] w-72"
+            )}
           >
-            <div className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted text-center mb-3 shrink-0 select-none font-outfit">
-              Select Time
-            </div>
-
-            <div className="relative flex flex-grow overflow-hidden gap-1.5 text-center h-full">
-              {/* Hours */}
-              <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5 scrollbar-none border-r border-border pb-3 pt-1.5">
-                {hours.map((h) => {
-                  const isSel = h === hour;
-                  return (
-                    <button
-                      key={h}
-                      type="button"
-                      onClick={() => handleSelect(h, minute, period)}
-                      className={`w-full py-1.5 text-xs font-semibold rounded-md transition-all ${
-                        isSel
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground-secondary hover:bg-surface-hover hover:text-foreground"
-                      }`}
-                    >
-                      {h}
-                    </button>
-                  );
-                })}
+            <div className="flex gap-2 divide-x divide-border">
+              <TimeColumn label="Hour" options={HOURS} selected={hour} onSelect={(next) => update({ hour: next })} />
+              <div className="flex flex-1 pl-2">
+                <TimeColumn label="Minute" options={MINUTES} selected={minute} onSelect={(next) => update({ minute: next })} />
               </div>
-
-              {/* Minutes */}
-              <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5 scrollbar-none border-r border-border pb-3 pt-1.5">
-                {minutes.map((m) => {
-                  const isSel = m === minute;
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => handleSelect(hour, m, period)}
-                      className={`w-full py-1.5 text-xs font-semibold rounded-md transition-all ${
-                        isSel
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground-secondary hover:bg-surface-hover hover:text-foreground"
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* AM/PM */}
-              <div className="flex-1 overflow-y-auto space-y-0.5 pb-3 pt-1.5 scrollbar-none">
-                {periods.map((p) => {
-                  const isSel = p === period;
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => handleSelect(hour, minute, p)}
-                      className={`w-full py-2.5 text-xs font-semibold rounded-md transition-all ${
-                        isSel
-                          ? "bg-accent text-accent-foreground"
-                          : "text-foreground-secondary hover:bg-surface-hover hover:text-foreground"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-1 pl-2">
+                <TimeColumn label="Period" options={PERIODS} selected={period} onSelect={(next) => update({ period: next })} />
               </div>
             </div>
-
-            <div className="mt-2.5 shrink-0 pt-2.5 border-t border-border">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="w-full py-2 bg-primary hover:bg-primary-hover text-primary-foreground text-[10px] font-bold rounded-md transition-colors uppercase tracking-widest font-outfit"
-              >
-                Apply Time
-              </button>
-            </div>
+            <Button size="sm" variant="secondary" className="mt-3 w-full" onClick={() => setIsOpen(false)}>
+              Done
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

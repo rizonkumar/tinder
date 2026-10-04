@@ -4,145 +4,104 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MONTH_NAMES, DAYS_OF_WEEK } from "../../constants";
 import { formatLocalDate, formatDisplayDate } from "../../utils/dateUtils";
 import useClickOutside from "../../hooks/useClickOutside";
+import { IconButton } from "../ui/IconButton";
+import { cn } from "../../utils/cn";
+import PickerTrigger from "./PickerTrigger";
 
-export default function CustomDatePicker({
-  value,
-  onChange,
-  placeholder = "Select Date",
-  inline = false,
-}) {
+const startOfToday = () => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
+export default function CustomDatePicker({ value, onChange, placeholder = "Pick a day", inline = false, allowPast = false }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentDate, setCurrentDate] = useState(
-    value ? new Date(value) : new Date(),
-  );
+  const [viewDate, setViewDate] = useState(() => (value ? new Date(`${value}T00:00`) : new Date()));
   const containerRef = useRef(null);
-
   useClickOutside(containerRef, () => setIsOpen(false));
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstWeekday = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = startOfToday();
+  const isViewingPastMonth = !allowPast && new Date(year, month, 1) <= new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
-
-  const handleSelectDay = (day) => {
-    const selected = new Date(year, month, day);
-    const formatted = formatLocalDate(selected);
-    onChange(formatted);
+  const selectDay = (day) => {
+    onChange(formatLocalDate(new Date(year, month, day)));
     setIsOpen(false);
   };
 
-  const formattedDisplay = formatDisplayDate(value);
-
-  // Check if a day is today
-  const today = new Date();
-  const isToday = (d) =>
-    year === today.getFullYear() &&
-    month === today.getMonth() &&
-    d === today.getDate();
-
-  const calendarCells = [];
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    calendarCells.push(<div key={`empty-${i}`} className="w-9 h-9" />);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isSelected =
-      value ===
-      `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    calendarCells.push(
-      <button
-        key={`day-${d}`}
-        type="button"
-        onClick={() => handleSelectDay(d)}
-        className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold font-sans transition-colors ${
-          isSelected
-            ? "bg-accent text-accent-foreground"
-            : isToday(d)
-              ? "bg-accent/10 text-accent font-bold"
-              : "text-foreground hover:bg-surface-hover hover:text-foreground"
-        }`}
-      >
-        {d}
-      </button>,
-    );
-  }
-
   return (
-    <div ref={containerRef} className="relative w-full select-none">
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full text-xs rounded-md border px-3.5 py-3 cursor-pointer transition-all duration-200 font-sans ${
-          isOpen
-            ? "border-accent bg-background shadow-card ring-1 ring-ring"
-            : "border-border bg-background text-foreground hover:border-border-strong"
-        }`}
-      >
-        <span
-          className={
-            formattedDisplay
-              ? "text-foreground font-semibold"
-              : "text-foreground-muted font-medium"
-          }
-        >
-          {formattedDisplay || placeholder}
-        </span>
-        <Calendar
-          size={14}
-          className={`transition-colors duration-200 ${isOpen ? "text-accent" : "text-foreground-muted"}`}
-        />
-      </div>
+    <div ref={containerRef} className="relative w-full">
+      <PickerTrigger
+        icon={Calendar}
+        value={formatDisplayDate(value)}
+        placeholder={placeholder}
+        isOpen={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+      />
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className={`${
-              inline
-                ? "relative mt-2 w-full"
-                : "absolute top-full mt-2 left-0 right-0 sm:right-auto sm:w-[300px] z-[260]"
-            } bg-background border border-border shadow-popover rounded-md p-4 flex flex-col font-sans`}
+            transition={{ duration: 0.12 }}
+            className={cn(
+              "mt-2 rounded-lg border border-border bg-surface p-3 shadow-popover",
+              inline ? "relative w-full" : "absolute left-0 top-full z-[90] w-[18.5rem]"
+            )}
           >
-            <div className="flex items-center justify-between mb-4 text-xs font-bold text-foreground font-outfit px-1 select-none">
-              <button
-                type="button"
-                onClick={handlePrevMonth}
-                className="p-1.5 rounded-full hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors focus-ring"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <span className="tracking-wide text-sm font-bold">
+            <div className="mb-2 flex items-center justify-between">
+              <IconButton label="Previous month" size="sm" onClick={() => setViewDate(new Date(year, month - 1, 1))} disabled={isViewingPastMonth}>
+                <ChevronLeft />
+              </IconButton>
+              <span className="label-14 text-foreground">
                 {MONTH_NAMES[month]} {year}
               </span>
-              <button
-                type="button"
-                onClick={handleNextMonth}
-                className="p-1.5 rounded-full hover:bg-surface-hover text-foreground-muted hover:text-foreground transition-colors focus-ring"
-              >
-                <ChevronRight size={16} />
-              </button>
+              <IconButton label="Next month" size="sm" onClick={() => setViewDate(new Date(year, month + 1, 1))}>
+                <ChevronRight />
+              </IconButton>
             </div>
-
-            <div className="grid grid-cols-7 gap-1 text-[10px] font-bold uppercase tracking-widest text-foreground-muted text-center mb-2 select-none">
+            <div className="grid grid-cols-7 text-center text-xs text-foreground-muted">
               {DAYS_OF_WEEK.map((day) => (
-                <div key={day} className="py-1 shrink-0">
+                <span key={day} className="py-1.5">
                   {day}
-                </div>
+                </span>
               ))}
             </div>
-
-            <div className="grid grid-cols-7 gap-1 text-center shrink-0">
-              {calendarCells}
+            <div className="grid grid-cols-7 gap-0.5 text-center">
+              {Array.from({ length: firstWeekday }).map((_, index) => (
+                <span key={`blank-${index}`} />
+              ))}
+              {Array.from({ length: daysInMonth }, (_, index) => index + 1).map((day) => {
+                const cellDate = new Date(year, month, day);
+                const iso = formatLocalDate(cellDate);
+                const isSelected = value === iso;
+                const isToday = cellDate.getTime() === today.getTime();
+                const isDisabled = !allowPast && cellDate < today;
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => selectDay(day)}
+                    aria-pressed={isSelected}
+                    aria-label={cellDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+                    className={cn(
+                      "tabular mx-auto flex size-9 items-center justify-center rounded-md text-[0.8125rem] transition-colors focus-ring disabled:cursor-not-allowed disabled:text-foreground-muted/50",
+                      isSelected
+                        ? "bg-primary font-medium text-primary-foreground"
+                        : isToday
+                          ? "font-semibold text-accent hover:bg-surface-hover"
+                          : "text-foreground hover:bg-surface-hover"
+                    )}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}

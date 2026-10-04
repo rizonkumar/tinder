@@ -10,10 +10,9 @@ export const formatLocalDate = (date) => {
 
 export const formatDisplayDate = (dateStr) => {
   if (!dateStr) return "";
-  const parts = dateStr.split("-");
-  if (parts.length !== 3) return dateStr;
-  const [y, m, d] = parts;
-  return `${d}/${m}/${y}`;
+  const parsed = new Date(`${dateStr}T00:00`);
+  if (isNaN(parsed.getTime())) return dateStr;
+  return parsed.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 };
 
 export const parseTime = (timeStr) => {

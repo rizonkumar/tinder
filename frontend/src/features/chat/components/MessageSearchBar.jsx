@@ -1,5 +1,7 @@
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Input } from "../../../components/ui/Field";
+import { IconButton } from "../../../components/ui/IconButton";
 
 export default function MessageSearchBar({
   showSearchBar,
@@ -11,68 +13,54 @@ export default function MessageSearchBar({
   onNext,
   onClose,
 }) {
+  const hasMatches = searchMatches.length > 0;
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") onClose();
+    if (event.key === "Enter" && hasMatches) {
+      event.preventDefault();
+      if (event.shiftKey) onPrev();
+      else onNext();
+    }
+  };
+
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {showSearchBar && (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="flex items-center space-x-3 bg-background-secondary border-b border-border px-4 py-2.5 shrink-0 select-none"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="shrink-0 overflow-hidden border-b border-border bg-surface"
         >
-          <div className="relative flex-grow">
-            <Search
-              size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearch(e.target.value)}
-              placeholder="Search conversation..."
-              className="w-full text-xs rounded-md border border-border bg-background pl-9 pr-8 py-2 focus-ring text-foreground placeholder:text-foreground-muted"
-              autoFocus
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => onSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground-secondary"
-              >
-                <X size={12} />
-              </button>
-            )}
-          </div>
-
-          {searchMatches.length > 0 && (
-            <div className="flex items-center space-x-2 text-[10px] font-bold text-foreground-secondary shrink-0 font-outfit uppercase tracking-wider">
-              <span>
-                {currentMatchIndex + 1} of {searchMatches.length}
-              </span>
-              <button
-                type="button"
-                onClick={onPrev}
-                className="px-2 py-1 rounded-md border border-border bg-background hover:bg-surface-hover transition-colors uppercase tracking-widest text-[9px]"
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                onClick={onNext}
-                className="px-2 py-1 rounded-md border border-border bg-background hover:bg-surface-hover transition-colors uppercase tracking-widest text-[9px]"
-              >
-                Next
-              </button>
+          <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
+            <div className="min-w-0 flex-1">
+              <Input
+                icon={Search}
+                type="search"
+                value={searchQuery}
+                onChange={(event) => onSearch(event.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Search in conversation"
+                aria-label="Search in conversation"
+                className="h-9"
+                autoFocus
+              />
             </div>
-          )}
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs font-bold text-foreground-muted hover:text-foreground-secondary focus:outline-none shrink-0"
-          >
-            Cancel
-          </button>
+            <span className="tabular min-w-[3.5rem] text-center text-xs text-foreground-muted" aria-live="polite">
+              {searchQuery ? (hasMatches ? `${currentMatchIndex + 1} of ${searchMatches.length}` : "No results") : ""}
+            </span>
+            <IconButton label="Previous result" size="sm" onClick={onPrev} disabled={!hasMatches}>
+              <ChevronUp />
+            </IconButton>
+            <IconButton label="Next result" size="sm" onClick={onNext} disabled={!hasMatches}>
+              <ChevronDown />
+            </IconButton>
+            <IconButton label="Close search" size="sm" onClick={onClose}>
+              <X />
+            </IconButton>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

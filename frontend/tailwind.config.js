@@ -16,7 +16,6 @@ export default {
       fontFamily: {
         sans: ["Geist", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
         mono: ["Geist Mono", "ui-monospace", "SFMono-Regular", "monospace"],
-        outfit: ["Geist", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {
         background: {
@@ -63,6 +62,11 @@ export default {
           DEFAULT: "var(--danger)",
           hover: "var(--danger-hover)",
           surface: "var(--danger-surface)",
+        },
+        bubble: {
+          sent: "var(--bubble-sent)",
+          "sent-border": "var(--bubble-sent-border)",
+          received: "var(--bubble-received)",
         },
         overlay: "var(--overlay)",
         ring: "var(--ring)",

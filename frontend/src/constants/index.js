@@ -176,6 +176,15 @@ export const DAYS_OF_WEEK = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export const EMOJI_REACTIONS = ["❤️", "👍", "😂", "😮", "😢", "🔥"];
 
+export const CALL_STATES = {
+  IDLE: "idle",
+  CALLING: "calling",
+  RINGING: "ringing",
+  CONNECTED: "connected",
+};
+
+export const CALL_REACTIONS = ["💖", "🎉", "😂", "🔥", "😮"];
+
 export const CALL_STATUSES = {
   MISSED: "missed",
   COMPLETED: "completed",

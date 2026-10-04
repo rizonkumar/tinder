@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Globe, ExternalLink } from "lucide-react";
 import { useLinkPreview } from "../hooks/useLinkPreview";
-import { metaTextClass } from "../utils/chatBubbleStyles";
+import { Skeleton } from "../../../components/ui/Skeleton";
 
 function getHostname(url) {
   try {
@@ -11,29 +11,24 @@ function getHostname(url) {
   }
 }
 
-export default function LinkPreviewCard({ url, isSentByMe }) {
+const CONTAINER =
+  "mt-2 block overflow-hidden rounded-lg border border-border bg-surface transition-colors hover:border-border-strong focus-ring";
+
+export default function LinkPreviewCard({ url }) {
   const { data, isLoading } = useLinkPreview(url);
   const [iconFailed, setIconFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
-
   const hostname = getHostname(url);
-  const containerClass = `mt-2 block overflow-hidden rounded-md border transition-colors ${
-    isSentByMe
-      ? "border-blue-1000/20 bg-blue-1000/5 hover:bg-blue-1000/10"
-      : "border-border bg-background hover:bg-surface-hover"
-  }`;
-  const mutedClass = metaTextClass(isSentByMe);
-  const titleClass = isSentByMe ? "text-blue-1000" : "text-foreground";
 
   if (isLoading) {
     return (
-      <div className={`${containerClass} animate-pulse`}>
-        <div className="flex items-center gap-2.5 px-3 py-2">
-          <span className="h-8 w-8 shrink-0 rounded-md bg-surface-active" />
-          <span className="flex-grow space-y-1.5">
-            <span className="block h-2.5 w-1/2 rounded bg-surface-active" />
-            <span className="block h-2 w-3/4 rounded bg-surface-active" />
-          </span>
+      <div className={CONTAINER} aria-hidden="true">
+        <div className="flex items-center gap-2.5 px-3 py-2.5">
+          <Skeleton className="size-8 shrink-0" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton className="h-3 w-1/2" />
+            <Skeleton className="h-2.5 w-3/4" />
+          </div>
         </div>
       </div>
     );
@@ -41,35 +36,21 @@ export default function LinkPreviewCard({ url, isSentByMe }) {
 
   const hasImage = data?.image && !imageFailed;
   const title = data?.title || hostname;
-  const description = data?.description;
   const siteName = data?.siteName || hostname;
-  const faviconSrc = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
 
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(event) => event.stopPropagation()}
-      className={containerClass}
-    >
+    <a href={url} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()} className={CONTAINER}>
       {hasImage && (
-        <img
-          src={data.image}
-          alt=""
-          className="h-32 w-full object-cover"
-          loading="lazy"
-          onError={() => setImageFailed(true)}
-        />
+        <img src={data.image} alt="" loading="lazy" className="h-32 w-full object-cover" onError={() => setImageFailed(true)} />
       )}
-      <div className="flex items-center gap-2.5 px-3 py-2">
+      <div className="flex items-center gap-2.5 px-3 py-2.5">
         {!hasImage && (
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background-secondary">
+          <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background-secondary text-foreground-muted">
             {iconFailed ? (
-              <Globe size={15} className="opacity-70" />
+              <Globe size={15} aria-hidden="true" />
             ) : (
               <img
-                src={faviconSrc}
+                src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
                 alt=""
                 width={18}
                 height={18}
@@ -79,18 +60,14 @@ export default function LinkPreviewCard({ url, isSentByMe }) {
             )}
           </span>
         )}
-        <span className="min-w-0 flex-grow">
-          <span className={`block text-[11px] font-bold tracking-tight truncate font-outfit ${titleClass}`}>
-            {title}
-          </span>
-          {description && (
-            <span className={`block text-[10px] leading-snug line-clamp-2 ${mutedClass}`}>
-              {description}
-            </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[0.8125rem] font-medium text-foreground">{title}</span>
+          {data?.description && (
+            <span className="line-clamp-2 text-xs leading-4 text-foreground-secondary">{data.description}</span>
           )}
-          <span className={`mt-0.5 flex items-center gap-1 text-[10px] truncate ${mutedClass}`}>
+          <span className="mt-0.5 flex items-center gap-1 truncate text-xs text-foreground-muted">
             <span className="truncate">{siteName}</span>
-            <ExternalLink size={11} className="shrink-0 opacity-70" />
+            <ExternalLink size={11} className="shrink-0" aria-hidden="true" />
           </span>
         </span>
       </div>
